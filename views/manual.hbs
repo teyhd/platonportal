@@ -1,0 +1,25 @@
+<style>
+    iframe{
+        width: 100%;
+        height: 1920px;
+    }
+</style>
+<div class="row">
+    <h5 class="center">Инструкции</h5>
+    <div class="collection col s12  center">
+        {{#each files}}
+        <a id="{{this}}" class="collection-item">{{this}}</a>
+        {{/each}}
+    </div>
+    <div class="col s12">    
+    <iframe id="frame" src=" " >не удалось показать документ</iframe>
+    </div>
+</div>
+<script>
+ $(".collection-item").click(function() {
+        console.log("docs/"+this.id)
+       // $("#frame").src = this.id
+        $('#frame').attr('src',"docs/"+this.id);
+       // $("#userids").val(this.id)      
+    })
+</script>

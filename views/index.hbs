@@ -1,0 +1,68 @@
+<style>
+  .l{
+    height: 400px;  
+  }
+  .h{
+    height: 300px;
+  }
+.bl{
+ 
+}
+ header, .main, footer {
+      padding-left: 200px;
+    }
+
+    @media only screen and (max-width : 992px) {
+      header, .main, footer {
+        padding-left: 0;
+      }
+    }
+    .tnews{
+          line-height: normal;
+           font-size: 14pt;
+    }
+    .card{
+      min-width: 150px;
+    }
+</style>
+
+
+<br>
+<div class="main"><div class="row">
+   {{#each menu}}
+  <div class="bl col s6 m4 h4 l3 ">
+    <a href="{{this.link}}">
+      <div class="card">
+        <div class="card-image">
+          <img src="img/{{this.pic}}">
+        </div>
+        <div class="card-content">
+          <p>{{{this.text}}}</p>
+        </div>
+      </div>    
+    </a>
+  </div>
+  {{/each}}
+</div>
+</div>
+
+
+ 
+  <ul id="slide-out" class="sidenav sidenav-fixed">
+    <li>
+      <nav class="#0097a7 cyan darken-1">
+      <div class="nav-wrapper">
+        <a href="/" class="brand-logo center hide-on-med-and-up flow-text">Информация</a>
+        <a href="/" class="brand-logo center hide-on-small-only">Информация</a>
+      </div>
+    </nav>
+    </li>
+      <ul class="collapsible">
+        {{#each info}}
+          <li>
+            <div class="collapsible-header"><i class="material-icons">info</i>{{title}}</div>
+            <div class="collapsible-body center-align center  tnews">{{{content}}}</div>
+          </li>
+        {{/each}}
+  </ul>
+    </ul>

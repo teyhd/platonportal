@@ -1,0 +1,36 @@
+.bord_log {
+  position: absolute;
+  top: 150px;
+  z-index: 5;
+  width: 80%;
+  height: 200px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center; }
+
+#pass_div {
+  color: white;
+  border: 4px double white;
+  width: 80%;
+  height: 90%;
+  background-color: #283493d2;
+  margin-left: auto;
+  margin-right: auto; }
+
+#mpopup {
+  margin-left: auto;
+  margin-right: auto; }
+
+.mbtn {
+  width: 100%; }
+
+th, tr, td {
+  border: 0.1px solid #231fa2;
+  color: #08082e; }
+
+.coldiv{
+  width: 50%;
+}
+a{
+  color: black;
+}
