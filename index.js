@@ -68,6 +68,15 @@ app.use(cookieParser());
 app.use(session({resave:false,saveUninitialized:false, secret: 'keyboard cat', cookie: {  }}))
 
 
+app.use(async function (req, res, next) {
+    let page = req._parsedOriginalUrl.pathname;
+
+    next();
+
+    mlog(page,getcurip(req.socket.remoteAddress),req.query)
+    
+})
+
 app.get('/',(req,res)=>{
     let set = {s:12,m:3,h:3,l:3}
     var menu = [{
@@ -186,6 +195,11 @@ app.get('*',async function(req, res){
         title: '404 Not Found',   
     });
 });
+function getcurip(str) {
+    let arr = str.split(':');
+    arr = arr[arr.length-1];
+    return arr;
+}
 async function start(){
     try {
         app.listen(PORT,()=> {
