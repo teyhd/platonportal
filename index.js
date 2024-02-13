@@ -15,7 +15,7 @@ appDir = appDir.split('///')
 appDir = appDir[1]
 
 var PORT = process.env.PORT || 777;
- PORT = process.env.PORT || 502;
+ PORT = process.env.PORT || 80;
 const app = express();
 const hbs = exphbs.create({
 defaultLayout: 'main',
