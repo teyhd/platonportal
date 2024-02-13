@@ -96,11 +96,6 @@ app.get('/',(req,res)=>{
         pic: "stud.png",
     },
     {
-        link: "https://web.telegram.org/",
-        text: "Telegream Web",
-        pic: "tg.png",
-    },
-    {
         link: "https://drive.google.com/drive/u/0/folders/1C5FnL33Y1KXxKzYY1A1bzOLyCt__kIOf",
         text: "Прогрес репорт",
         pic: "otrs.png",
@@ -109,6 +104,11 @@ app.get('/',(req,res)=>{
       link: "/manual",
       text: "Инструкции",
       pic: "manu.png",
+    },
+    {
+        link: "https://web.telegram.org/",
+        text: "Telegream Web",
+        pic: "tg.png",
     }
     ]
     var info = [{
