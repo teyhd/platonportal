@@ -81,7 +81,7 @@ app.get('/',(req,res)=>{
       pic: "calend.png",
     },
     {
-      link: "http://platon.teyhd.ru/",
+      link: "http://platon.teyhd.ru:81",
       text: "Аренда ПК",
       pic: "pc.png",
     },
