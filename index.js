@@ -206,7 +206,7 @@ app.get('/',(req,res)=>{
     
 ]
     res.render('index',{
-      title: 'Сервисы',
+      title: 'Сервисы Платоникса',
      // auth: auth,
       set: set,
       menu:menu,
