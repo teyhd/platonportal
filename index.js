@@ -84,7 +84,7 @@ app.get('/',(req,res)=>{
     let set = {s:12,m:3,h:3,l:3}
     var menu = [{
       link: "http://club8899.studyapps.ru/user/login?ReturnUrl=%2f",
-      text: "Дневник",
+      text: "Дневник TEST",
       pic: "studyapp.png",
     },
     {
