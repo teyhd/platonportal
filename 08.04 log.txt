@@ -1,0 +1,145 @@
+
+ 18:08:03 Глобальный косяк приложения!!!  Error: listen EADDRINUSE: address already in use :::80
+    at Server.setupListenHandle [as _listen2] (node:net:1897:16)
+    at listenInCluster (node:net:1945:12)
+    at Server.listen (node:net:2037:7)
+    at Function.listen (/var/www/html/platonportal/node_modules/express/lib/application.js:635:24)
+    at start (file:///var/www/html/platonportal/index.js:240:13)
+    at file:///var/www/html/platonportal/index.js:248:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:222:25)
+    at async ModuleLoader.import (node:internal/modules/esm/loader:323:24)
+    at async loadESM (node:internal/process/esm_loader:28:7)
+    at async handleMainPromise (node:internal/modules/run_main:113:12)
+ 18:10:55 Сервер - запущен
+ 18:10:55 Порт: 777
+ 18:14:24 Сервер - запущен
+ 18:14:24 Порт: 777
+ 18:22:29 Сервер - запущен
+ 18:22:29 Порт: 777
+ 18:22:37 / 77.232.185.34
+ 18:22:37 /css/main.css 77.232.185.34
+ 18:22:37 /img/studyapp.png 77.232.185.34
+ 18:22:37 /img/calend.png 77.232.185.34
+ 18:22:37 /img/pc.png 77.232.185.34
+ 18:22:37 /img/platon.png 77.232.185.34
+ 18:22:37 /img/stud.png 77.232.185.34
+ 18:22:37 /lib.js 77.232.185.34
+ 18:22:37 /main.js 77.232.185.34
+ 18:22:37 /img/otrs.png 77.232.185.34
+ 18:22:37 /img/manu.png 77.232.185.34
+ 18:22:37 /img/tg.png 77.232.185.34
+ 18:22:37 /favicon.ico 77.232.185.34
+ 18:22:37 /favicon.ico 77.232.185.34
+ 18:22:39 / 77.232.185.34
+ 18:22:39 /css/main.css 77.232.185.34
+ 18:22:39 /img/studyapp.png 77.232.185.34
+ 18:22:39 /img/calend.png 77.232.185.34
+ 18:22:39 /img/pc.png 77.232.185.34
+ 18:22:39 /img/platon.png 77.232.185.34
+ 18:22:39 /img/stud.png 77.232.185.34
+ 18:22:39 /lib.js 77.232.185.34
+ 18:22:39 /main.js 77.232.185.34
+ 18:22:39 /img/otrs.png 77.232.185.34
+ 18:22:39 /img/manu.png 77.232.185.34
+ 18:22:39 /img/tg.png 77.232.185.34
+ 18:22:40 / 77.232.185.34
+ 18:22:40 /css/main.css 77.232.185.34
+ 18:22:40 /img/studyapp.png 77.232.185.34
+ 18:22:40 /img/calend.png 77.232.185.34
+ 18:22:40 /img/pc.png 77.232.185.34
+ 18:22:40 /img/platon.png 77.232.185.34
+ 18:22:40 /img/stud.png 77.232.185.34
+ 18:22:40 /lib.js 77.232.185.34
+ 18:22:40 /main.js 77.232.185.34
+ 18:22:40 /img/otrs.png 77.232.185.34
+ 18:22:40 /img/manu.png 77.232.185.34
+ 18:22:40 /img/tg.png 77.232.185.34
+ 18:22:40 / 77.232.185.34
+ 18:22:40 /css/main.css 77.232.185.34
+ 18:22:40 /img/studyapp.png 77.232.185.34
+ 18:22:40 /img/calend.png 77.232.185.34
+ 18:22:40 /img/pc.png 77.232.185.34
+ 18:22:40 /img/platon.png 77.232.185.34
+ 18:22:40 /img/stud.png 77.232.185.34
+ 18:22:40 /lib.js 77.232.185.34
+ 18:22:40 /main.js 77.232.185.34
+ 18:22:40 /img/otrs.png 77.232.185.34
+ 18:22:40 /img/manu.png 77.232.185.34
+ 18:22:40 /img/tg.png 77.232.185.34
+ 18:22:40 / 77.232.185.34
+ 18:22:40 /css/main.css 77.232.185.34
+ 18:22:40 /img/studyapp.png 77.232.185.34
+ 18:22:40 /img/calend.png 77.232.185.34
+ 18:22:40 /img/pc.png 77.232.185.34
+ 18:22:40 /img/platon.png 77.232.185.34
+ 18:22:40 /img/stud.png 77.232.185.34
+ 18:22:40 /lib.js 77.232.185.34
+ 18:22:40 /main.js 77.232.185.34
+ 18:22:40 /img/otrs.png 77.232.185.34
+ 18:22:40 /img/tg.png 77.232.185.34
+ 18:22:40 /img/manu.png 77.232.185.34
+ 18:24:22 Сервер - запущен
+ 18:24:22 Порт: 777
+ 18:24:27 Глобальный косяк приложения!!!  Error: listen EADDRINUSE: address already in use :::777
+    at Server.setupListenHandle [as _listen2] (node:net:1872:16)
+    at listenInCluster (node:net:1920:12)
+    at Server.listen (node:net:2008:7)
+    at Function.listen (/var/www/html/platonportal/node_modules/express/lib/application.js:635:24)
+    at start (file:///var/www/html/platonportal/index.js:240:13)
+    at file:///var/www/html/platonportal/index.js:248:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:218:25)
+    at async ModuleLoader.import (node:internal/modules/esm/loader:329:24)
+    at async loadESM (node:internal/process/esm_loader:28:7)
+    at async handleMainPromise (node:internal/modules/run_main:113:12)
+ 18:25:55 Сервер - запущен
+ 18:25:55 Порт: 777
+ 18:25:58 / 77.232.185.34
+ 18:25:58 /css/main.css 77.232.185.34
+ 18:25:58 /img/studyapp.png 77.232.185.34
+ 18:25:58 /img/calend.png 77.232.185.34
+ 18:25:58 /img/pc.png 77.232.185.34
+ 18:25:58 /img/platon.png 77.232.185.34
+ 18:25:58 /img/stud.png 77.232.185.34
+ 18:25:58 /main.js 77.232.185.34
+ 18:25:58 /lib.js 77.232.185.34
+ 18:25:58 /img/otrs.png 77.232.185.34
+ 18:25:58 /img/manu.png 77.232.185.34
+ 18:25:58 /img/tg.png 77.232.185.34
+ 18:26:01 /css/main.css 77.232.185.34
+ 18:26:14 var/www/html/platonportal/public
+ 18:26:14 Сервер - запущен
+ 18:26:14 Порт: 777
+ 18:26:20 / 77.232.185.34
+ 18:26:20 /css/main.css 77.232.185.34
+ 18:26:20 /img/calend.png 77.232.185.34
+ 18:26:20 /img/studyapp.png 77.232.185.34
+ 18:26:20 /img/pc.png 77.232.185.34
+ 18:26:20 /img/platon.png 77.232.185.34
+ 18:26:20 /img/stud.png 77.232.185.34
+ 18:26:20 /lib.js 77.232.185.34
+ 18:26:20 /img/otrs.png 77.232.185.34
+ 18:26:20 /main.js 77.232.185.34
+ 18:26:20 /img/manu.png 77.232.185.34
+ 18:26:20 /img/tg.png 77.232.185.34
+ 18:27:03 file:/var/www/html/platonportal/public
+ 18:27:03 Сервер - запущен
+ 18:27:03 Порт: 777
+ 18:27:09 / 77.232.185.34
+ 18:27:09 /css/main.css 77.232.185.34
+ 18:27:09 /img/studyapp.png 77.232.185.34
+ 18:27:09 /img/calend.png 77.232.185.34
+ 18:27:09 /img/pc.png 77.232.185.34
+ 18:27:09 /img/platon.png 77.232.185.34
+ 18:27:09 /img/stud.png 77.232.185.34
+ 18:27:09 /lib.js 77.232.185.34
+ 18:27:09 /main.js 77.232.185.34
+ 18:27:09 /img/otrs.png 77.232.185.34
+ 18:27:09 /img/manu.png 77.232.185.34
+ 18:27:09 /img/tg.png 77.232.185.34
+ 18:27:33 file:/var/www/html/platonportal/public
+ 18:27:33 Сервер - запущен
+ 18:27:33 Порт: 777
+ 18:27:52 /var/www/html/platonportal/public
+ 18:27:52 Сервер - запущен
+ 18:27:52 Порт: 777
+ 18:27:56 / 77.232.185.34
