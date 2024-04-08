@@ -26,7 +26,7 @@ export function mlog (par) {
       }
       
     } 
-    fs.writeFileSync(path.join('logs',`${curdate(datecreate.getDate())}.${curdate(datecreate.getMonth()+1)} log.txt`),
+    fs.writeFileSync(path.join(`${curdate(datecreate.getDate())}.${curdate(datecreate.getMonth()+1)} log.txt`),
     texta,
     {
       encoding: "utf8",
