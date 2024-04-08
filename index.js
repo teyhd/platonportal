@@ -11,8 +11,8 @@ import path from 'path'
 import fs from 'fs-extra'
 
 var appDir = path.dirname(import.meta.url);
-appDir = appDir.split('///')
-appDir = appDir[1]
+//appDir = appDir.split('///')
+//appDir = appDir[1]
 
 var PORT = process.env.PORT || 777;
  //PORT = process.env.PORT || 80;
