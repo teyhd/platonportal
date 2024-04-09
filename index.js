@@ -82,20 +82,26 @@ app.use(async function (req, res, next) {
 
 app.get('/',(req,res)=>{
     let set = {s:12,m:3,h:3,l:3}
-    var menu = [{
+    var menu = [
+    {
+        link: "http://cloud.platoniks.ru",
+        text: "Облако",
+        pic: "cloud.png",
+    },
+    {
+        link: "http://pc.platoniks.ru",
+        text: "Аренда ПК",
+        pic: "pc.png",
+    },
+        {
       link: "http://club8899.studyapps.ru/user/login?ReturnUrl=%2f",
-      text: "Дневник TEST",
+      text: "Дневник",
       pic: "studyapp.png",
     },
     {
       link: "https://docs.google.com/spreadsheets/d/1GCyzhYJp6EJdZEWvYYqfBzl0762tlZjMkdB2oxD5oF8/edit#gid=1168501255",
       text: "Расписание",
       pic: "calend.png",
-    },
-    {
-      link: "http://platon.teyhd.ru:81",
-      text: "Аренда ПК",
-      pic: "pc.png",
     },
     {
         link: "https://teacher.platonics.ru/",
