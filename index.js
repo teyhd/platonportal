@@ -9,7 +9,7 @@ import session from 'express-session'
 import cookieParser from 'cookie-parser'
 import path from 'path'
 import fs from 'fs-extra'
-
+let iswin = true
 var appDir = path.dirname(import.meta.url);
 appDir = appDir.split('//')
 appDir = appDir[1]
@@ -62,23 +62,36 @@ helpers: {
 
 app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
-app.set('views',path.join(appDir, 'views'));
-mlog(path.join(appDir, 'public'));
-app.use(express.static(path.join(appDir, 'public')));
+
+if (iswin) {
+    app.set('views',path.join('views'));
+    app.use(express.static('public'));
+} else{
+    app.set('views',path.join(appDir, 'views'));
+    mlog(path.join(appDir, 'public'));
+    app.use(express.static(path.join(appDir, 'public')));
+}
 
 app.use(cookieParser());
-app.use(session({resave:false,saveUninitialized:false, secret: 'keyboard cat', cookie: {  }}))
-
+app.use(session({name: 'login',resave:false,saveUninitialized:false, secret: 'keyboard cat', cookie: { domain: ".localhost" }}));
 
 app.use(async function (req, res, next) {
     let page = req._parsedOriginalUrl.pathname;
 
+    console.log(req.session);
+    mlog("ТЕСТ",req.session.test)
+    req.session.counter = req.session.counter || 0;
+    req.session.test = req.session.test+1
     next();
 
     mlog(page,getcurip(req.socket.remoteAddress),req.query)
     
 })
 
+app.get('/e',(req,res)=>{
+    req.session.test = 0
+    res.sendStatus(200)
+})
 
 app.get('/',(req,res)=>{
     let set = {s:12,m:3,h:3,l:3}
@@ -93,7 +106,7 @@ app.get('/',(req,res)=>{
         text: "Аренда ПК",
         pic: "pc.png",
     },
-        {
+    {
       link: "http://club8899.studyapps.ru/user/login?ReturnUrl=%2f",
       text: "Дневник",
       pic: "studyapp.png",
