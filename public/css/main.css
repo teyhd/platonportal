@@ -1,3 +1,6 @@
+body{
+  background-color: #acacac;
+}
 .bord_log {
   position: absolute;
   top: 150px;
