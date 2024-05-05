@@ -84,7 +84,7 @@ app.get('/',(req,res)=>{
     let set = {s:12,m:3,h:3,l:3}
     var menu = [
     {
-        link: "http://cloud.platoniks.ru",
+        link: "https://cloud.platoniks.ru",
         text: "Облако",
         pic: "cloud.png",
     },
@@ -94,12 +94,12 @@ app.get('/',(req,res)=>{
         pic: "pc.png",
     },
         {
-      link: "http://club8899.studyapps.ru/user/login?ReturnUrl=%2f",
+      link: "https://club8899.studyapps.ru/user/login?ReturnUrl=%2f",
       text: "Дневник",
       pic: "studyapp.png",
     },
     {
-      link: "https://docs.google.com/spreadsheets/d/1GCyzhYJp6EJdZEWvYYqfBzl0762tlZjMkdB2oxD5oF8/edit#gid=1168501255",
+      link: "https://docs.google.com/spreadsheets/d/1NwIw-9fBZrcDFDsGQON1ggA8Ur_CfYQNQ-nvffw0i6c/edit#gid=17477241",
       text: "Расписание",
       pic: "calend.png",
     },
