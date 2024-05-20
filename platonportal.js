@@ -9,7 +9,7 @@ import session from 'express-session'
 import cookieParser from 'cookie-parser'
 import path from 'path'
 import fs from 'fs-extra'
-
+let iswin = true
 var appDir = path.dirname(import.meta.url);
 appDir = appDir.split('//')
 appDir = appDir[1]
@@ -62,29 +62,42 @@ helpers: {
 
 app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
-app.set('views',path.join(appDir, 'views'));
-mlog(path.join(appDir, 'public'));
-app.use(express.static(path.join(appDir, 'public')));
+
+if (iswin) {
+    app.set('views',path.join('views'));
+    app.use(express.static('public'));
+} else{
+    app.set('views',path.join(appDir, 'views'));
+    mlog(path.join(appDir, 'public'));
+    app.use(express.static(path.join(appDir, 'public')));
+}
 
 app.use(cookieParser());
-app.use(session({resave:false,saveUninitialized:false, secret: 'keyboard cat', cookie: {  }}))
-
+app.use(session({name: 'login',resave:false,saveUninitialized:false, secret: 'keyboard cat', cookie: { domain: "platoniks.ru" }}));
 
 app.use(async function (req, res, next) {
     let page = req._parsedOriginalUrl.pathname;
-
+    req.session.test == undefined ? req.session.test = 0 : req.session.test
+    mlog(req.session);
+    mlog("ТЕСТ",req.session.test)
+    req.session.counter = req.session.counter || 0;
+    req.session.test = req.session.test+1
     next();
-
-    mlog(page,getcurip(req.socket.remoteAddress),req.query)
+    
+    mlog(page,req.headers['nip'],req.query)
     
 })
 
+app.get('/e',(req,res)=>{
+    req.session.test = 0
+    res.sendStatus(200)
+})
 
 app.get('/',(req,res)=>{
     let set = {s:12,m:3,h:3,l:3}
     var menu = [
     {
-        link: "https://cloud.platoniks.ru",
+        link: "http://cloud.platoniks.ru",
         text: "Облако",
         pic: "cloud.png",
     },
@@ -93,13 +106,13 @@ app.get('/',(req,res)=>{
         text: "Аренда ПК",
         pic: "pc.png",
     },
-        {
-      link: "https://club8899.studyapps.ru/user/login?ReturnUrl=%2f",
+    {
+      link: "http://club8899.studyapps.ru/user/login?ReturnUrl=%2f",
       text: "Дневник",
       pic: "studyapp.png",
     },
     {
-      link: "https://docs.google.com/spreadsheets/d/1NwIw-9fBZrcDFDsGQON1ggA8Ur_CfYQNQ-nvffw0i6c/edit#gid=17477241",
+      link: "https://docs.google.com/spreadsheets/d/1GCyzhYJp6EJdZEWvYYqfBzl0762tlZjMkdB2oxD5oF8/edit#gid=1168501255",
       text: "Расписание",
       pic: "calend.png",
     },
@@ -124,12 +137,57 @@ app.get('/',(req,res)=>{
       pic: "manu.png",
     },
     {
-        link: "https://web.telegram.org/",
-        text: "Telegream Web",
+        link: "https://t.me/platonicsbot",
+        text: "Бот Платоникс",
         pic: "tg.png",
     }
     ]
-    
+
+    if (req.session.role>0){
+        menu.unshift(
+        {
+            link: "https://pc.platoniks.ru/ctrl",
+            text: "Управление ПК",
+            pic: "pc.png",
+        },
+        {
+        link: "http://activ.platoniks.ru",
+        text: "NODE JS панель",
+        pic: "node.png",
+        },
+        {
+            link: "http://db.platoniks.ru",
+            text: "База данных",
+            pic: "db.png",
+        },
+        {
+            link: "http://plex.platoniks.ru/web/index.html#!/",
+            text: "PLEX",
+            pic: "plex.png",
+        },
+        {
+            link: "http://port.platoniks.ru",
+            text: "Docker",
+            pic: "port.png",
+        },
+        {
+            link: "http://vpn.platoniks.ru/",
+            text: "VPN",
+            pic: "vpn.png",
+        },
+        {
+            link: "https://tilda.ru/projects/",
+            text: "Tilda",
+            pic: "tilda.png",
+        },
+        {
+            link: "https://photo.platoniks.ru",
+            text: "Фото",
+            pic: "photo.png",
+        }
+    )
+}
+
     var info = [{
         title:"Сервисы Платоникса!",
         content:`Добро пожаловать на страницу
@@ -204,34 +262,74 @@ app.get('/',(req,res)=>{
         <br>⭐️ Кафедра начальных классов – Иванова Елена Елена 
         <br>⭐️ Кафедра наставников – Юникова Марина 
         <br>⭐️ Кафедра тьюторов – Царькова Любовь Дурдымуратовна`
-    },
-    {
-        title:"Информация по принтерам",
-        content:`⭐️Если ваш документ полностью черно-белый - печатайте, пожалуйста, в первую очередь на принтере hp m227fdw (2644fd), если он свободен, а не на цветном epson
-        <br>⭐️Черно-былый принтер в коридоре - это именно m227fdw (2644fd). Пожалуйста, не запускайте печать на принтер из 3 кабинета с похожим названием m227fdw (7c706b)
-        <br>⭐️Новый маленький epson пока что еще учится печатать, в частности не знаком с macOS. Но мы его научим (оповещу). Цветная печать с mac доступна на большом epson
-        <br>⭐️Если что-то идет не так при печати: замятие, ошибка, полосы и т.п., и вы не уверены в своих способностях самостоятельно решить проблему - обращайтесь напрямую ко мне (можно звонить)`
-    },
-    
+    },  
 ]
     res.render('index',{
       title: 'Сервисы Платоникса',
      // auth: auth,
       set: set,
       menu:menu,
-      info:info
-    });
-  })
-  app.get('/manual',(req,res)=>{
-    let files = fs.readdirSync(path.join(appDir,"public/docs"))
-    console.log(files);
-    res.render('manual',{
-      title: 'Инструкции',
-     // auth: auth,
-      files:files
+      info:info,
+      auth: req.session.role
     });
   })
 
+app.get('/manual',(req,res)=>{
+    let files = fs.readdirSync(path.join(appDir,"public/docs"))
+    console.log(files);
+    res.render('manual',{
+        title: 'Инструкции',
+        // auth: auth,
+        files:files
+    });
+})
+
+app.get('/auth',async (req,res)=>{
+    console.log(req.query);
+    if (req.query.pass!=undefined) {
+        let ans = await auth_user(req.query.login,req.query.pass);
+        mlog(ans);
+        if (ans!=undefined){
+            req.session.name = ans.name
+            req.session.userid = ans.id
+            req.session.role = ans.role
+            res.send('ok')
+        } else {
+            res.send('nok')
+        }
+    } else{
+        res.render('auth',{
+            title: 'Авторизация',
+            auth: req.session.role
+        });
+    }
+}) 
+
+async function auth_user(login, pass) {
+    if(pass=='pladmin'){
+        return {
+            id: 1,
+            name: 'Администратор',
+            role: 2
+        }
+    }
+}
+
+app.get('/logout', function(req, res) {
+    mlog( req.session.name,"вышел из системы");
+    req.session = null;
+    req.session.test = null
+    req.session.userid = null
+    //res.send('ok');
+    console.dir(req.session)
+    req.session.save(function (err) {
+      if (err) next(err)
+      req.session.regenerate(function (err) {
+        if (err) next(err)
+        res.redirect('/')
+      })
+    })
+})
 app.get('*',async function(req, res){
     res.render('404', { 
         url: req.url,

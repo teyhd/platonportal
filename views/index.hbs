@@ -54,6 +54,7 @@
       <div class="nav-wrapper">
         <a href="/" class="brand-logo center hide-on-med-and-up flow-text">Информация</a>
         <a href="/" class="brand-logo center hide-on-small-only">Информация</a>
+        
       </div>
     </nav>
     </li>
@@ -64,5 +65,12 @@
             <div class="collapsible-body center-align center  tnews">{{{content}}}</div>
           </li>
         {{/each}}
+
+        {{#if auth}}
+        <li><a href="/logout">Выход<i class="material-icons">account_circle</i></a></li>
+        {{else}}
+        <li><a class="modal-trigger" href="#modal1" name="login">Вход<i class="material-icons">account_circle</i></a></li>
+        {{/if}}
+     
   </ul>
     </ul>

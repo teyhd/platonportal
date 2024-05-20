@@ -73,18 +73,18 @@ if (iswin) {
 }
 
 app.use(cookieParser());
-app.use(session({name: 'login',resave:false,saveUninitialized:false, secret: 'keyboard cat', cookie: { domain: ".localhost" }}));
+app.use(session({name: 'login',resave:false,saveUninitialized:false, secret: 'keyboard cat', cookie: { domain: "platoniks.ru" }}));
 
 app.use(async function (req, res, next) {
     let page = req._parsedOriginalUrl.pathname;
-
-    console.log(req.session);
+    req.session.test == undefined ? req.session.test = 0 : req.session.test
+    mlog(req.session);
     mlog("ТЕСТ",req.session.test)
     req.session.counter = req.session.counter || 0;
     req.session.test = req.session.test+1
     next();
-
-    mlog(page,getcurip(req.socket.remoteAddress),req.query)
+    
+    mlog(page,req.headers['nip'],req.query)
     
 })
 
@@ -142,7 +142,6 @@ app.get('/',(req,res)=>{
         pic: "tg.png",
     }
     ]
-    
     var info = [{
         title:"Сервисы Платоникса!",
         content:`Добро пожаловать на страницу
@@ -235,16 +234,52 @@ app.get('/',(req,res)=>{
       info:info
     });
   })
-  app.get('/manual',(req,res)=>{
+
+app.get('/manual',(req,res)=>{
     let files = fs.readdirSync(path.join(appDir,"public/docs"))
     console.log(files);
     res.render('manual',{
-      title: 'Инструкции',
-     // auth: auth,
-      files:files
+        title: 'Инструкции',
+        // auth: auth,
+        files:files
     });
-  })
+})
 
+app.get('/auth',async (req,res)=>{
+    console.log(req.query);
+    if (req.query.pass!=undefined) {
+        let ans = await auth_user(req.query.login,req.query.pass);
+        mlog(ans);
+        if (ans!=undefined){
+            req.session.name = ans.name
+            req.session.userid = ans.id
+            res.send('ok')
+        } else {
+            res.send('nok')
+        }
+    } else{
+        res.render('auth',{
+            title: 'Авторизация',
+            //auth: req.session.userid
+        });
+    }
+}) 
+
+app.get('/logout', function(req, res) {
+    mlog( req.session.name,"вышел из системы");
+    req.session = null;
+    req.session.test = null
+    req.session.userid = null
+    //res.send('ok');
+    console.dir(req.session)
+    req.session.save(function (err) {
+      if (err) next(err)
+      req.session.regenerate(function (err) {
+        if (err) next(err)
+        res.redirect('/')
+      })
+    })
+})
 app.get('*',async function(req, res){
     res.render('404', { 
         url: req.url,
