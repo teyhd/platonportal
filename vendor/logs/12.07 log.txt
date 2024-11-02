@@ -1,0 +1,195 @@
+
+ 08:29:18 Сервер - запущен
+ 08:29:18 Порт: 777
+ 09:50:53 
+ cookie:[object Object] 
+ test:0
+ 09:50:53 ТЕСТ 0
+ 09:50:53 /robots.txt 52.167.144.67
+ 11:28:30 Сервер - запущен
+ 11:28:30 Порт: 777
+ 11:35:10 
+ cookie:[object Object] 
+ test:0
+ 11:35:10 ТЕСТ 0
+ 11:35:10 / 199.244.88.232
+ 12:13:36 
+ cookie:[object Object] 
+ test:0
+ 12:13:36 ТЕСТ 0
+ 12:13:36 / 91.92.254.4
+ 12:13:36 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 12:13:36 ТЕСТ 1
+ 12:13:36 /wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:13:36 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 12:13:36 ТЕСТ 2
+ 12:13:36 /xmlrpc.php 91.92.254.4 
+ rsd:
+ 12:13:36 
+ cookie:[object Object] 
+ test:3 
+ counter:0
+ 12:13:36 ТЕСТ 3
+ 12:13:36 / 91.92.254.4
+ 12:13:36 
+ cookie:[object Object] 
+ test:4 
+ counter:0
+ 12:13:36 ТЕСТ 4
+ 12:13:36 /blog/wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:13:36 
+ cookie:[object Object] 
+ test:5 
+ counter:0
+ 12:13:36 ТЕСТ 5
+ 12:13:36 /web/wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:13:36 
+ cookie:[object Object] 
+ test:6 
+ counter:0
+ 12:13:36 ТЕСТ 6
+ 12:13:36 /wordpress/wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:13:36 
+ cookie:[object Object] 
+ test:7 
+ counter:0
+ 12:13:36 ТЕСТ 7
+ 12:13:36 /website/wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:13:37 
+ cookie:[object Object] 
+ test:8 
+ counter:0
+ 12:13:37 ТЕСТ 8
+ 12:13:37 /wp/wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:13:37 
+ cookie:[object Object] 
+ test:9 
+ counter:0
+ 12:13:37 ТЕСТ 9
+ 12:13:37 /news/wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:13:37 
+ cookie:[object Object] 
+ test:10 
+ counter:0
+ 12:13:37 ТЕСТ 10
+ 12:13:37 /2020/wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:13:37 
+ cookie:[object Object] 
+ test:11 
+ counter:0
+ 12:13:37 ТЕСТ 11
+ 12:13:37 /2019/wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:13:37 
+ cookie:[object Object] 
+ test:12 
+ counter:0
+ 12:13:37 ТЕСТ 12
+ 12:13:37 /shop/wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:13:37 
+ cookie:[object Object] 
+ test:13 
+ counter:0
+ 12:13:37 ТЕСТ 13
+ 12:13:37 /wp1/wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:13:37 
+ cookie:[object Object] 
+ test:14 
+ counter:0
+ 12:13:37 ТЕСТ 14
+ 12:13:37 /test/wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:13:37 
+ cookie:[object Object] 
+ test:15 
+ counter:0
+ 12:13:37 ТЕСТ 15
+ 12:13:37 /wp2/wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:13:37 
+ cookie:[object Object] 
+ test:16 
+ counter:0
+ 12:13:37 ТЕСТ 16
+ 12:13:37 /site/wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:13:37 
+ cookie:[object Object] 
+ test:17 
+ counter:0
+ 12:13:37 ТЕСТ 17
+ 12:13:37 /cms/wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:13:37 
+ cookie:[object Object] 
+ test:18 
+ counter:0
+ 12:13:37 ТЕСТ 18
+ 12:13:37 /sito/wp-includes/wlwmanifest.xml 91.92.254.4
+ 12:36:37 
+ cookie:[object Object] 
+ test:0
+ 12:36:37 ТЕСТ 0
+ 12:36:37 / 77.232.185.34
+ 14:23:31 
+ cookie:[object Object] 
+ test:0
+ 14:23:31 ТЕСТ 0
+ 14:23:31 / 35.93.78.235
+ 14:37:11 
+ cookie:[object Object] 
+ test:0
+ 14:37:11 ТЕСТ 0
+ 14:37:11 /robots.txt 54.36.148.247
+ 14:37:22 
+ cookie:[object Object] 
+ test:0
+ 14:37:22 ТЕСТ 0
+ 14:37:22 / 54.36.149.51
+ 14:48:15 Сервер - запущен
+ 14:48:15 Порт: 777
+ 14:48:17 Глобальный косяк приложения!!!  Error: getaddrinfo EAI_AGAIN home.teyhd.ru
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:118:26)
+ 14:48:17 Глобальный косяк приложения!!!  Error: getaddrinfo EAI_AGAIN home.teyhd.ru
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:118:26)
+ 14:59:59 Сервер - запущен
+ 14:59:59 Порт: 777
+ 15:03:26 
+ cookie:[object Object] 
+ test:0
+ 15:03:26 ТЕСТ 0
+ 15:03:26 / 149.202.214.115
+ 15:09:56 Сервер - запущен
+ 15:09:56 Порт: 777
+ 18:23:14 
+ cookie:[object Object] 
+ test:0
+ 18:23:14 ТЕСТ 0
+ 18:23:14 / undefined
+ 20:27:08 
+ cookie:[object Object] 
+ test:0
+ 20:27:08 ТЕСТ 0
+ 20:27:08 / 205.169.39.41
+ 20:33:10 
+ cookie:[object Object] 
+ test:0
+ 20:33:10 ТЕСТ 0
+ 20:33:10 / 198.235.24.171
+ 21:13:02 
+ cookie:[object Object] 
+ test:0
+ 21:13:02 ТЕСТ 0
+ 21:13:02 / 84.51.223.125
+ 23:04:01 
+ cookie:[object Object] 
+ test:0
+ 23:04:01 ТЕСТ 0
+ 23:04:01 / 91.108.29.240
+ 23:53:38 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 23:53:38 ТЕСТ 1
+ 23:53:38 / 91.108.29.240

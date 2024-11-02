@@ -674,3 +674,191 @@
  test:0
  16:58:12 ТЕСТ 0
  16:58:12 / 176.15.163.246
+ 17:33:20 
+ cookie:[object Object] 
+ test:3 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 17:33:20 ТЕСТ 3
+ 17:33:20 / 77.232.185.34
+ 17:56:11 
+ cookie:[object Object] 
+ test:0
+ 17:56:11 ТЕСТ 0
+ 17:56:11 / 77.232.185.34
+ 18:02:06 
+ cookie:[object Object] 
+ test:0
+ 18:02:06 ТЕСТ 0
+ 18:02:06 / 77.232.185.34
+ 18:02:14 
+ cookie:[object Object] 
+ test:0
+ 18:02:14 ТЕСТ 0
+ 18:02:14 /auth 77.232.185.34 
+ login: 
+ pass:pladmin
+ 18:02:14 
+ id:1 
+ name:Администратор 
+ role:2
+ 18:02:14 
+ cookie:[object Object] 
+ test:0
+ 18:02:14 ТЕСТ 0
+ 18:02:14 / 77.232.185.34
+ 18:03:08 
+ cookie:[object Object] 
+ test:0
+ 18:03:08 ТЕСТ 0
+ 18:03:08 /auth 77.232.185.34 
+ login: 
+ pass:pladmin
+ 18:03:08 
+ id:1 
+ name:Администратор 
+ role:2
+ 18:03:08 
+ cookie:[object Object] 
+ test:0
+ 18:03:08 ТЕСТ 0
+ 18:03:08 / 77.232.185.34
+ 18:03:20 
+ cookie:[object Object] 
+ test:0
+ 18:03:20 ТЕСТ 0
+ 18:03:20 /auth 77.232.185.34 
+ login: 
+ pass:pladmin
+ 18:03:20 
+ id:1 
+ name:Администратор 
+ role:2
+ 18:03:20 
+ cookie:[object Object] 
+ test:0
+ 18:03:20 ТЕСТ 0
+ 18:03:20 / 77.232.185.34
+ 18:03:41 
+ cookie:[object Object] 
+ test:4 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 18:03:41 ТЕСТ 4
+ 18:03:41 / 77.232.185.34
+ 18:13:09 
+ cookie:[object Object] 
+ test:5 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 18:13:09 ТЕСТ 5
+ 18:13:09 / 77.232.185.34
+ 18:29:29 
+ cookie:[object Object] 
+ test:0
+ 18:29:29 ТЕСТ 0
+ 18:29:29 / 45.90.63.219
+ 18:35:43 
+ cookie:[object Object] 
+ test:0
+ 18:35:43 ТЕСТ 0
+ 18:35:43 / 176.15.163.246
+ 18:53:38 
+ cookie:[object Object] 
+ test:0
+ 18:53:38 ТЕСТ 0
+ 18:53:38 / 179.43.167.18
+ 18:54:22 
+ cookie:[object Object] 
+ test:0
+ 18:54:22 ТЕСТ 0
+ 18:54:22 /cdnjs.cloud 179.43.167.18
+ 18:54:22 
+ cookie:[object Object] 
+ test:0
+ 18:54:22 ТЕСТ 0
+ 18:54:22 /code.jquery.com/jquery-3.6.0.js 179.43.167.18
+ 18:54:22 
+ cookie:[object Object] 
+ test:0
+ 18:54:22 ТЕСТ 0
+ 18:54:22 /cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.js 179.43.167.18
+ 20:42:27 
+ cookie:[object Object] 
+ test:0
+ 20:42:27 ТЕСТ 0
+ 20:42:27 / 172.17.0.2
+ 21:43:13 
+ cookie:[object Object] 
+ test:0
+ 21:43:13 ТЕСТ 0
+ 21:43:13 / 178.254.38.45
+ 21:48:01 
+ cookie:[object Object] 
+ test:0
+ 21:48:01 ТЕСТ 0
+ 21:48:01 / 92.100.244.223
+ 21:48:17 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 21:48:17 ТЕСТ 1
+ 21:48:17 /auth 92.100.244.223 
+ login:F 
+ pass:pladmin
+ 21:48:17 
+ id:1 
+ name:Администратор 
+ role:2
+ 21:48:17 
+ cookie:[object Object] 
+ test:2 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 21:48:17 ТЕСТ 2
+ 21:48:17 / 92.100.244.223
+ 21:48:36 
+ cookie:[object Object] 
+ test:3 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 21:48:36 ТЕСТ 3
+ 21:48:36 / 92.100.244.223
+ 23:05:13 
+ cookie:[object Object] 
+ test:0
+ 23:05:13 ТЕСТ 0
+ 23:05:13 / 88.201.249.178
+ 23:06:27 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 23:06:27 ТЕСТ 1
+ 23:06:27 / 176.15.163.246
+ 23:12:01 Сервер - запущен
+ 23:12:01 Порт: 777
+ 23:30:59 
+ cookie:[object Object] 
+ test:0
+ 23:30:59 ТЕСТ 0
+ 23:30:59 /robots.txt 85.208.96.204
+ 23:30:59 
+ cookie:[object Object] 
+ test:0
+ 23:30:59 ТЕСТ 0
+ 23:30:59 /upl 85.208.96.198
+ 23:52:58 
+ cookie:[object Object] 
+ test:0
+ 23:52:58 ТЕСТ 0
+ 23:52:58 /manual 85.208.96.203

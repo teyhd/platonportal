@@ -1,0 +1,338 @@
+
+ 00:33:53 Сервер - запущен
+ 00:33:53 Порт: 777
+ 00:36:07 
+ cookie:[object Object] 
+ test:0
+ 00:36:07 ТЕСТ 0
+ 00:36:07 / 176.15.163.246
+ 00:55:40 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 00:55:40 ТЕСТ 1
+ 00:55:40 / 92.100.244.223
+ 00:55:51 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 00:55:51 ТЕСТ 2
+ 00:55:51 /auth 92.100.244.223 
+ login:P 
+ pass:pladmin
+ 00:55:51 
+ id:1 
+ name:Администратор 
+ role:2
+ 00:55:51 
+ cookie:[object Object] 
+ test:3 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 00:55:51 ТЕСТ 3
+ 00:55:51 / 92.100.244.223
+ 00:55:56 
+ cookie:[object Object] 
+ test:4 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 00:55:56 ТЕСТ 4
+ 00:55:56 / 92.100.244.223
+ 00:55:58 
+ cookie:[object Object] 
+ test:5 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 00:55:58 ТЕСТ 5
+ 00:55:58 Администратор вышел из системы
+ 00:55:58 /logout 92.100.244.223
+ 00:56:01 
+ cookie:[object Object] 
+ test:5 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 00:56:01 ТЕСТ 5
+ 00:56:01 / 92.100.244.223
+ 00:56:35 
+ cookie:[object Object] 
+ test:0
+ 00:56:35 ТЕСТ 0
+ 00:56:35 / 92.100.244.223
+ 01:03:28 
+ cookie:[object Object] 
+ test:0
+ 01:03:28 ТЕСТ 0
+ 01:03:28 / undefined
+ 01:04:19 
+ cookie:[object Object] 
+ test:6 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 01:04:19 ТЕСТ 6
+ 01:04:19 / 92.100.244.223
+ 01:12:38 
+ cookie:[object Object] 
+ test:0
+ 01:12:38 ТЕСТ 0
+ 01:12:38 /robots.txt 213.180.203.152
+ 01:12:38 
+ cookie:[object Object] 
+ test:0
+ 01:12:38 ТЕСТ 0
+ 01:12:38 / 213.180.203.132
+ 01:13:04 
+ cookie:[object Object] 
+ test:0
+ 01:13:04 ТЕСТ 0
+ 01:13:04 / 87.250.224.233
+ 02:19:21 
+ cookie:[object Object] 
+ test:0
+ 02:19:21 ТЕСТ 0
+ 02:19:21 /robots.txt 95.108.213.143
+ 02:20:21 
+ cookie:[object Object] 
+ test:0
+ 02:20:21 ТЕСТ 0
+ 02:20:21 /robots.txt 5.255.231.95
+ 02:20:22 
+ cookie:[object Object] 
+ test:0
+ 02:20:22 ТЕСТ 0
+ 02:20:22 / 5.255.231.173
+ 02:35:20 
+ cookie:[object Object] 
+ test:0
+ 02:35:20 ТЕСТ 0
+ 02:35:20 / 95.108.213.102
+ 04:30:48 
+ cookie:[object Object] 
+ test:0
+ 04:30:48 ТЕСТ 0
+ 04:30:48 /robots.txt 66.249.66.195
+ 04:30:48 
+ cookie:[object Object] 
+ test:0
+ 04:30:48 ТЕСТ 0
+ 04:30:48 /manual 66.249.66.195
+ 08:15:48 
+ cookie:[object Object] 
+ test:0
+ 08:15:48 ТЕСТ 0
+ 08:15:48 /robots.txt 66.249.66.195
+ 08:15:49 
+ cookie:[object Object] 
+ test:0
+ 08:15:49 ТЕСТ 0
+ 08:15:49 / 66.249.66.195
+ 08:16:02 
+ cookie:[object Object] 
+ test:0
+ 08:16:02 ТЕСТ 0
+ 08:16:02 / 66.249.66.195
+ 08:16:03 
+ cookie:[object Object] 
+ test:0
+ 08:16:03 ТЕСТ 0
+ 08:16:03 / 66.249.66.195
+ 09:16:29 
+ cookie:[object Object] 
+ test:0
+ 09:16:29 ТЕСТ 0
+ 09:16:29 / 77.232.185.34
+ 09:18:38 
+ cookie:[object Object] 
+ test:0
+ 09:18:38 ТЕСТ 0
+ 09:18:38 / undefined
+ 09:56:55 
+ cookie:[object Object] 
+ test:0
+ 09:56:55 ТЕСТ 0
+ 09:56:55 / 212.33.255.53
+ 09:57:01 
+ cookie:[object Object] 
+ test:0
+ 09:57:01 ТЕСТ 0
+ 09:57:01 / 176.15.165.179
+ 10:00:59 
+ cookie:[object Object] 
+ test:7 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 10:00:59 ТЕСТ 7
+ 10:00:59 / 77.232.185.34
+ 10:01:52 
+ cookie:[object Object] 
+ test:0
+ 10:01:52 ТЕСТ 0
+ 10:01:52 /robots.txt 95.108.213.236
+ 10:01:52 
+ cookie:[object Object] 
+ test:0
+ 10:01:52 ТЕСТ 0
+ 10:01:52 / 95.108.213.103
+ 10:02:05 
+ cookie:[object Object] 
+ test:0
+ 10:02:05 ТЕСТ 0
+ 10:02:05 / 80.251.227.20
+ 10:51:18 
+ cookie:[object Object] 
+ test:0
+ 10:51:18 ТЕСТ 0
+ 10:51:18 / 77.232.185.34
+ 12:27:28 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 12:27:28 ТЕСТ 1
+ 12:27:28 / 176.118.191.112
+ 13:09:02 
+ cookie:[object Object] 
+ test:0
+ 13:09:02 ТЕСТ 0
+ 13:09:02 / 217.66.159.248
+ 13:18:10 
+ cookie:[object Object] 
+ test:0
+ 13:18:10 ТЕСТ 0
+ 13:18:10 / 77.232.185.34
+ 13:19:27 
+ cookie:[object Object] 
+ test:0
+ 13:19:27 ТЕСТ 0
+ 13:19:27 /robots.txt 95.108.213.183
+ 13:19:27 
+ cookie:[object Object] 
+ test:0
+ 13:19:27 ТЕСТ 0
+ 13:19:27 / 213.180.203.115
+ 13:50:13 
+ cookie:[object Object] 
+ test:0
+ 13:50:13 ТЕСТ 0
+ 13:50:13 /robots.txt 185.191.171.8
+ 13:50:14 
+ cookie:[object Object] 
+ test:0
+ 13:50:14 ТЕСТ 0
+ 13:50:14 / 85.208.96.199
+ 14:27:42 
+ cookie:[object Object] 
+ test:0
+ 14:27:42 ТЕСТ 0
+ 14:27:42 / 34.219.215.243
+ 14:29:30 
+ cookie:[object Object] 
+ test:0
+ 14:29:30 ТЕСТ 0
+ 14:29:30 / 34.220.159.167
+ 15:58:32 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 15:58:32 ТЕСТ 2
+ 15:58:32 / 77.232.185.34
+ 15:58:34 
+ cookie:[object Object] 
+ test:3 
+ counter:0
+ 15:58:34 ТЕСТ 3
+ 15:58:34 /auth 77.232.185.34 
+ login:P 
+ pass:pladmin
+ 15:58:34 
+ id:1 
+ name:Администратор 
+ role:2
+ 15:58:35 
+ cookie:[object Object] 
+ test:4 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 15:58:35 ТЕСТ 4
+ 15:58:35 / 77.232.185.34
+ 16:22:25 
+ cookie:[object Object] 
+ test:5 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 16:22:25 ТЕСТ 5
+ 16:22:25 / 77.232.185.34
+ 16:35:04 
+ cookie:[object Object] 
+ test:0
+ 16:35:04 ТЕСТ 0
+ 16:35:04 / 77.232.185.34
+ 17:12:31 
+ cookie:[object Object] 
+ test:0
+ 17:12:31 ТЕСТ 0
+ 17:12:31 / 176.53.223.75
+ 17:25:44 
+ cookie:[object Object] 
+ test:0
+ 17:25:44 ТЕСТ 0
+ 17:25:44 / 193.233.18.58
+ 17:25:45 
+ cookie:[object Object] 
+ test:0
+ 17:25:45 ТЕСТ 0
+ 17:25:45 / 193.233.18.58
+ 18:35:54 
+ cookie:[object Object] 
+ test:0
+ 18:35:54 ТЕСТ 0
+ 18:35:54 / 43.157.40.137
+ 18:48:06 
+ cookie:[object Object] 
+ test:0
+ 18:48:06 ТЕСТ 0
+ 18:48:06 /wp-login.php 128.199.66.248
+ 19:51:54 
+ cookie:[object Object] 
+ test:0
+ 19:51:54 ТЕСТ 0
+ 19:51:54 /robots.txt 107.174.115.161
+ 19:51:54 
+ cookie:[object Object] 
+ test:0
+ 19:51:54 ТЕСТ 0
+ 19:51:54 / 107.174.115.161
+ 19:52:43 
+ cookie:[object Object] 
+ test:0
+ 19:52:43 ТЕСТ 0
+ 19:52:43 /robots.txt 23.94.63.236
+ 19:52:44 
+ cookie:[object Object] 
+ test:0
+ 19:52:44 ТЕСТ 0
+ 19:52:44 / 23.94.63.236
+ 20:54:06 
+ cookie:[object Object] 
+ test:0
+ 20:54:06 ТЕСТ 0
+ 20:54:06 / 5.255.253.42
+ 21:15:02 
+ cookie:[object Object] 
+ test:0
+ 21:15:02 ТЕСТ 0
+ 21:15:02 / 67.205.174.68

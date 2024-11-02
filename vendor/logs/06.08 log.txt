@@ -1,0 +1,33 @@
+
+ 07:57:44 Сервер - запущен
+ 07:57:44 Порт: 777
+ 07:57:55 Глобальный косяк приложения!!!  Error: getaddrinfo EAI_AGAIN home.teyhd.ru
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:118:26)
+ 07:57:55 Глобальный косяк приложения!!!  Error: getaddrinfo EAI_AGAIN home.teyhd.ru
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:118:26)
+ 17:00:39 
+ cookie:[object Object] 
+ test:0
+ 17:00:39 ТЕСТ 0
+ 17:00:39 / 178.69.32.175
+ 17:17:15 
+ cookie:[object Object] 
+ test:0
+ 17:17:15 ТЕСТ 0
+ 17:17:15 /robots.txt 66.249.68.37
+ 17:37:13 
+ cookie:[object Object] 
+ test:0
+ 17:37:13 ТЕСТ 0
+ 17:37:13 / 178.69.32.175
+ 22:02:40 Сервер - запущен
+ 22:02:40 Порт: 777
+ 22:02:42 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 22:02:42 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 23:29:34 
+ cookie:[object Object] 
+ test:0
+ 23:29:34 ТЕСТ 0
+ 23:29:34 / 15.204.161.7

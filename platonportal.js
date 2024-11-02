@@ -1,4 +1,4 @@
-import {mlog} from './vendor/logs.js'
+import {mlog,say} from './vendor/logs.js'
 process.on('uncaughtException', (err) => {
 mlog('Глобальный косяк приложения!!! ', err.stack);
 }); //Если все пошло по ***, спасет ситуацию
@@ -106,13 +106,18 @@ app.get('/',(req,res)=>{
         text: "Аренда ПК",
         pic: "pc.png",
     },
+   /* {
+        link: "http://platon.teyhd.ru:88",
+        text: "Закупки",
+        pic: "order.png",
+    },*/
     {
       link: "http://club8899.studyapps.ru/user/login?ReturnUrl=%2f",
       text: "Дневник",
       pic: "studyapp.png",
     },
     {
-      link: "https://docs.google.com/spreadsheets/d/1GCyzhYJp6EJdZEWvYYqfBzl0762tlZjMkdB2oxD5oF8/edit#gid=1168501255",
+      link: "https://docs.google.com/spreadsheets/d/1JiMIcnklI7CGoP-Mfc_kqghuo71kFLfccVtsc6eH_Rw/edit?gid=1961581949#gid=1961581949",
       text: "Расписание",
       pic: "calend.png",
     },
@@ -145,6 +150,11 @@ app.get('/',(req,res)=>{
 
     if (req.session.role>0){
         menu.unshift(
+        {
+            link: "http://platon.teyhd.ru:86/upd",
+            text: "Расписание",
+            pic: "time.png",
+        },
         {
             link: "https://pc.platoniks.ru/ctrl",
             text: "Управление ПК",
@@ -228,26 +238,24 @@ app.get('/',(req,res)=>{
     },
     {
         title:"Распределение наставников",
-        content:`Начальная школа 
-        <br>1-4 классы: Михаил Арапов (@doubleHeart_tyler) 
-        <br>Нина Долганова (@heather_alle)
-        <br><br>5 и 6 АРТ: Ольга Гриценко (@OlgaGritsenkoo)
-        <br>6 МИТ: Диана Наговицына (@dianchik_01n)
-        <br>7 классы: Юрий Жабин (@Puree_Johnson)
-        <br>8-10 классы: Алиса Новикова (@NovikovaAlisa)`
+        content:`1 класс — Алина 
+<br>2-3-4 классы — Миша 
+<br>5-6 классы и Святогор — Нина 
+<br>7-е классы — Полина 
+<br>8-е классы — Элина 
+<br>9 класс — Семен 
+<br>10-11 классы — Никита `
     },
     {
         title:"Распределение тьюторов",
-        content:`Начальная школа 
-        <br>1-2 классы Любовь @lubovtsarkova
-        <br>3-4 классы Виктория @Ryzhaya_Viktoriya
-        <br>
-        <br>Средняя и старшая школа:
-        <br>5 класс Виктория @Ryzhaya_Viktoriya
-        <br>6 классы Лена @flyflybird
-        <br>7 АРТ Анастасия
-        <br>7 МИТ Любовь @lubovtsarkova
-        <br>8-10 классы Дарья @d120833`
+        content:`1 класс — Виктория 
+<br>2-3 классы — Любовь 
+<br>4-5 классы — Виктория 
+<br>6 класс — Дарья 
+<br>7-е классы — Константин 
+<br>8 АРТ — Константин 
+<br>8 МИТ — Любовь 
+<br>9-10-11 классы — Дарья`
     },
     {
         title:"Основные контакты",
@@ -345,6 +353,7 @@ async function start(){
     try {
         app.listen(PORT,()=> {
             mlog('Сервер - запущен')
+            say('Распределительный портал - запущен \nПорт: '+PORT)
             mlog('Порт:',PORT);
         })
     } catch (e) {

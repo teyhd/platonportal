@@ -1,0 +1,463 @@
+
+ 01:08:03 
+ cookie:[object Object] 
+ test:0
+ 01:08:03 ТЕСТ 0
+ 01:08:03 /php.zip 38.180.50.219
+ 02:40:27 
+ cookie:[object Object] 
+ test:0
+ 02:40:27 ТЕСТ 0
+ 02:40:27 /export.zip 38.180.50.219
+ 03:38:16 
+ cookie:[object Object] 
+ test:0
+ 03:38:16 ТЕСТ 0
+ 03:38:16 / 34.245.105.63
+ 04:11:45 
+ cookie:[object Object] 
+ test:0
+ 04:11:45 ТЕСТ 0
+ 04:11:45 /adminweb.zip 38.180.50.219
+ 04:29:36 
+ cookie:[object Object] 
+ test:0
+ 04:29:36 ТЕСТ 0
+ 04:29:36 /wp-admin/setup-config.php 165.22.110.5 
+ step:1
+ 04:29:36 
+ cookie:[object Object] 
+ test:0
+ 04:29:36 ТЕСТ 0
+ 04:29:36 /wordpress/wp-admin/setup-config.php 165.22.110.5 
+ step:1
+ 05:27:26 
+ cookie:[object Object] 
+ test:0
+ 05:27:26 ТЕСТ 0
+ 05:27:26 / 103.82.240.139
+ 05:27:27 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 05:27:27 ТЕСТ 1
+ 05:27:27 /wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:27 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 05:27:27 ТЕСТ 2
+ 05:27:27 /xmlrpc.php 103.82.240.139 
+ rsd:
+ 05:27:27 
+ cookie:[object Object] 
+ test:3 
+ counter:0
+ 05:27:27 ТЕСТ 3
+ 05:27:27 / 103.82.240.139
+ 05:27:27 
+ cookie:[object Object] 
+ test:4 
+ counter:0
+ 05:27:27 ТЕСТ 4
+ 05:27:27 /blog/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:27 
+ cookie:[object Object] 
+ test:5 
+ counter:0
+ 05:27:27 ТЕСТ 5
+ 05:27:27 /web/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:28 
+ cookie:[object Object] 
+ test:6 
+ counter:0
+ 05:27:28 ТЕСТ 6
+ 05:27:28 /wordpress/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:28 
+ cookie:[object Object] 
+ test:7 
+ counter:0
+ 05:27:28 ТЕСТ 7
+ 05:27:28 /website/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:28 
+ cookie:[object Object] 
+ test:8 
+ counter:0
+ 05:27:28 ТЕСТ 8
+ 05:27:28 /wp/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:28 
+ cookie:[object Object] 
+ test:9 
+ counter:0
+ 05:27:28 ТЕСТ 9
+ 05:27:28 /news/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:29 
+ cookie:[object Object] 
+ test:10 
+ counter:0
+ 05:27:29 ТЕСТ 10
+ 05:27:29 /2018/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:29 
+ cookie:[object Object] 
+ test:11 
+ counter:0
+ 05:27:29 ТЕСТ 11
+ 05:27:29 /2019/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:29 
+ cookie:[object Object] 
+ test:12 
+ counter:0
+ 05:27:29 ТЕСТ 12
+ 05:27:29 /shop/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:29 
+ cookie:[object Object] 
+ test:13 
+ counter:0
+ 05:27:29 ТЕСТ 13
+ 05:27:29 /wp1/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:29 
+ cookie:[object Object] 
+ test:14 
+ counter:0
+ 05:27:29 ТЕСТ 14
+ 05:27:29 /test/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:30 
+ cookie:[object Object] 
+ test:15 
+ counter:0
+ 05:27:30 ТЕСТ 15
+ 05:27:30 /media/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:30 
+ cookie:[object Object] 
+ test:16 
+ counter:0
+ 05:27:30 ТЕСТ 16
+ 05:27:30 /wp2/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:30 
+ cookie:[object Object] 
+ test:17 
+ counter:0
+ 05:27:30 ТЕСТ 17
+ 05:27:30 /site/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:30 
+ cookie:[object Object] 
+ test:18 
+ counter:0
+ 05:27:30 ТЕСТ 18
+ 05:27:30 /cms/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:27:30 
+ cookie:[object Object] 
+ test:19 
+ counter:0
+ 05:27:30 ТЕСТ 19
+ 05:27:30 /sito/wp-includes/wlwmanifest.xml 103.82.240.139
+ 05:41:38 
+ cookie:[object Object] 
+ test:0
+ 05:41:38 ТЕСТ 0
+ 05:41:38 /adminuser.zip 38.180.50.219
+ 07:11:43 
+ cookie:[object Object] 
+ test:0
+ 07:11:43 ТЕСТ 0
+ 07:11:43 /adminfiles.zip 38.180.50.219
+ 07:21:02 
+ cookie:[object Object] 
+ test:0
+ 07:21:02 ТЕСТ 0
+ 07:21:02 / 54.36.149.12
+ 07:35:28 
+ cookie:[object Object] 
+ test:0
+ 07:35:28 ТЕСТ 0
+ 07:35:28 / undefined
+ 07:53:00 
+ cookie:[object Object] 
+ test:0
+ 07:53:00 ТЕСТ 0
+ 07:53:00 /.svn/wc.db 3.218.143.214
+ 08:05:30 
+ cookie:[object Object] 
+ test:0
+ 08:05:30 ТЕСТ 0
+ 08:05:30 /.vscode/sftp.json 94.141.120.67
+ 08:05:30 
+ cookie:[object Object] 
+ test:0
+ 08:05:30 ТЕСТ 0
+ 08:05:30 /sftp-config.json 94.141.120.67
+ 08:05:31 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 08:05:31 ТЕСТ 1
+ 08:05:31 /sftp.json 94.141.120.67
+ 08:43:54 
+ cookie:[object Object] 
+ test:0
+ 08:43:54 ТЕСТ 0
+ 08:43:54 /wwwroot.zip 38.180.50.219
+ 08:54:34 
+ cookie:[object Object] 
+ test:0
+ 08:54:34 ТЕСТ 0
+ 08:54:34 / 77.232.185.34
+ 09:08:48 
+ cookie:[object Object] 
+ test:0
+ 09:08:48 ТЕСТ 0
+ 09:08:48 / 77.232.185.34
+ 09:09:51 
+ cookie:[object Object] 
+ test:0
+ 09:09:51 ТЕСТ 0
+ 09:09:51 /robots.txt 95.108.213.253
+ 09:09:51 
+ cookie:[object Object] 
+ test:0
+ 09:09:51 ТЕСТ 0
+ 09:09:51 / 213.180.203.36
+ 09:23:04 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 09:23:04 ТЕСТ 2
+ 09:23:04 / 92.100.245.237
+ 09:45:11 
+ cookie:[object Object] 
+ test:0
+ 09:45:11 ТЕСТ 0
+ 09:45:11 / 77.232.185.34
+ 10:03:12 
+ cookie:[object Object] 
+ test:0
+ 10:03:12 ТЕСТ 0
+ 10:03:12 / 124.236.100.56
+ 10:03:33 
+ cookie:[object Object] 
+ test:0
+ 10:03:33 ТЕСТ 0
+ 10:03:33 / 124.236.100.56
+ 10:10:24 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 10:10:24 ТЕСТ 1
+ 10:10:24 / 77.232.185.34
+ 10:10:26 
+ cookie:[object Object] 
+ test:0
+ 10:10:26 ТЕСТ 0
+ 10:10:26 / 77.232.185.34
+ 10:12:00 
+ cookie:[object Object] 
+ test:0
+ 10:12:00 ТЕСТ 0
+ 10:12:00 / 77.232.185.34
+ 10:17:27 
+ cookie:[object Object] 
+ test:0
+ 10:17:27 ТЕСТ 0
+ 10:17:27 /full.zip 38.180.50.219
+ 10:41:46 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 10:41:46 ТЕСТ 2
+ 10:41:46 / 176.59.7.74
+ 10:54:14 
+ cookie:[object Object] 
+ test:0
+ 10:54:14 ТЕСТ 0
+ 10:54:14 / 85.93.60.153
+ 11:38:25 
+ cookie:[object Object] 
+ test:0
+ 11:38:25 ТЕСТ 0
+ 11:38:25 /image/lgbg.jpg undefined
+ 11:38:25 
+ cookie:[object Object] 
+ test:0
+ 11:38:25 ТЕСТ 0
+ 11:38:25 /skin/default_1/images/logo.png undefined
+ 11:38:26 
+ cookie:[object Object] 
+ test:0
+ 11:38:26 ТЕСТ 0
+ 11:38:26 / undefined
+ 11:38:26 
+ cookie:[object Object] 
+ test:0
+ 11:38:26 ТЕСТ 0
+ 11:38:26 /login.rsp undefined
+ 11:38:27 
+ cookie:[object Object] 
+ test:0
+ 11:38:27 ТЕСТ 0
+ 11:38:27 /device.rsp undefined 
+ opt:user 
+ cmd:list
+ 11:46:51 
+ cookie:[object Object] 
+ test:0
+ 11:46:51 ТЕСТ 0
+ 11:46:51 / 93.100.159.142
+ 11:53:50 
+ cookie:[object Object] 
+ test:0
+ 11:53:50 ТЕСТ 0
+ 11:53:50 /l.zip 38.180.50.219
+ 12:10:17 
+ cookie:[object Object] 
+ test:3 
+ counter:0
+ 12:10:17 ТЕСТ 3
+ 12:10:17 / 176.59.14.247
+ 12:27:40 
+ cookie:[object Object] 
+ test:0
+ 12:27:40 ТЕСТ 0
+ 12:27:40 / 77.232.185.34
+ 13:29:05 
+ cookie:[object Object] 
+ test:0
+ 13:29:05 ТЕСТ 0
+ 13:29:05 /la.zip 38.180.50.219
+ 14:04:10 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 14:04:10 ТЕСТ 1
+ 14:04:10 / 176.59.6.90
+ 14:18:07 
+ cookie:[object Object] 
+ test:0
+ 14:18:07 ТЕСТ 0
+ 14:18:07 / 217.66.154.149
+ 14:39:22 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 14:39:22 ТЕСТ 2
+ 14:39:22 / 77.232.185.34
+ 15:04:28 
+ cookie:[object Object] 
+ test:0
+ 15:04:28 ТЕСТ 0
+ 15:04:28 /lat.zip 38.180.50.219
+ 15:07:22 
+ cookie:[object Object] 
+ test:0
+ 15:07:22 ТЕСТ 0
+ 15:07:22 / 77.232.185.34
+ 15:50:31 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 15:50:31 ТЕСТ 1
+ 15:50:31 / 77.232.185.34
+ 15:53:58 
+ cookie:[object Object] 
+ test:0
+ 15:53:58 ТЕСТ 0
+ 15:53:58 / 77.232.185.34
+ 15:56:39 
+ cookie:[object Object] 
+ test:0
+ 15:56:39 ТЕСТ 0
+ 15:56:39 / 77.232.185.34
+ 16:02:46 
+ cookie:[object Object] 
+ test:0
+ 16:02:46 ТЕСТ 0
+ 16:02:46 /cfide/scripts/ajax/fckeditor/editor/filemanager/browser/default/browser.html 104.247.184.227
+ 16:02:48 
+ cookie:[object Object] 
+ test:0
+ 16:02:48 ТЕСТ 0
+ 16:02:48 /fckeditor/editor/filemanager/browser/default/browser.html 104.247.184.227
+ 16:02:48 
+ cookie:[object Object] 
+ test:0
+ 16:02:48 ТЕСТ 0
+ 16:02:48 /html/js/editor/fckeditor/editor/filemanager/browser/default/browser.html 104.247.184.227
+ 16:02:48 
+ cookie:[object Object] 
+ test:0
+ 16:02:48 ТЕСТ 0
+ 16:02:48 /admin/fckeditor/editor/filemanager/browser/default/browser.html 104.247.184.227
+ 16:36:25 
+ cookie:[object Object] 
+ test:0
+ 16:36:25 ТЕСТ 0
+ 16:36:25 /lato.zip 38.180.50.219
+ 16:41:19 
+ cookie:[object Object] 
+ test:0
+ 16:41:19 ТЕСТ 0
+ 16:41:19 /robots.txt 69.171.249.32
+ 16:45:38 
+ cookie:[object Object] 
+ test:0
+ 16:45:38 ТЕСТ 0
+ 16:45:38 / 185.12.124.78
+ 17:21:24 
+ cookie:[object Object] 
+ test:0
+ 17:21:24 ТЕСТ 0
+ 17:21:24 / 40.77.167.243
+ 18:04:18 
+ cookie:[object Object] 
+ test:0
+ 18:04:18 ТЕСТ 0
+ 18:04:18 /laton.zip 38.180.50.219
+ 18:27:18 
+ cookie:[object Object] 
+ test:0
+ 18:27:18 ТЕСТ 0
+ 18:27:18 / undefined
+ 19:25:25 
+ cookie:[object Object] 
+ test:0
+ 19:25:25 ТЕСТ 0
+ 19:25:25 /latoni.zip 38.180.50.219
+ 19:32:53 
+ cookie:[object Object] 
+ test:0
+ 19:32:53 ТЕСТ 0
+ 19:32:53 / undefined
+ 19:43:38 
+ cookie:[object Object] 
+ test:0
+ 19:43:38 ТЕСТ 0
+ 19:43:38 / 188.143.169.41
+ 19:55:38 
+ cookie:[object Object] 
+ test:0
+ 19:55:38 ТЕСТ 0
+ 19:55:38 / 52.167.144.195
+ 20:09:55 
+ cookie:[object Object] 
+ test:0
+ 20:09:55 ТЕСТ 0
+ 20:09:55 / 178.252.127.240
+ 20:39:23 
+ cookie:[object Object] 
+ test:0
+ 20:39:23 ТЕСТ 0
+ 20:39:23 /latonik.zip 38.180.50.219
+ 21:44:28 
+ cookie:[object Object] 
+ test:0
+ 21:44:28 ТЕСТ 0
+ 21:44:28 /latoniks.zip 38.180.50.219
+ 21:46:35 
+ cookie:[object Object] 
+ test:0
+ 21:46:35 ТЕСТ 0
+ 21:46:35 / undefined
+ 23:01:03 
+ cookie:[object Object] 
+ test:0
+ 23:01:03 ТЕСТ 0
+ 23:01:03 / 37.76.131.24

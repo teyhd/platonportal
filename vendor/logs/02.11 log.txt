@@ -1,0 +1,39 @@
+
+ 02:54:16 Сервер - запущен
+ 02:54:16 Порт: 777
+ 16:32:38 Сервер - запущен
+ 16:32:38 Порт: 777
+ 16:32:45 Глобальный косяк приложения!!!  Error: getaddrinfo EAI_AGAIN home.teyhd.ru
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:118:26)
+ 16:32:45 Глобальный косяк приложения!!!  Error: getaddrinfo EAI_AGAIN home.teyhd.ru
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:118:26)
+ 16:50:18 Сервер - запущен
+ 16:50:18 Порт: 777
+ 16:50:19 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 16:50:19 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 16:52:36 Сервер - запущен
+ 16:52:36 Порт: 777
+ 16:52:38 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 16:52:38 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 16:57:46 Сервер - запущен
+ 16:57:46 Порт: 777
+ 16:57:47 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 16:57:47 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 17:04:05 Сервер - запущен
+ 17:04:05 Порт: 777
+ 17:04:06 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 17:04:06 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 15:40:13 Сервер - запущен
+ 15:40:13 Порт: 777
+ 15:40:15 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 15:40:15 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
