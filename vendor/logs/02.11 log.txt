@@ -37,3 +37,363 @@
     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
  15:40:15 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 15:42:30 Сервер - запущен
+ 15:42:30 Порт: 777
+ 15:42:32 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 15:42:32 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 15:42:56 
+ cookie:[object Object] 
+ test:0
+ 15:42:56 ТЕСТ 0
+ 15:42:56 / undefined
+ 15:43:50 Сервер - запущен
+ 15:43:50 Порт: 777
+ 15:43:52 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 15:43:52 Глобальный косяк приложения!!!  Error: connect ECONNREFUSED 77.232.186.22:3334
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+ 15:56:39 Сервер - запущен
+ 15:56:39 Порт: 777
+ 15:59:03 
+ cookie:[object Object] 
+ test:0
+ 15:59:03 ТЕСТ 0
+ 15:59:03 / undefined
+ 16:03:33 Сервер - запущен
+ 16:03:33 Порт: 777
+ 16:53:37 
+ cookie:[object Object] 
+ test:0
+ 16:53:37 ТЕСТ 0
+ 16:53:37 / undefined
+ 17:22:33 Сервер - запущен
+ 17:22:33 Порт: 777
+ 17:48:45 Сервер - запущен
+ 17:48:45 Порт: 777
+ 18:29:58 
+ cookie:[object Object] 
+ test:0
+ 18:29:58 ТЕСТ 0
+ 18:29:58 / 77.232.185.34
+ 18:31:04 
+ cookie:[object Object] 
+ test:0
+ 18:31:04 ТЕСТ 0
+ 18:31:04 / 185.165.171.22
+ 18:39:13 
+ cookie:[object Object] 
+ test:0
+ 18:39:13 ТЕСТ 0
+ 18:39:13 / 95.214.55.79
+ 18:39:24 
+ cookie:[object Object] 
+ test:0
+ 18:39:24 ТЕСТ 0
+ 18:39:24 / 209.38.208.202
+ 18:39:34 
+ cookie:[object Object] 
+ test:0
+ 18:39:34 ТЕСТ 0
+ 18:39:34 / 209.38.208.202
+ 18:39:34 
+ cookie:[object Object] 
+ test:0
+ 18:39:34 ТЕСТ 0
+ 18:39:34 /php-cgi/php-cgi.exe 209.38.208.202 
+ %ADd cgi.force_redirect%3D0 %ADd disable_functions%3D"" %ADd allow_url_include%3D1 %ADd auto_prepend_file%3Dphp://input:
+ 18:39:34 
+ cookie:[object Object] 
+ test:0
+ 18:39:34 ТЕСТ 0
+ 18:39:34 /server 209.38.208.202
+ 18:39:34 
+ cookie:[object Object] 
+ test:0
+ 18:39:34 ТЕСТ 0
+ 18:39:34 /.vscode/sftp.json 209.38.208.202
+ 18:39:34 
+ cookie:[object Object] 
+ test:0
+ 18:39:34 ТЕСТ 0
+ 18:39:34 /about 209.38.208.202
+ 18:39:34 
+ cookie:[object Object] 
+ test:0
+ 18:39:34 ТЕСТ 0
+ 18:39:34 /debug/default/view 209.38.208.202 
+ panel:config
+ 18:39:34 
+ cookie:[object Object] 
+ test:0
+ 18:39:34 ТЕСТ 0
+ 18:39:34 /v2/_catalog 209.38.208.202
+ 18:39:34 
+ cookie:[object Object] 
+ test:0
+ 18:39:34 ТЕСТ 0
+ 18:39:34 /ecp/Current/exporttool/microsoft.exchange.ediscovery.exporttool.application 209.38.208.202
+ 18:39:34 
+ cookie:[object Object] 
+ test:0
+ 18:39:34 ТЕСТ 0
+ 18:39:34 /server-status 209.38.208.202
+ 18:39:35 
+ cookie:[object Object] 
+ test:0
+ 18:39:35 ТЕСТ 0
+ 18:39:35 /login.action 209.38.208.202
+ 18:39:35 
+ cookie:[object Object] 
+ test:0
+ 18:39:35 ТЕСТ 0
+ 18:39:35 /_all_dbs 209.38.208.202
+ 18:39:35 
+ cookie:[object Object] 
+ test:0
+ 18:39:35 ТЕСТ 0
+ 18:39:35 /.DS_Store 209.38.208.202
+ 18:39:35 
+ cookie:[object Object] 
+ test:0
+ 18:39:35 ТЕСТ 0
+ 18:39:35 /.env 209.38.208.202
+ 18:39:35 
+ cookie:[object Object] 
+ test:0
+ 18:39:35 ТЕСТ 0
+ 18:39:35 /.git/config 209.38.208.202
+ 18:39:35 
+ cookie:[object Object] 
+ test:0
+ 18:39:35 ТЕСТ 0
+ 18:39:35 /s/2323e2638313e2233323e27373/_/;/META-INF/maven/com.atlassian.jira/jira-webapp-dist/pom.properties 209.38.208.202
+ 18:39:35 
+ cookie:[object Object] 
+ test:0
+ 18:39:35 ТЕСТ 0
+ 18:39:35 /config.json 209.38.208.202
+ 18:39:35 
+ cookie:[object Object] 
+ test:0
+ 18:39:35 ТЕСТ 0
+ 18:39:35 /telescope/requests 209.38.208.202
+ 18:39:36 
+ cookie:[object Object] 
+ test:0
+ 18:39:36 ТЕСТ 0
+ 18:39:36 / 209.38.208.202 
+ rest_route:/wp/v2/users/
+ 18:41:02 
+ cookie:[object Object] 
+ test:0
+ 18:41:02 ТЕСТ 0
+ 18:41:02 / 195.211.77.140
+ 18:41:03 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 18:41:03 ТЕСТ 1
+ 18:41:03 / 154.219.232.198
+ 18:41:11 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 18:41:11 ТЕСТ 2
+ 18:41:11 /manual 154.219.232.198
+ 18:41:13 
+ cookie:[object Object] 
+ test:0
+ 18:41:13 ТЕСТ 0
+ 18:41:13 / 195.211.77.142
+ 18:41:26 
+ cookie:[object Object] 
+ test:3 
+ counter:0
+ 18:41:26 ТЕСТ 3
+ 18:41:26 /auth 154.219.232.198 
+ login:P 
+ pass:pladmin
+ 18:41:26 
+ id:1 
+ name:Администратор 
+ role:2
+ 18:41:26 
+ cookie:[object Object] 
+ test:4 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 18:41:26 ТЕСТ 4
+ 18:41:26 / 154.219.232.198
+ 18:42:22 
+ cookie:[object Object] 
+ test:0
+ 18:42:22 ТЕСТ 0
+ 18:42:22 / 205.169.39.96
+ 18:42:29 
+ cookie:[object Object] 
+ test:0
+ 18:42:29 ТЕСТ 0
+ 18:42:29 / 205.169.39.96
+ 18:42:32 
+ cookie:[object Object] 
+ test:0
+ 18:42:32 ТЕСТ 0
+ 18:42:32 / 34.41.204.224
+ 18:44:28 
+ cookie:[object Object] 
+ test:0
+ 18:44:28 ТЕСТ 0
+ 18:44:28 / 147.45.185.25
+ 18:44:28 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 18:44:28 ТЕСТ 1
+ 18:44:28 / 147.45.185.25
+ 18:47:12 
+ cookie:[object Object] 
+ test:0
+ 18:47:12 ТЕСТ 0
+ 18:47:12 / 104.197.69.115
+ 18:48:21 
+ cookie:[object Object] 
+ test:0
+ 18:48:21 ТЕСТ 0
+ 18:48:21 / undefined
+ 20:32:49 Сервер - запущен
+ 20:32:49 Порт: 777
+ 20:36:53 Сервер - запущен
+ 20:36:53 Порт: 777
+ 20:55:16 
+ cookie:[object Object] 
+ test:0
+ 20:55:16 ТЕСТ 0
+ 20:55:16 /ecp/Current/exporttool/microsoft.exchange.ediscovery.exporttool.application 4.151.218.131
+ 20:59:18 
+ cookie:[object Object] 
+ test:0
+ 20:59:18 ТЕСТ 0
+ 20:59:18 / 154.219.232.198
+ 20:59:32 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 20:59:32 ТЕСТ 1
+ 20:59:32 / 154.219.232.198
+ 20:59:35 
+ cookie:[object Object] 
+ test:0
+ 20:59:35 ТЕСТ 0
+ 20:59:35 /.git/config 45.149.241.114
+ 20:59:43 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 20:59:43 ТЕСТ 2
+ 20:59:43 / 154.219.232.198
+ 20:59:56 
+ cookie:[object Object] 
+ test:0
+ 20:59:56 ТЕСТ 0
+ 20:59:56 / 77.232.185.34
+ 21:02:22 
+ cookie:[object Object] 
+ test:0
+ 21:02:22 ТЕСТ 0
+ 21:02:22 / 47.91.91.123
+ 21:03:26 
+ cookie:[object Object] 
+ test:0
+ 21:03:26 ТЕСТ 0
+ 21:03:26 / 176.53.216.75
+ 21:32:39 
+ cookie:[object Object] 
+ test:0
+ 21:32:39 ТЕСТ 0
+ 21:32:39 / 109.71.177.41
+ 21:45:47 
+ cookie:[object Object] 
+ test:0
+ 21:45:47 ТЕСТ 0
+ 21:45:47 / 147.45.185.25
+ 21:45:48 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 21:45:48 ТЕСТ 1
+ 21:45:48 / 147.45.185.25
+ 21:54:04 
+ cookie:[object Object] 
+ test:0
+ 21:54:04 ТЕСТ 0
+ 21:54:04 /robots.txt 133.242.174.119
+ 21:54:04 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 21:54:04 ТЕСТ 1
+ 21:54:04 / 133.242.174.119
+ 22:37:28 Сервер - запущен
+ 22:37:28 Порт: 777
+ 22:55:55 Сервер - запущен
+ 22:55:55 Порт: 777
+ 23:15:14 
+ cookie:[object Object] 
+ test:0
+ 23:15:14 ТЕСТ 0
+ 23:15:14 / 77.232.185.34
+ 23:38:21 
+ cookie:[object Object] 
+ test:0
+ 23:38:21 ТЕСТ 0
+ 23:38:21 / 176.15.164.106
+ 23:38:53 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 23:38:53 ТЕСТ 1
+ 23:38:53 /auth 176.15.164.106 
+ login:P 
+ pass:pladmin
+ 23:38:53 
+ id:1 
+ name:Администратор 
+ role:2
+ 23:38:53 
+ cookie:[object Object] 
+ test:2 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 23:38:53 ТЕСТ 2
+ 23:38:53 / 176.15.164.106
+ 23:50:42 
+ cookie:[object Object] 
+ test:3 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 23:50:42 ТЕСТ 3
+ 23:50:42 / 176.15.164.106
+ 23:52:42 
+ cookie:[object Object] 
+ test:0
+ 23:52:42 ТЕСТ 0
+ 23:52:42 /robots.txt 95.108.213.91
+ 23:52:42 
+ cookie:[object Object] 
+ test:0
+ 23:52:42 ТЕСТ 0
+ 23:52:42 / 213.180.203.245
+ 23:56:21 
+ cookie:[object Object] 
+ test:0
+ 23:56:21 ТЕСТ 0
+ 23:56:21 /static/images/common/ico.png 5.255.231.160 
+ ver:4.52

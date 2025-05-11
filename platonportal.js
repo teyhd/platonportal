@@ -127,14 +127,19 @@ app.get('/',(req,res)=>{
         pic: "platon.png",
     },
     {
-        link: "https://panel.bigbencrm.ru/web-app-3.3.8.9/#/app/teacher_home",
+        link: "https://forms.gle/MmGPPEBr51uWj93Q9",
         text: "Геймификация",
         pic: "stud.png",
     },
     {
-        link: "https://drive.google.com/drive/u/0/folders/1C5FnL33Y1KXxKzYY1A1bzOLyCt__kIOf",
+        link: "https://vote.platoniks.ru/",
+        text: "Черный ящик",
+        pic: "vote.png",
+    },
+    {
+        link: "https://rep.platoniks.ru/",
         text: "Прогрес репорт",
-        pic: "otrs.png",
+        pic: "progres.png",
     },
     {
       link: "/manual",
@@ -273,7 +278,7 @@ app.get('/',(req,res)=>{
     },  
 ]
     res.render('index',{
-      title: 'Сервисы Платоникса',
+      title: 'Гармония Образования',
      // auth: auth,
       set: set,
       menu:menu,
