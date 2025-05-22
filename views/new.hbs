@@ -2,7 +2,7 @@
     <!-- Services -->
     <section>
       <h2 class="mb-6 text-2xl font-semibold text-white" hidden>Сервисы</h2>
-      <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <div class="grid gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {{#each menu}}
           <a href="{{this.link}}" class="flex flex-col items-center justify-center p-6 min-h-[160px] rounded-2xl bg-gray-800 hover:bg-gray-700 text-white shadow-lg transition-all duration-200 ease-in-out transform hover:-translate-y-1 hover:shadow-xl group text-center">
             <img src="/img/{{this.pic}}" alt="{{this.text}}" class="w-25 h-25 mb-4 transition-transform duration-200 group-hover:scale-110" />
