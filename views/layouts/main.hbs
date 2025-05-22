@@ -1,12 +1,10 @@
 {{> head}}
-    <body> 
+    <body class="h-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100"> 
     {{>navbar}}
-    <div class="container">
-         
+   
         {{{ body }}}
-      
-        <div class="container"> {{>popup}}</div>
         
+        {{>popup}} 
     </div>
  
     <script src="lib.js"></script>

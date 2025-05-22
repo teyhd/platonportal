@@ -831,3 +831,1389 @@
  counter:0
  11:39:09 ТЕСТ 10
  11:39:09 /avatar.jpg 77.232.185.34
+ 11:56:48 Глобальный косяк приложения!!!  ReferenceError: iswin is not defined
+    at file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:62:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:274:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:116:5)
+ 11:57:55 C:\Users\mit\Documents\0.Projects\mainportal\vendor\public
+ 11:57:55 Сервер - запущен
+ 11:57:55 Порт: 777
+ 11:57:58 C:\Users\mit\Documents\0.Projects\mainportal\vendor\public
+ 11:57:58 Сервер - запущен
+ 11:57:58 Порт: 777
+ 11:58:08 
+ cookie:[object Object] 
+ test:0
+ 11:58:08 ТЕСТ 0
+ 11:58:08 / undefined
+ 11:58:48 C:\Users\mit\Documents\0.Projects\mainportal\vendor\public
+ 11:58:48 Сервер - запущен
+ 11:58:48 Порт: 777
+ 11:59:04 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 11:59:04 Сервер - запущен
+ 11:59:04 Порт: 777
+ 11:59:06 
+ cookie:[object Object] 
+ test:0
+ 11:59:06 ТЕСТ 0
+ 11:59:06 / undefined
+ 11:59:07 
+ cookie:[object Object] 
+ test:0
+ 11:59:07 ТЕСТ 0
+ 11:59:07 /avatar.jpg undefined
+ 11:59:17 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 11:59:17 Сервер - запущен
+ 11:59:17 Порт: 777
+ 12:03:12 
+ cookie:[object Object] 
+ test:0
+ 12:03:12 ТЕСТ 0
+ 12:03:12 / undefined
+ 12:03:12 
+ cookie:[object Object] 
+ test:0
+ 12:03:12 ТЕСТ 0
+ 12:03:12 /avatar.jpg undefined
+ 12:03:53 
+ cookie:[object Object] 
+ test:0
+ 12:03:53 ТЕСТ 0
+ 12:03:53 / undefined
+ 12:03:53 
+ cookie:[object Object] 
+ test:0
+ 12:03:53 ТЕСТ 0
+ 12:03:53 /avatar.jpg undefined
+ 12:06:59 
+ cookie:[object Object] 
+ test:0
+ 12:06:59 ТЕСТ 0
+ 12:06:59 / undefined
+ 12:06:59 
+ cookie:[object Object] 
+ test:0
+ 12:06:59 ТЕСТ 0
+ 12:06:59 /avatar.jpg undefined
+ 12:07:32 
+ cookie:[object Object] 
+ test:0
+ 12:07:32 ТЕСТ 0
+ 12:07:32 / undefined
+ 12:08:37 
+ cookie:[object Object] 
+ test:0
+ 12:08:37 ТЕСТ 0
+ 12:08:37 / undefined
+ 12:10:21 
+ cookie:[object Object] 
+ test:0
+ 12:10:21 ТЕСТ 0
+ 12:10:21 / undefined
+ 12:45:17 
+ cookie:[object Object] 
+ test:0
+ 12:45:17 ТЕСТ 0
+ 12:45:17 / undefined
+ 12:46:30 
+ cookie:[object Object] 
+ test:0
+ 12:46:30 ТЕСТ 0
+ 12:46:30 / undefined
+ 12:46:30 
+ cookie:[object Object] 
+ test:0
+ 12:46:30 ТЕСТ 0
+ 12:46:30 /avatar.jpg undefined
+ 12:46:57 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 12:46:57 Сервер - запущен
+ 12:46:57 Порт: 777
+ 12:46:58 
+ cookie:[object Object] 
+ test:0
+ 12:46:58 ТЕСТ 0
+ 12:46:58 / undefined
+ 12:46:58 
+ cookie:[object Object] 
+ test:0
+ 12:46:58 ТЕСТ 0
+ 12:46:58 /avatar.jpg undefined
+ 12:47:06 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 12:47:06 Сервер - запущен
+ 12:47:06 Порт: 777
+ 14:05:31 
+ cookie:[object Object] 
+ test:0
+ 14:05:31 ТЕСТ 0
+ 14:05:31 / undefined
+ 14:05:31 
+ cookie:[object Object] 
+ test:0
+ 14:05:31 ТЕСТ 0
+ 14:05:31 /avatar.jpg undefined
+ 14:20:01 
+ cookie:[object Object] 
+ test:0
+ 14:20:01 ТЕСТ 0
+ 14:20:01 / undefined
+ 14:20:01 
+ cookie:[object Object] 
+ test:0
+ 14:20:01 ТЕСТ 0
+ 14:20:01 /avatar.jpg undefined
+ 14:20:51 
+ cookie:[object Object] 
+ test:0
+ 14:20:51 ТЕСТ 0
+ 14:20:51 / undefined
+ 14:20:51 
+ cookie:[object Object] 
+ test:0
+ 14:20:51 ТЕСТ 0
+ 14:20:51 /avatar.jpg undefined
+ 14:22:13 
+ cookie:[object Object] 
+ test:0
+ 14:22:13 ТЕСТ 0
+ 14:22:13 / undefined
+ 14:22:13 
+ cookie:[object Object] 
+ test:0
+ 14:22:13 ТЕСТ 0
+ 14:22:13 /avatar.jpg undefined
+ 14:24:05 
+ cookie:[object Object] 
+ test:0
+ 14:24:05 ТЕСТ 0
+ 14:24:05 / undefined
+ 14:24:05 
+ cookie:[object Object] 
+ test:0
+ 14:24:05 ТЕСТ 0
+ 14:24:05 /avatar.jpg undefined
+ 14:25:07 
+ cookie:[object Object] 
+ test:0
+ 14:25:07 ТЕСТ 0
+ 14:25:07 / undefined
+ 14:25:07 
+ cookie:[object Object] 
+ test:0
+ 14:25:07 ТЕСТ 0
+ 14:25:07 /avatar.jpg undefined
+ 14:25:57 
+ cookie:[object Object] 
+ test:0
+ 14:25:57 ТЕСТ 0
+ 14:25:57 / undefined
+ 14:25:57 
+ cookie:[object Object] 
+ test:0
+ 14:25:57 ТЕСТ 0
+ 14:25:57 /avatar.jpg undefined
+ 14:26:10 
+ cookie:[object Object] 
+ test:0
+ 14:26:10 ТЕСТ 0
+ 14:26:10 / undefined
+ 14:26:10 
+ cookie:[object Object] 
+ test:0
+ 14:26:10 ТЕСТ 0
+ 14:26:10 /avatar.jpg undefined
+ 14:26:24 
+ cookie:[object Object] 
+ test:0
+ 14:26:24 ТЕСТ 0
+ 14:26:24 / undefined
+ 14:26:24 
+ cookie:[object Object] 
+ test:0
+ 14:26:24 ТЕСТ 0
+ 14:26:24 /avatar.jpg undefined
+ 14:26:49 
+ cookie:[object Object] 
+ test:0
+ 14:26:49 ТЕСТ 0
+ 14:26:49 / undefined
+ 14:26:49 
+ cookie:[object Object] 
+ test:0
+ 14:26:49 ТЕСТ 0
+ 14:26:49 /avatar.jpg undefined
+ 14:26:58 
+ cookie:[object Object] 
+ test:0
+ 14:26:58 ТЕСТ 0
+ 14:26:58 / undefined
+ 14:26:58 
+ cookie:[object Object] 
+ test:0
+ 14:26:58 ТЕСТ 0
+ 14:26:58 /avatar.jpg undefined
+ 14:28:18 
+ cookie:[object Object] 
+ test:0
+ 14:28:18 ТЕСТ 0
+ 14:28:18 / undefined
+ 14:28:18 
+ cookie:[object Object] 
+ test:0
+ 14:28:18 ТЕСТ 0
+ 14:28:18 /avatar.jpg undefined
+ 14:28:37 
+ cookie:[object Object] 
+ test:0
+ 14:28:37 ТЕСТ 0
+ 14:28:37 / undefined
+ 14:28:37 
+ cookie:[object Object] 
+ test:0
+ 14:28:37 ТЕСТ 0
+ 14:28:37 /avatar.jpg undefined
+ 14:28:52 
+ cookie:[object Object] 
+ test:0
+ 14:28:52 ТЕСТ 0
+ 14:28:52 / undefined
+ 14:28:52 
+ cookie:[object Object] 
+ test:0
+ 14:28:52 ТЕСТ 0
+ 14:28:52 /avatar.jpg undefined
+ 14:29:04 
+ cookie:[object Object] 
+ test:0
+ 14:29:04 ТЕСТ 0
+ 14:29:04 / undefined
+ 14:29:04 
+ cookie:[object Object] 
+ test:0
+ 14:29:04 ТЕСТ 0
+ 14:29:04 /avatar.jpg undefined
+ 14:30:29 
+ cookie:[object Object] 
+ test:0
+ 14:30:29 ТЕСТ 0
+ 14:30:29 / undefined
+ 14:30:29 
+ cookie:[object Object] 
+ test:0
+ 14:30:29 ТЕСТ 0
+ 14:30:29 /avatar.jpg undefined
+ 14:43:48 
+ cookie:[object Object] 
+ test:0
+ 14:43:48 ТЕСТ 0
+ 14:43:48 / undefined
+ 14:44:26 
+ cookie:[object Object] 
+ test:0
+ 14:44:26 ТЕСТ 0
+ 14:44:26 / undefined
+ 14:44:53 
+ cookie:[object Object] 
+ test:0
+ 14:44:53 ТЕСТ 0
+ 14:44:53 / undefined
+ 14:51:35 
+ cookie:[object Object] 
+ test:0
+ 14:51:35 ТЕСТ 0
+ 14:51:35 / undefined
+ 14:52:05 
+ cookie:[object Object] 
+ test:0
+ 14:52:05 ТЕСТ 0
+ 14:52:05 / undefined
+ 14:52:18 
+ cookie:[object Object] 
+ test:0
+ 14:52:18 ТЕСТ 0
+ 14:52:18 / undefined
+ 14:52:28 
+ cookie:[object Object] 
+ test:0
+ 14:52:28 ТЕСТ 0
+ 14:52:28 / undefined
+ 14:53:14 
+ cookie:[object Object] 
+ test:0
+ 14:53:14 ТЕСТ 0
+ 14:53:14 / undefined
+ 14:58:32 
+ cookie:[object Object] 
+ test:0
+ 14:58:32 ТЕСТ 0
+ 14:58:32 / undefined
+ 14:58:59 
+ cookie:[object Object] 
+ test:0
+ 14:58:59 ТЕСТ 0
+ 14:58:59 / undefined
+ 15:00:13 
+ cookie:[object Object] 
+ test:0
+ 15:00:13 ТЕСТ 0
+ 15:00:13 / undefined
+ 15:00:37 
+ cookie:[object Object] 
+ test:0
+ 15:00:37 ТЕСТ 0
+ 15:00:37 / undefined
+ 15:00:53 
+ cookie:[object Object] 
+ test:0
+ 15:00:53 ТЕСТ 0
+ 15:00:53 / undefined
+ 15:06:31 
+ cookie:[object Object] 
+ test:0
+ 15:06:31 ТЕСТ 0
+ 15:06:31 / undefined
+ 15:07:52 
+ cookie:[object Object] 
+ test:0
+ 15:07:52 ТЕСТ 0
+ 15:07:52 / undefined
+ 15:09:35 
+ cookie:[object Object] 
+ test:0
+ 15:09:35 ТЕСТ 0
+ 15:09:35 / undefined
+ 15:10:54 
+ cookie:[object Object] 
+ test:0
+ 15:10:54 ТЕСТ 0
+ 15:10:54 / undefined
+ 15:11:02 
+ cookie:[object Object] 
+ test:0
+ 15:11:02 ТЕСТ 0
+ 15:11:02 / undefined
+ 15:11:57 
+ cookie:[object Object] 
+ test:0
+ 15:11:57 ТЕСТ 0
+ 15:11:57 / undefined
+ 15:12:19 
+ cookie:[object Object] 
+ test:0
+ 15:12:19 ТЕСТ 0
+ 15:12:19 / undefined
+ 15:12:32 
+ cookie:[object Object] 
+ test:0
+ 15:12:32 ТЕСТ 0
+ 15:12:32 / undefined
+ 16:50:12 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 16:50:12 Сервер - запущен
+ 16:50:12 Порт: 777
+ 16:50:13 
+ cookie:[object Object] 
+ test:0
+ 16:50:13 ТЕСТ 0
+ 16:50:13 / undefined
+ 16:50:46 
+ cookie:[object Object] 
+ test:0
+ 16:50:46 ТЕСТ 0
+ 16:50:46 / undefined
+ 16:52:56 
+ cookie:[object Object] 
+ test:0
+ 16:52:56 ТЕСТ 0
+ 16:52:56 / undefined
+ 16:54:45 
+ cookie:[object Object] 
+ test:0
+ 16:54:45 ТЕСТ 0
+ 16:54:45 / undefined
+ 16:56:04 
+ cookie:[object Object] 
+ test:0
+ 16:56:04 ТЕСТ 0
+ 16:56:04 / undefined
+ 16:57:13 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 16:57:13 Сервер - запущен
+ 16:57:13 Порт: 777
+ 16:57:14 
+ cookie:[object Object] 
+ test:0
+ 16:57:14 ТЕСТ 0
+ 16:57:14 / undefined
+ 16:57:31 
+ cookie:[object Object] 
+ test:0
+ 16:57:31 ТЕСТ 0
+ 16:57:31 / undefined
+ 16:58:06 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 16:58:06 Сервер - запущен
+ 16:58:06 Порт: 777
+ 17:02:33 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 17:02:33 Сервер - запущен
+ 17:02:33 Порт: 777
+ 17:02:48 
+ cookie:[object Object] 
+ test:0
+ 17:02:48 ТЕСТ 0
+ 17:02:48 / undefined
+ 17:04:23 
+ cookie:[object Object] 
+ test:0
+ 17:04:23 ТЕСТ 0
+ 17:04:23 / undefined
+ 17:07:30 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 17:07:30 Сервер - запущен
+ 17:07:30 Порт: 777
+ 17:07:33 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 17:07:33 Сервер - запущен
+ 17:07:33 Порт: 777
+ 17:08:00 
+ cookie:[object Object] 
+ test:0
+ 17:08:00 ТЕСТ 0
+ 17:08:00 / undefined
+ 17:08:32 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 17:08:32 Сервер - запущен
+ 17:08:32 Порт: 777
+ 17:08:33 
+ cookie:[object Object] 
+ test:0
+ 17:08:33 ТЕСТ 0
+ 17:08:33 / undefined
+ 17:08:47 
+ cookie:[object Object] 
+ test:0
+ 17:08:47 ТЕСТ 0
+ 17:08:47 / undefined
+ 17:08:51 
+ cookie:[object Object] 
+ test:0
+ 17:08:51 ТЕСТ 0
+ 17:08:51 / undefined
+ 17:09:02 
+ cookie:[object Object] 
+ test:0
+ 17:09:02 ТЕСТ 0
+ 17:09:02 / undefined
+ 17:09:27 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 17:09:27 Сервер - запущен
+ 17:09:27 Порт: 777
+ 17:09:28 
+ cookie:[object Object] 
+ test:0
+ 17:09:28 ТЕСТ 0
+ 17:09:28 / undefined
+ 17:11:58 
+ cookie:[object Object] 
+ test:0
+ 17:11:58 ТЕСТ 0
+ 17:11:58 / undefined
+ 17:12:21 
+ cookie:[object Object] 
+ test:0
+ 17:12:21 ТЕСТ 0
+ 17:12:21 / undefined
+ 17:12:36 
+ cookie:[object Object] 
+ test:0
+ 17:12:36 ТЕСТ 0
+ 17:12:36 / undefined
+ 17:13:10 
+ cookie:[object Object] 
+ test:0
+ 17:13:10 ТЕСТ 0
+ 17:13:10 / undefined
+ 17:15:58 
+ cookie:[object Object] 
+ test:0
+ 17:15:58 ТЕСТ 0
+ 17:15:58 / undefined
+ 17:17:33 
+ cookie:[object Object] 
+ test:0
+ 17:17:33 ТЕСТ 0
+ 17:17:33 /manual undefined
+ 17:18:17 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 17:18:17 Сервер - запущен
+ 17:18:17 Порт: 777
+ 17:18:18 
+ cookie:[object Object] 
+ test:0
+ 17:18:18 ТЕСТ 0
+ 17:18:18 / undefined
+ 17:19:13 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 17:19:13 Сервер - запущен
+ 17:19:13 Порт: 777
+ 17:19:13 
+ cookie:[object Object] 
+ test:0
+ 17:19:13 ТЕСТ 0
+ 17:19:13 / undefined
+ 17:39:39 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 17:39:39 Сервер - запущен
+ 17:39:39 Порт: 777
+ 17:39:40 
+ cookie:[object Object] 
+ test:0
+ 17:39:40 ТЕСТ 0
+ 17:39:40 / undefined
+ 17:39:59 
+ cookie:[object Object] 
+ test:0
+ 17:39:59 ТЕСТ 0
+ 17:39:59 / undefined
+ 17:40:23 
+ cookie:[object Object] 
+ test:0
+ 17:40:23 ТЕСТ 0
+ 17:40:23 / undefined
+ 17:40:39 
+ cookie:[object Object] 
+ test:0
+ 17:40:39 ТЕСТ 0
+ 17:40:39 / undefined
+ 17:41:47 
+ cookie:[object Object] 
+ test:0
+ 17:41:47 ТЕСТ 0
+ 17:41:47 / undefined
+ 17:41:56 
+ cookie:[object Object] 
+ test:0
+ 17:41:56 ТЕСТ 0
+ 17:41:56 / undefined
+ 17:42:19 
+ cookie:[object Object] 
+ test:0
+ 17:42:19 ТЕСТ 0
+ 17:42:19 / undefined
+ 17:42:30 
+ cookie:[object Object] 
+ test:0
+ 17:42:30 ТЕСТ 0
+ 17:42:30 / undefined
+ 17:43:16 
+ cookie:[object Object] 
+ test:0
+ 17:43:16 ТЕСТ 0
+ 17:43:16 / undefined
+ 17:43:53 
+ cookie:[object Object] 
+ test:0
+ 17:43:53 ТЕСТ 0
+ 17:43:53 / undefined
+ 17:43:58 
+ cookie:[object Object] 
+ test:0
+ 17:43:58 ТЕСТ 0
+ 17:43:58 / undefined
+ 17:44:11 
+ cookie:[object Object] 
+ test:0
+ 17:44:11 ТЕСТ 0
+ 17:44:11 / undefined
+ 17:44:17 
+ cookie:[object Object] 
+ test:0
+ 17:44:17 ТЕСТ 0
+ 17:44:17 / undefined
+ 17:44:25 
+ cookie:[object Object] 
+ test:0
+ 17:44:25 ТЕСТ 0
+ 17:44:25 / undefined
+ 17:44:34 
+ cookie:[object Object] 
+ test:0
+ 17:44:34 ТЕСТ 0
+ 17:44:34 / undefined
+ 17:44:39 
+ cookie:[object Object] 
+ test:0
+ 17:44:39 ТЕСТ 0
+ 17:44:39 / undefined
+ 17:45:22 
+ cookie:[object Object] 
+ test:0
+ 17:45:22 ТЕСТ 0
+ 17:45:22 / undefined
+ 17:45:36 
+ cookie:[object Object] 
+ test:0
+ 17:45:36 ТЕСТ 0
+ 17:45:36 / undefined
+ 17:49:58 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 17:49:58 Сервер - запущен
+ 17:49:58 Порт: 777
+ 17:50:05 
+ cookie:[object Object] 
+ test:0
+ 17:50:05 ТЕСТ 0
+ 17:50:05 / undefined
+ 17:53:36 
+ cookie:[object Object] 
+ test:0
+ 17:53:36 ТЕСТ 0
+ 17:53:36 / undefined
+ 17:53:46 
+ cookie:[object Object] 
+ test:0
+ 17:53:46 ТЕСТ 0
+ 17:53:46 / undefined
+ 17:54:12 
+ cookie:[object Object] 
+ test:0
+ 17:54:12 ТЕСТ 0
+ 17:54:12 / undefined
+ 17:54:57 
+ cookie:[object Object] 
+ test:0
+ 17:54:57 ТЕСТ 0
+ 17:54:57 / undefined
+ 17:55:15 
+ cookie:[object Object] 
+ test:0
+ 17:55:15 ТЕСТ 0
+ 17:55:15 / undefined
+ 17:57:10 
+ cookie:[object Object] 
+ test:0
+ 17:57:10 ТЕСТ 0
+ 17:57:10 / undefined
+ 17:57:57 
+ cookie:[object Object] 
+ test:0
+ 17:57:57 ТЕСТ 0
+ 17:57:57 / undefined
+ 17:58:08 
+ cookie:[object Object] 
+ test:0
+ 17:58:08 ТЕСТ 0
+ 17:58:08 / undefined
+ 17:58:56 
+ cookie:[object Object] 
+ test:0
+ 17:58:56 ТЕСТ 0
+ 17:58:56 / undefined
+ 17:59:14 
+ cookie:[object Object] 
+ test:0
+ 17:59:14 ТЕСТ 0
+ 17:59:14 / undefined
+ 17:59:28 
+ cookie:[object Object] 
+ test:0
+ 17:59:28 ТЕСТ 0
+ 17:59:28 / undefined
+ 18:04:35 
+ cookie:[object Object] 
+ test:0
+ 18:04:35 ТЕСТ 0
+ 18:04:35 / undefined
+ 18:05:05 
+ cookie:[object Object] 
+ test:0
+ 18:05:05 ТЕСТ 0
+ 18:05:05 / undefined
+ 18:05:30 
+ cookie:[object Object] 
+ test:0
+ 18:05:30 ТЕСТ 0
+ 18:05:30 / undefined
+ 18:06:10 
+ cookie:[object Object] 
+ test:0
+ 18:06:10 ТЕСТ 0
+ 18:06:10 / undefined
+ 18:08:56 
+ cookie:[object Object] 
+ test:0
+ 18:08:56 ТЕСТ 0
+ 18:08:56 / undefined
+ 18:12:35 
+ cookie:[object Object] 
+ test:0
+ 18:12:35 ТЕСТ 0
+ 18:12:35 / undefined
+ 18:13:39 
+ cookie:[object Object] 
+ test:0
+ 18:13:39 ТЕСТ 0
+ 18:13:39 / undefined
+ 18:14:32 
+ cookie:[object Object] 
+ test:0
+ 18:14:32 ТЕСТ 0
+ 18:14:32 / undefined
+ 18:14:37 
+ cookie:[object Object] 
+ test:0
+ 18:14:37 ТЕСТ 0
+ 18:14:37 / undefined 
+ pin:24248
+ 18:16:43 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:16:43 Сервер - запущен
+ 18:16:43 Порт: 777
+ 18:16:45 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:16:45 Сервер - запущен
+ 18:16:45 Порт: 777
+ 18:17:28 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:17:28 Сервер - запущен
+ 18:17:28 Порт: 777
+ 18:17:34 
+ cookie:[object Object] 
+ test:0
+ 18:17:34 ТЕСТ 0
+ 18:17:34 / undefined 
+ pin:dgdfg
+ 18:18:10 
+ cookie:[object Object] 
+ test:0
+ 18:18:10 ТЕСТ 0
+ 18:18:10 / undefined 
+ pin:dgdfg
+ 18:18:14 
+ cookie:[object Object] 
+ test:0
+ 18:18:14 ТЕСТ 0
+ 18:18:14 / undefined 
+ pin:sdf
+ 18:18:49 
+ cookie:[object Object] 
+ test:0
+ 18:18:49 ТЕСТ 0
+ 18:18:49 / undefined 
+ pin:sdf
+ 18:18:52 
+ cookie:[object Object] 
+ test:0
+ 18:18:52 ТЕСТ 0
+ 18:18:52 /auth undefined 
+ pass:sdfsdf
+ 18:18:52 undefined
+ 18:19:02 
+ cookie:[object Object] 
+ test:0
+ 18:19:02 ТЕСТ 0
+ 18:19:02 /auth undefined 
+ pass:pladmin
+ 18:19:02 
+ id:1 
+ name:Администратор 
+ role:2
+ 18:19:02 
+ cookie:[object Object] 
+ test:0
+ 18:19:02 ТЕСТ 0
+ 18:19:02 / undefined 
+ pin:sdf
+ 18:19:37 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:19:37 Сервер - запущен
+ 18:19:37 Порт: 777
+ 18:19:48 
+ cookie:[object Object] 
+ test:0
+ 18:19:48 ТЕСТ 0
+ 18:19:48 / undefined 
+ pin:sdf
+ 18:20:07 
+ cookie:[object Object] 
+ test:0
+ 18:20:07 ТЕСТ 0
+ 18:20:07 /auth undefined 
+ pass:pladmin
+ 18:20:07 
+ id:1 
+ name:Администратор 
+ role:2
+ 18:20:07 
+ cookie:[object Object] 
+ test:0
+ 18:20:07 ТЕСТ 0
+ 18:20:07 / undefined 
+ pin:sdf
+ 18:20:42 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:20:42 Сервер - запущен
+ 18:20:42 Порт: 777
+ 18:21:47 
+ cookie:[object Object] 
+ test:0
+ 18:21:47 ТЕСТ 0
+ 18:21:47 / undefined 
+ pin:sdf
+ 18:21:57 
+ cookie:[object Object] 
+ test:0
+ 18:21:57 ТЕСТ 0
+ 18:21:57 /auth undefined 
+ pass:pladmin
+ 18:21:57 
+ id:1 
+ name:Администратор 
+ role:2
+ 18:21:57 
+ cookie:[object Object] 
+ test:0
+ 18:21:57 ТЕСТ 0
+ 18:21:57 / undefined 
+ pin:sdf
+ 18:22:01 
+ cookie:[object Object] 
+ test:0
+ 18:22:01 ТЕСТ 0
+ 18:22:01 / undefined 
+ pin:sdf
+ 18:22:48 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:22:48 Сервер - запущен
+ 18:22:48 Порт: 777
+ 18:23:07 
+ cookie:[object Object] 
+ test:0
+ 18:23:07 ТЕСТ 0
+ 18:23:07 / undefined 
+ pin:sdf
+ 18:23:13 
+ cookie:[object Object] 
+ test:0
+ 18:23:13 ТЕСТ 0
+ 18:23:13 /auth undefined 
+ pass:pladmin
+ 18:23:13 
+ id:1 
+ name:Администратор 
+ role:2
+ 18:23:13 
+ cookie:[object Object] 
+ test:0
+ 18:23:13 ТЕСТ 0
+ 18:23:13 / undefined 
+ pin:sdf
+ 18:23:54 
+ cookie:[object Object] 
+ test:0
+ 18:23:54 ТЕСТ 0
+ 18:23:54 /auth undefined 
+ pass:pladmin
+ 18:23:54 
+ id:1 
+ name:Администратор 
+ role:2
+ 18:23:54 
+ cookie:[object Object] 
+ test:0
+ 18:23:54 ТЕСТ 0
+ 18:23:54 / undefined 
+ pin:sdf
+ 18:24:00 
+ cookie:[object Object] 
+ test:0
+ 18:24:00 ТЕСТ 0
+ 18:24:00 / undefined 
+ pin:sdf
+ 18:24:04 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:24:04 Сервер - запущен
+ 18:24:04 Порт: 777
+ 18:24:08 
+ cookie:[object Object] 
+ test:0
+ 18:24:08 ТЕСТ 0
+ 18:24:08 / undefined 
+ pin:sdf
+ 18:25:36 
+ cookie:[object Object] 
+ test:0
+ 18:25:36 ТЕСТ 0
+ 18:25:36 /auth undefined
+ 18:25:51 
+ cookie:[object Object] 
+ test:0
+ 18:25:51 ТЕСТ 0
+ 18:25:51 / undefined
+ 18:25:57 
+ cookie:[object Object] 
+ test:0
+ 18:25:57 ТЕСТ 0
+ 18:25:57 /auth undefined 
+ pass:pladmin
+ 18:25:57 
+ id:1 
+ name:Администратор 
+ role:2
+ 18:25:57 
+ cookie:[object Object] 
+ test:0
+ 18:25:57 ТЕСТ 0
+ 18:25:57 / undefined
+ 18:26:03 
+ cookie:[object Object] 
+ test:0
+ 18:26:03 ТЕСТ 0
+ 18:26:03 / undefined
+ 18:26:32 
+ cookie:[object Object] 
+ test:0
+ 18:26:32 ТЕСТ 0
+ 18:26:32 / undefined
+ 18:27:05 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:27:05 Сервер - запущен
+ 18:27:05 Порт: 777
+ 18:27:08 
+ cookie:[object Object] 
+ test:0
+ 18:27:08 ТЕСТ 0
+ 18:27:08 / undefined
+ 18:27:13 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 18:27:13 ТЕСТ 1
+ 18:27:13 / undefined
+ 18:27:20 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 18:27:20 ТЕСТ 2
+ 18:27:20 /auth undefined 
+ pass:pladmin
+ 18:27:20 
+ id:1 
+ name:Администратор 
+ role:2
+ 18:27:20 
+ cookie:[object Object] 
+ test:3 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 18:27:20 ТЕСТ 3
+ 18:27:20 / undefined
+ 18:28:06 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:28:06 Сервер - запущен
+ 18:28:06 Порт: 777
+ 18:28:09 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:28:09 Сервер - запущен
+ 18:28:09 Порт: 777
+ 18:28:21 
+ cookie:[object Object] 
+ test:0
+ 18:28:21 ТЕСТ 0
+ 18:28:21 / undefined
+ 18:28:44 
+ cookie:[object Object] 
+ test:0
+ 18:28:44 ТЕСТ 0
+ 18:28:44 / undefined
+ 18:29:08 
+ cookie:[object Object] 
+ test:0
+ 18:29:08 ТЕСТ 0
+ 18:29:08 / undefined
+ 18:29:42 
+ cookie:[object Object] 
+ test:0
+ 18:29:42 ТЕСТ 0
+ 18:29:42 / undefined
+ 18:30:34 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:30:34 Сервер - запущен
+ 18:30:34 Порт: 777
+ 18:30:35 
+ cookie:[object Object] 
+ test:0
+ 18:30:35 ТЕСТ 0
+ 18:30:35 / undefined
+ 18:30:48 
+ cookie:[object Object] 
+ test:0
+ 18:30:48 ТЕСТ 0
+ 18:30:48 / undefined
+ 18:32:05 
+ cookie:[object Object] 
+ test:0
+ 18:32:05 ТЕСТ 0
+ 18:32:05 /manual undefined
+ 18:33:31 
+ cookie:[object Object] 
+ test:0
+ 18:33:31 ТЕСТ 0
+ 18:33:31 /manual undefined
+ 18:33:59 
+ cookie:[object Object] 
+ test:0
+ 18:33:59 ТЕСТ 0
+ 18:33:59 /manual undefined
+ 18:34:24 
+ cookie:[object Object] 
+ test:0
+ 18:34:24 ТЕСТ 0
+ 18:34:24 /manual undefined
+ 18:34:34 
+ cookie:[object Object] 
+ test:0
+ 18:34:34 ТЕСТ 0
+ 18:34:34 /manual undefined
+ 18:34:58 
+ cookie:[object Object] 
+ test:0
+ 18:34:58 ТЕСТ 0
+ 18:34:58 /manual undefined
+ 18:35:09 
+ cookie:[object Object] 
+ test:0
+ 18:35:09 ТЕСТ 0
+ 18:35:09 /manual undefined
+ 18:35:22 
+ cookie:[object Object] 
+ test:0
+ 18:35:22 ТЕСТ 0
+ 18:35:22 /manual undefined
+ 18:35:28 
+ cookie:[object Object] 
+ test:0
+ 18:35:28 ТЕСТ 0
+ 18:35:28 /manual undefined
+ 18:35:36 
+ cookie:[object Object] 
+ test:0
+ 18:35:36 ТЕСТ 0
+ 18:35:36 /manual undefined
+ 18:36:03 
+ cookie:[object Object] 
+ test:0
+ 18:36:03 ТЕСТ 0
+ 18:36:03 / undefined
+ 18:36:10 
+ cookie:[object Object] 
+ test:0
+ 18:36:10 ТЕСТ 0
+ 18:36:10 /auth undefined 
+ pass:чpladmin
+ 18:36:10 undefined
+ 18:36:13 
+ cookie:[object Object] 
+ test:0
+ 18:36:13 ТЕСТ 0
+ 18:36:13 /auth undefined 
+ pass:pladmin
+ 18:36:13 
+ id:1 
+ name:Администратор 
+ role:2
+ 18:36:13 
+ cookie:[object Object] 
+ test:0
+ 18:36:13 ТЕСТ 0
+ 18:36:13 / undefined
+ 18:38:41 
+ cookie:[object Object] 
+ test:0
+ 18:38:41 ТЕСТ 0
+ 18:38:41 / undefined
+ 18:38:45 
+ cookie:[object Object] 
+ test:0
+ 18:38:45 ТЕСТ 0
+ 18:38:45 / undefined
+ 18:39:03 
+ cookie:[object Object] 
+ test:0
+ 18:39:03 ТЕСТ 0
+ 18:39:03 / undefined
+ 18:39:52 
+ cookie:[object Object] 
+ test:0
+ 18:39:52 ТЕСТ 0
+ 18:39:52 / undefined
+ 18:39:55 
+ cookie:[object Object] 
+ test:0
+ 18:39:55 ТЕСТ 0
+ 18:39:55 / undefined
+ 18:40:04 
+ cookie:[object Object] 
+ test:0
+ 18:40:04 ТЕСТ 0
+ 18:40:04 / undefined
+ 18:40:14 
+ cookie:[object Object] 
+ test:0
+ 18:40:14 ТЕСТ 0
+ 18:40:14 / undefined
+ 18:42:37 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:42:37 Сервер - запущен
+ 18:42:37 Порт: 777
+ 18:42:43 
+ cookie:[object Object] 
+ test:0
+ 18:42:43 ТЕСТ 0
+ 18:42:43 / undefined
+ 18:42:50 
+ cookie:[object Object] 
+ test:0
+ 18:42:50 ТЕСТ 0
+ 18:42:50 /logout undefined
+ 18:42:50 undefined вышел из системы
+ 18:42:50 
+ cookie:[object Object] 
+ test:0
+ 18:42:50 ТЕСТ 0
+ 18:42:50 / undefined
+ 18:43:02 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:43:02 Сервер - запущен
+ 18:43:02 Порт: 777
+ 18:43:03 
+ cookie:[object Object] 
+ test:0
+ 18:43:03 ТЕСТ 0
+ 18:43:03 / undefined
+ 18:43:30 
+ cookie:[object Object] 
+ test:0
+ 18:43:30 ТЕСТ 0
+ 18:43:30 /logout undefined
+ 18:43:30 undefined вышел из системы
+ 18:43:30 
+ cookie:[object Object] 
+ test:0
+ 18:43:30 ТЕСТ 0
+ 18:43:30 / undefined
+ 18:43:32 
+ cookie:[object Object] 
+ test:0
+ 18:43:32 ТЕСТ 0
+ 18:43:32 /logout undefined
+ 18:43:32 undefined вышел из системы
+ 18:43:32 
+ cookie:[object Object] 
+ test:0
+ 18:43:32 ТЕСТ 0
+ 18:43:32 / undefined
+ 18:43:33 
+ cookie:[object Object] 
+ test:0
+ 18:43:33 ТЕСТ 0
+ 18:43:33 /logout undefined
+ 18:43:33 undefined вышел из системы
+ 18:43:33 
+ cookie:[object Object] 
+ test:0
+ 18:43:33 ТЕСТ 0
+ 18:43:33 / undefined
+ 18:43:34 
+ cookie:[object Object] 
+ test:0
+ 18:43:34 ТЕСТ 0
+ 18:43:34 /logout undefined
+ 18:43:34 undefined вышел из системы
+ 18:43:34 
+ cookie:[object Object] 
+ test:0
+ 18:43:34 ТЕСТ 0
+ 18:43:34 / undefined
+ 18:43:49 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:43:49 Сервер - запущен
+ 18:43:49 Порт: 777
+ 18:43:51 
+ cookie:[object Object] 
+ test:0
+ 18:43:51 ТЕСТ 0
+ 18:43:51 / undefined
+ 18:43:54 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:43:54 Сервер - запущен
+ 18:43:54 Порт: 777
+ 18:43:54 
+ cookie:[object Object] 
+ test:0
+ 18:43:54 ТЕСТ 0
+ 18:43:54 / undefined
+ 18:43:56 
+ cookie:[object Object] 
+ test:0
+ 18:43:56 ТЕСТ 0
+ 18:43:56 / undefined
+ 18:43:59 
+ cookie:[object Object] 
+ test:0
+ 18:43:59 ТЕСТ 0
+ 18:43:59 /logout undefined
+ 18:43:59 undefined вышел из системы
+ 18:43:59 
+ cookie:[object Object] 
+ test:0
+ 18:43:59 ТЕСТ 0
+ 18:43:59 / undefined
+ 18:44:40 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:44:40 Сервер - запущен
+ 18:44:40 Порт: 777
+ 18:44:43 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:44:43 Сервер - запущен
+ 18:44:43 Порт: 777
+ 18:44:43 
+ cookie:[object Object] 
+ test:0
+ 18:44:43 ТЕСТ 0
+ 18:44:43 / undefined
+ 18:44:45 
+ cookie:[object Object] 
+ test:0
+ 18:44:45 ТЕСТ 0
+ 18:44:45 /logout undefined
+ 18:44:45 undefined вышел из системы
+ 18:44:45 
+ cookie:[object Object] 
+ test:0
+ 18:44:45 ТЕСТ 0
+ 18:44:45 / undefined
+ 18:44:51 
+ cookie:[object Object] 
+ test:0
+ 18:44:51 ТЕСТ 0
+ 18:44:51 /logout undefined
+ 18:44:51 undefined вышел из системы
+ 18:44:51 
+ cookie:[object Object] 
+ test:0
+ 18:44:51 ТЕСТ 0
+ 18:44:51 / undefined
+ 18:45:46 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:45:46 Сервер - запущен
+ 18:45:46 Порт: 777
+ 18:45:49 
+ cookie:[object Object] 
+ test:0
+ 18:45:49 ТЕСТ 0
+ 18:45:49 / undefined
+ 18:45:51 
+ cookie:[object Object] 
+ test:0
+ 18:45:51 ТЕСТ 0
+ 18:45:51 /logout undefined
+ 18:45:51 undefined вышел из системы
+ 18:45:51 
+ cookie:[object Object] 
+ test:0
+ 18:45:51 ТЕСТ 0
+ 18:45:51 / undefined
+ 18:45:51 
+ cookie:[object Object] 
+ test:0
+ 18:45:51 ТЕСТ 0
+ 18:45:51 / undefined
+ 18:45:53 
+ cookie:[object Object] 
+ test:0
+ 18:45:53 ТЕСТ 0
+ 18:45:53 /logout undefined
+ 18:45:53 undefined вышел из системы
+ 18:45:53 
+ cookie:[object Object] 
+ test:0
+ 18:45:53 ТЕСТ 0
+ 18:45:53 / undefined
+ 18:45:53 
+ cookie:[object Object] 
+ test:0
+ 18:45:53 ТЕСТ 0
+ 18:45:53 / undefined
+ 18:46:07 
+ cookie:[object Object] 
+ test:0
+ 18:46:07 ТЕСТ 0
+ 18:46:07 / undefined
+ 18:46:21 
+ cookie:[object Object] 
+ test:0
+ 18:46:21 ТЕСТ 0
+ 18:46:21 / undefined
+ 18:46:47 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:46:47 Сервер - запущен
+ 18:46:47 Порт: 777
+ 18:46:50 
+ cookie:[object Object] 
+ test:0
+ 18:46:50 ТЕСТ 0
+ 18:46:50 / undefined
+ 18:46:52 
+ cookie:[object Object] 
+ test:0
+ 18:46:52 ТЕСТ 0
+ 18:46:52 / undefined
+ 18:46:56 
+ cookie:[object Object] 
+ test:0
+ 18:46:56 ТЕСТ 0
+ 18:46:56 / undefined
+ 18:47:04 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:47:04 Сервер - запущен
+ 18:47:04 Порт: 777
+ 18:47:05 
+ cookie:[object Object] 
+ test:0
+ 18:47:05 ТЕСТ 0
+ 18:47:05 / undefined
+ 18:47:11 
+ cookie:[object Object] 
+ test:0
+ 18:47:11 ТЕСТ 0
+ 18:47:11 /logout undefined
+ 18:47:11 undefined вышел из системы
+ 18:47:11 
+ cookie:[object Object] 
+ test:0
+ 18:47:11 ТЕСТ 0
+ 18:47:11 / undefined
+ 18:47:11 
+ cookie:[object Object] 
+ test:0
+ 18:47:11 ТЕСТ 0
+ 18:47:11 / undefined
+ 18:47:21 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:47:21 Сервер - запущен
+ 18:47:21 Порт: 777
+ 18:47:34 
+ cookie:[object Object] 
+ test:0
+ 18:47:34 ТЕСТ 0
+ 18:47:34 / undefined
+ 18:47:40 
+ cookie:[object Object] 
+ test:0
+ 18:47:40 ТЕСТ 0
+ 18:47:41 / undefined
+ 18:47:49 
+ cookie:[object Object] 
+ test:0
+ 18:47:49 ТЕСТ 0
+ 18:47:49 / undefined
+ 18:47:55 
+ cookie:[object Object] 
+ test:0
+ 18:47:55 ТЕСТ 0
+ 18:47:55 /logout undefined
+ 18:47:55 undefined вышел из системы
+ 18:47:55 
+ cookie:[object Object] 
+ test:0
+ 18:47:55 ТЕСТ 0
+ 18:47:55 / undefined
+ 18:47:55 
+ cookie:[object Object] 
+ test:0
+ 18:47:55 ТЕСТ 0
+ 18:47:55 / undefined
+ 18:48:14 
+ cookie:[object Object] 
+ test:0
+ 18:48:14 ТЕСТ 0
+ 18:48:14 / undefined
+ 18:49:04 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 18:49:04 Сервер - запущен
+ 18:49:04 Порт: 777
+ 18:49:56 
+ cookie:[object Object] 
+ test:0
+ 18:49:56 ТЕСТ 0
+ 18:49:56 / undefined

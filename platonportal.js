@@ -9,10 +9,7 @@ import session from 'express-session'
 import cookieParser from 'cookie-parser'
 import path from 'path'
 import fs from 'fs-extra'
-let iswin = true
-var appDir = path.dirname(import.meta.url);
-appDir = appDir.split('//')
-appDir = appDir[1]
+import { fileURLToPath } from 'url';
 
 var PORT = process.env.PORT || 777;
  //PORT = process.env.PORT || 80;
@@ -38,7 +35,7 @@ helpers: {
         },
     if_eq: function (a, b, opts) {
         if (a == b){ // Or === depending on your needs
-            // logman.log(opts);
+           //  mlog(opts);
             return opts.fn(this);
         } else
             return opts.inverse(this);
@@ -59,20 +56,22 @@ helpers: {
 }
 });
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+export let appDir = __dirname;
+
 app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
 
-if (iswin) {
-    app.set('views',path.join('views'));
-    app.use(express.static('public'));
-} else{
-    app.set('views',path.join(appDir, 'views'));
-    mlog(path.join(appDir, 'public'));
-    app.use(express.static(path.join(appDir, 'public')));
-}
+const viewsPath = path.join(appDir, 'views');
+const publicPath = path.join(appDir, 'public');
+
+app.set('views', viewsPath);
+mlog(publicPath);
+app.use(express.static(publicPath));
 
 app.use(cookieParser());
-app.use(session({name: 'login',resave:false,saveUninitialized:false, secret: 'keyboard cat', cookie: { domain: "platoniks.ru" }}));
+app.use(session({name: 'login',resave:false,saveUninitialized:false, secret: 'platonsecretcokie', cookie: { domain: "*.platoniks.ru" }}));
 
 app.use(async function (req, res, next) {
     let page = req._parsedOriginalUrl.pathname;
@@ -81,10 +80,8 @@ app.use(async function (req, res, next) {
     mlog("ТЕСТ",req.session.test)
     req.session.counter = req.session.counter || 0;
     req.session.test = req.session.test+1
-    next();
-    
     mlog(page,req.headers['nip'],req.query)
-    
+    next();
 })
 
 app.get('/e',(req,res)=>{
@@ -93,7 +90,6 @@ app.get('/e',(req,res)=>{
 })
 
 app.get('/',(req,res)=>{
-    let sets = {s:12,m:3,h:3,l:3}
     var menu = [
     {
         link: "http://cloud.platoniks.ru",
@@ -138,7 +134,7 @@ app.get('/',(req,res)=>{
     {
         link: "https://rep.platoniks.ru/",
         text: "Прогресс репорт",
-        pic: "progres.png",
+        pic: "grp.png",
     },
     {
       link: "/manual",
@@ -204,82 +200,76 @@ app.get('/',(req,res)=>{
 
     var info = [{
         title:"Сервисы Платоникса!",
-        content:`Добро пожаловать на страницу
-        <br> с полезными сервисами для сотрудников компании! 
-        <br> Здесь вы найдете удобную коллекцию ссылок
-        <br>на все необходимые ресурсы, 
-        <br> помогающие в работе. 
-        <br> От инструментов для управления проектами
-        <br> до внутренних порталов и 
-        <br> обучающих материалов 
-        <br><br>Используйте эту страницу 
-        <br для максимальной продуктивности 
-        <br>и эффективности в работе!`
+        content: "Добро пожаловать на страницу с важными сервисами для сотрудников компании! Здесь представлена коллекция ссылок на ключевые ресурсы, которые помогут вам в работе. От инструментов управления проектами до внутренних порталов и обучающих материалов. Используйте эту страницу для повышения продуктивности и эффективности!"
+    },
+    {
+        title:"WIFI Пароли",
+        content: `Пароли от WIFI
+TSchool_Sibur
+platon2023`
     },
     
     {
         title:"Звонки",
-        content:`
-        0	8:45	-	9:00
-        <br>1	9:00	-	9:40
-        <br>1+	9:40	-	9:55
-        <br>2	9:55	-	10:35
-        <br>3	10:40	-	11:20
-        <br>4	11:25	-	12:05
-        <br>4+	12:05	-	12:15
-        <br>5	12:15	-	12:55
-        <br>5+	12:55	-	13:05
-        <br>5++	13:05	-	13:45
-        <br>6	13:55	-	14:35
-        <br>6+	14:35	-	14:45
-        <br>7	14:45	-	15:25
-        <br>7+	15:25	-	15:35
-        <br>8	15:35	-	16:15
-        <br>8+	16:15	-	16:25
-        <br>9	16:25	-	17:05
-        <br>10	17:15	-	17:55
-        <br>11	18:00	-	18:40`
+        content:`0	8:45	-	9:00
+        1	9:00	-	9:40
+        1+	9:40	-	9:55
+        2	9:55	-	10:35
+        3	10:40	-	11:20
+        4	11:25	-	12:05
+        4+	12:05	-	12:15
+        5	12:15	-	12:55
+        5+	12:55	-	13:05
+        5++	13:05	-	13:45
+        6	13:55	-	14:35
+        6+	14:35	-	14:45
+        7	14:45	-	15:25
+        7+	15:25	-	15:35
+        8	15:35	-	16:15
+        8+	16:15	-	16:25
+        9	16:25	-	17:05
+        10	17:15	-	17:55
+        11	18:00	-	18:40`
     },
     {
         title:"Распределение наставников",
         content:`1 класс — Алина 
-<br>2-3-4 классы — Миша 
-<br>5-6 классы и Святогор — Нина 
-<br>7-е классы — Полина 
-<br>8-е классы — Элина 
-<br>9 класс — Семен 
-<br>10-11 классы — Никита `
+2-3-4 классы — Миша 
+5-6 классы и Святогор — Нина 
+7-е классы — Полина 
+8-е классы — Элина 
+9 класс — Семен 
+10-11 классы — Никита `
     },
     {
         title:"Распределение тьюторов",
         content:`1 класс — Виктория 
-<br>2-3 классы — Любовь 
-<br>4-5 классы — Виктория 
-<br>6 класс — Дарья 
-<br>7-е классы — Константин 
-<br>8 АРТ — Константин 
-<br>8 МИТ — Любовь 
-<br>9-10-11 классы — Дарья`
+2-3 классы — Любовь 
+4-5 классы — Виктория 
+6 класс — Дарья 
+7-е классы — Константин 
+8 АРТ — Константин 
+8 МИТ — Любовь 
+9-10-11 классы — Дарья`
     },
     {
         title:"Основные контакты",
         content:`Администратор журнала, CRM - Могилянцева Ольга @ems_rosier 
-        <br>По вопросам закупки канцелярии, пособий и оборудования - Тирбах  Сергей  https://t.me/Sergej_Tierbach
-        <br>⭐️ Кафедра математики – Евстафьева Анжелика Анжелика 
-        <br>⭐️ Кафедра русского языка и литературы – Золотоверхая Мария @M_Zolotoverkhaya 
-        <br>⭐️ Кафедра иностранного языка – Иогансен Александра Игоревна @Nesnagoi 
-        <br>⭐️ Кафедра информатики и ИТ – Сорокина Наталья Наталья 
-        <br>⭐️ Кафедра естественных наук – Коба Дарья @dashkokoba 
-        <br>⭐️ Кафедра истории и обществознания – Кайгородцева Софья @rinnisognatore 
-        <br>⭐️ Кафедра начальных классов – Иванова Елена Елена 
-        <br>⭐️ Кафедра наставников – Юникова Марина 
-        <br>⭐️ Кафедра тьюторов – Царькова Любовь Дурдымуратовна`
+По вопросам закупки канцелярии, пособий и оборудования - <a href="https://t.me/Sergej_Tierbach">Тирбах Сергей</a> 
+⭐️ Кафедра математики – Евстафьева Анжелика Анжелика 
+⭐️ Кафедра русского языка и литературы – Золотоверхая Мария @M_Zolotoverkhaya 
+⭐️ Кафедра иностранного языка – Иогансен Александра Игоревна @Nesnagoi 
+⭐️ Кафедра информатики и ИТ – Сорокина Наталья Наталья 
+⭐️ Кафедра естественных наук – Коба Дарья @dashkokoba 
+⭐️ Кафедра истории и обществознания – Кайгородцева Софья @rinnisognatore 
+⭐️ Кафедра начальных классов – Иванова Елена Елена 
+⭐️ Кафедра наставников – Юникова Марина 
+⭐️ Кафедра тьюторов – Царькова Любовь Дурдымуратовна`
     },  
 ]
+
     res.render('new',{
       title: 'Гармония Образования',
-     // auth: auth,
-      sets: sets,
       menu:menu,
       info:info,
       auth: req.session.role
@@ -299,7 +289,7 @@ app.get('/manual',(req,res)=>{
 app.get('/auth',async (req,res)=>{
     console.log(req.query);
     if (req.query.pass!=undefined) {
-        let ans = await auth_user(req.query.login,req.query.pass);
+        let ans = await auth_user(req.query.pass);
         mlog(ans);
         if (ans!=undefined){
             req.session.name = ans.name
@@ -317,7 +307,7 @@ app.get('/auth',async (req,res)=>{
     }
 }) 
 
-async function auth_user(login, pass) {
+async function auth_user(pass) {
     if(pass=='pladmin'){
         return {
             id: 1,
@@ -327,21 +317,16 @@ async function auth_user(login, pass) {
     }
 }
 
-app.get('/logout', function(req, res) {
-    mlog( req.session.name,"вышел из системы");
-    req.session = null;
-    req.session.test = null
-    req.session.userid = null
-    //res.send('ok');
-    console.dir(req.session)
-    req.session.save(function (err) {
-      if (err) next(err)
-      req.session.regenerate(function (err) {
-        if (err) next(err)
-        res.redirect('/')
-      })
-    })
-})
+app.get('/logout', function(req, res, next) {
+  const username = req.session?.name;
+  mlog(username, 'вышел из системы');
+
+  req.session.destroy(function(err) {
+    if (err) return next(err);
+    res.redirect('/');
+  });
+});
+
 app.get('*',async function(req, res){
     res.render('404', { 
         url: req.url,

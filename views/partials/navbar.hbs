@@ -1,7 +1,56 @@
- <nav class="#0097a7 cyan darken-1">
-    <div class="nav-wrapper">
-      <a href="/" class="brand-logo center hide-on-med-and-up flow-text">Сервисы</a>
-      <a href="/" class="brand-logo center hide-on-small-only">Гармония Образования</a>
-      <a href="#" data-target="slide-out" class="right sidenav-trigger"><i class="material-icons">menu</i></a>
-       </div>  
-  </nav>
+<header class="relative fixed top-0 inset-x-0 z-10 bg-white/70 dark:bg-gray-800/70 backdrop-blur px-4 h-14 flex items-center justify-between">
+  <!-- Центрированный заголовок -->
+  <h1 class="absolute left-1/2 transform -translate-x-1/2 text-xl font-semibold text-gray-900 dark:text-gray-100">
+    {{title}}
+  </h1>
+
+  <!-- Левая часть (пусто или можно логотип) -->
+  <div class="flex items-center space-x-4"></div>
+
+  <!-- Правая часть -->
+  <div class="flex items-center space-x-3">
+    <button id="theme" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700" title="Сменить тему">🌞</button>
+    {{#if auth}}
+          <!-- Если пользователь авторизован -->
+      <button id="logoutBtn" class="px-4 py-1.5 text-sm font-medium rounded-md bg-red-600 text-white hover:bg-red-700 transition">
+        Выйти
+      </button>
+    {{else}}
+      <!-- Если пользователь НЕ авторизован -->
+      <button id="openModal" class="px-4 py-1.5 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition">
+        Войти
+      </button>
+    {{/if}}
+  </div>
+</header>
+<script>
+
+$(function () {
+  const $btn = $('#theme');
+  const root = document.documentElement;
+
+  function isSystemDark() {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  function applyTheme(theme) {
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      $btn.text('🌙');
+    } else {
+      root.classList.remove('dark');
+      $btn.text('🌞');
+    }
+  }
+
+  const savedTheme = localStorage.getItem('theme');
+  applyTheme(savedTheme || (isSystemDark() ? 'dark' : 'light'));
+
+  $btn.on('click', function () {
+    const isDark = root.classList.toggle('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    $btn.text(isDark ? '🌙' : '🌞');
+  });
+});
+
+</script>

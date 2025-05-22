@@ -4,15 +4,12 @@ import path from 'path'
 import request from 'request'
 import urlencode from 'urlencode'
 
-var appDir = path.dirname(import.meta.url);
-appDir = appDir.split('//')
-appDir = appDir[1]
-let test = false
-if (!test){
-  appDir = "//"+appDir
-}
+import { fileURLToPath } from 'url';
 
-console.log(appDir);
+// Получаем __dirname в ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+export let appDir = __dirname;
 
 function curdate(minute){
     minute = (minute < 10) ? '0' + minute : minute;

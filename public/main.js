@@ -1,8 +1,5 @@
-
-
   $(document).ready(function(){
-        
-    
+            
     $( "#close" ).click(function() {
       event.preventDefault();
     })
@@ -12,8 +9,7 @@
       if ($( "#pass" ).val()!=''){
        // $( "#btnl" ).submit();
         let tosend = $( "#pass" ).val();
-        let logins = $( "#logins" ).val();
-        $.get( "/auth", {login:logins,pass: tosend} )
+        $.get( "/auth", {pass: tosend} )
         .done(function( data ) {
           console.log( "Data Loaded: " + data );
             if (data=='ok'){
@@ -30,6 +26,11 @@
       }    
     });
 
+    $( "#logoutBtn" ).click(function() {
+      //M.toast({html: 'Пожалуйста, заполните содержание', classes: '#ef5350 red lighten-1 rounded'});
+      event.preventDefault();
+      logout();
+    });
     
     function logout(){
       M.toast({html: 'Выход из аккаунта', classes: '#ef5350 red lighten-1 rounded'});

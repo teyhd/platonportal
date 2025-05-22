@@ -1,54 +1,79 @@
-<!doctype html>
-<html lang="ru" class="h-full">
-<head>
-  <meta charset="utf-8" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <title>{{title}}</title>
-</head>
-<body class="h-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-  <!-- Header -->
-  <header class="fixed inset-x-0 top-0 z-10 flex items-center h-14 px-4 bg-white/70 backdrop-blur dark:bg-gray-800/70">
-    <h1 class="text-xl font-semibold mr-6">{{title}}</h1>
-    <button id="theme" class="ml-4 p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">🌞</button>
-    <img src="/avatar.jpg" alt="me" class="ml-3 w-8 h-8 rounded-full" />
-  </header>
-
-  <main class="pt-20 px-4 max-w-7xl mx-auto space-y-8">
+  <main class="pt-8 px-4 max-w-7xl mx-auto space-y-8">
     <!-- Services -->
     <section>
-      <h2 class="mb-4 text-lg font-medium">Сервисы</h2>
-      <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <h2 class="mb-6 text-2xl font-semibold text-white" hidden>Сервисы</h2>
+      <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {{#each menu}}
-          <a href="{{this.link}}" class="p-4 rounded-lg bg-white shadow-sm hover:shadow-md transition dark:bg-gray-800">
-            <div class="flex items-center gap-3 mb-1">
-              <img src="/img/{{this.pic}}" class="w-6 h-6" alt="{{this.text}}">
-              <span class="font-medium">{{this.text}}</span>
-            </div>
+          <a href="{{this.link}}" class="flex flex-col items-center justify-center p-6 min-h-[160px] rounded-2xl bg-gray-800 hover:bg-gray-700 text-white shadow-lg transition-all duration-200 ease-in-out transform hover:-translate-y-1 hover:shadow-xl group text-center">
+            <img src="/img/{{this.pic}}" alt="{{this.text}}" class="w-25 h-25 mb-4 transition-transform duration-200 group-hover:scale-110" />
+            <span class="text-base font-medium group-hover:underline">{{this.text}}</span>
           </a>
         {{/each}}
       </div>
     </section>
 
-    <!-- Информация -->
-    {{#if info.length}}
-    <section>
-      <h2 class="mb-4 text-lg font-medium">Информация</h2>
-      <div class="grid gap-4 md:grid-cols-2">
+    <section class="max-w-7xl mx-auto px-4">
+      <h2 class="mb-6 text-2xl font-semibold text-white text-center">Информация</h2>
+
+      <!-- 📱 Аккордеон (≤ lg) -->
+      <div class="space-y-4 lg:hidden">
         {{#each info}}
-          <div class="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
-            <h3 class="font-semibold text-base mb-2">{{this.title}}</h3>
-            <div class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+          <details class="group bg-gray-800 hover:bg-gray-700 rounded-xl p-4 text-white">
+            <summary class="flex items-center gap-3 cursor-pointer list-none select-none">
+              <!-- иконка -->
+              {{#if this.icon}}
+                <img src="/icons/{{this.icon}}" alt="icon" class="w-6 h-6 shrink-0">
+              {{else}}
+                <span class="w-6 h-6 flex items-center justify-center shrink-0">🛈</span>
+              {{/if}}
+
+              <h3 class="text-lg font-semibold">{{this.title}}</h3>
+
+              <!-- стрелка -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                  class="ml-auto w-4 h-4 transition-transform duration-300 group-open:rotate-180">
+                <path fill-rule="evenodd"
+                      d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.112l3.71-3.88a.75.75 0 1 1 1.08 1.04l-4.24 4.42a.75.75 0 0 1-1.08 0L5.25 8.27a.75.75 0 0 1-.02-1.06z"
+                      clip-rule="evenodd"/>
+              </svg>
+            </summary>
+
+            <div class="mt-2 text-sm text-gray-300 whitespace-pre-line">{{{this.content}}}</div>
+          </details>
+        {{/each}}
+      </div>
+
+      <!-- 💻 Masonry-разметка (≥ lg) -->
+      <div class="hidden lg:block columns-1 md:columns-2 xl:columns-3 gap-x-6 space-y-6">
+        {{#each info}}
+          <article class="break-inside-avoid bg-gray-800 hover:bg-gray-700 transition-colors
+                          rounded-xl shadow-lg text-white p-6 flex flex-col gap-2 relative group">
+            <header class="flex items-center gap-3 mb-2">
+              {{#if this.icon}}
+                <img src="/icons/{{this.icon}}" alt="icon" class="w-6 h-6 shrink-0">
+              {{else}}
+                <span class="w-6 h-6 flex items-center justify-center shrink-0">🛈</span>
+              {{/if}}
+              <h3 class="text-lg font-semibold leading-tight">{{this.title}}</h3>
+            </header>
+
+            <div class="text-sm text-gray-300 whitespace-pre-line leading-relaxed
+                        max-h-52 overflow-hidden lg:max-h-none lg:line-clamp-8 lg:group-hover:line-clamp-none">
               {{{this.content}}}
             </div>
-          </div>
+
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-10
+                        bg-gradient-to-t from-gray-800 to-transparent
+                        opacity-0 lg:opacity-100 group-hover:opacity-0 transition"></div>
+          </article>
         {{/each}}
       </div>
     </section>
-    {{/if}}
+
   </main>
 
   <footer class="mt-16 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
     © 2025 Harmony Edu Intranet · v0.1
   </footer>
-</body>
-</html>
+
+

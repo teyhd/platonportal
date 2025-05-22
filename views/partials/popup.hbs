@@ -1,13 +1,25 @@
-<div id="modal1" class="modal valign-wrapper">
-  <div class="modal-content">
-    <h4>Авторизуйтесь, пожалуйста!</h4>
-      <form id="formauth" class="col s12 login" action="upl" method="post" enctype="multipart/form-data">
-          <input class="validate" type="text" name="login" id="logins" placeholder="Введите логин"/>
-          <input class="validate" type="password" name="pass" id="pass" placeholder="Введите пароль"/>
-          <div class="row">
-              <div class="col s6"><button class="mbtn btn red modal-close" id="close">Закрыть</button></div>
-              <div class="col s6"><button class="mbtn btn modal-close" id="btnlogin" type="submit">ОК</button></div>
-          </div>
-      </form> 
+<!-- Модальное окно -->
+<div id="modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+  <div class="bg-gray-800 text-white p-6 rounded-2xl max-w-md w-full shadow-xl relative">
+    <button id="closeModal" class="absolute top-3 right-3 text-gray-400 hover:text-white text-xl">&times;</button>
+    <h3 class="text-xl font-semibold mb-4">Вход в систему</h3>
+    <!-- Здесь форма авторизации -->
+    <form>
+      <input id="pass" name="pin" type="password" placeholder="Пароль" class="w-full mb-4 p-2 rounded bg-gray-700 border border-gray-600 focus:outline-none" />
+      <button id="btnlogin" class="w-full py-2 bg-blue-600 hover:bg-blue-500 rounded font-medium">Войти</button>
+    </form>
   </div>
 </div>
+
+<script>
+  $(document).ready(function () {
+    $("#openModal").on("click", function () {
+      $("#modal").removeClass("hidden");
+    });
+
+    $("#closeModal").on("click", function () {
+      $("#modal").addClass("hidden");
+    });
+  });
+</script>
+
