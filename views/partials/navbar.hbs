@@ -1,8 +1,12 @@
 <header class="relative fixed top-0 inset-x-0 z-10 bg-white/70 dark:bg-gray-800/70 backdrop-blur px-4 h-14 flex items-center justify-between">
   <!-- Центрированный заголовок -->
-  <h1 class="absolute left-1/2 transform -translate-x-1/2 text-xl font-semibold text-gray-900 dark:text-gray-100">
-    {{title}}
-  </h1>
+<h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100
+           sm:absolute sm:left-1/2 sm:transform sm:-translate-x-1/2
+           text-left sm:text-center whitespace-nowrap overflow-hidden text-ellipsis">
+  {{title}}
+</h1>
+
+
 
   <!-- Левая часть (пусто или можно логотип) -->
   <div class="flex items-center space-x-4"></div>
