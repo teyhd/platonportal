@@ -71,7 +71,7 @@ mlog(publicPath);
 app.use(express.static(publicPath));
 
 app.use(cookieParser());
-app.use(session({name: 'login',resave:false,saveUninitialized:false, secret: 'platonsecretcokie', cookie: { domain: "*.platoniks.ru" }}));
+app.use(session({name: 'login',resave:false,saveUninitialized:false, secret: 'platonsecretcokie', cookie: { domain: ".platoniks.ru" }}));
 
 app.use(async function (req, res, next) {
     let page = req._parsedOriginalUrl.pathname;
