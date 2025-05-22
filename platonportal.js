@@ -59,7 +59,6 @@ helpers: {
 }
 });
 
-
 app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
 
@@ -94,7 +93,7 @@ app.get('/e',(req,res)=>{
 })
 
 app.get('/',(req,res)=>{
-    let set = {s:12,m:3,h:3,l:3}
+    let sets = {s:12,m:3,h:3,l:3}
     var menu = [
     {
         link: "http://cloud.platoniks.ru",
@@ -138,7 +137,7 @@ app.get('/',(req,res)=>{
     },
     {
         link: "https://rep.platoniks.ru/",
-        text: "Прогрес репорт",
+        text: "Прогресс репорт",
         pic: "progres.png",
     },
     {
@@ -277,10 +276,10 @@ app.get('/',(req,res)=>{
         <br>⭐️ Кафедра тьюторов – Царькова Любовь Дурдымуратовна`
     },  
 ]
-    res.render('index',{
+    res.render('new',{
       title: 'Гармония Образования',
      // auth: auth,
-      set: set,
+      sets: sets,
       menu:menu,
       info:info,
       auth: req.session.role
