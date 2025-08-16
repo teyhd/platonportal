@@ -2,7 +2,9 @@ import {mlog,say} from './vendor/logs.js'
 process.on('uncaughtException', (err) => {
 mlog('Глобальный косяк приложения!!! ', err.stack);
 }); //Если все пошло по ***, спасет ситуацию
-
+import 'dotenv/config'
+import * as db from './vendor/db.mjs';
+mlog(await db.getUsers());
 import express from 'express'
 import exphbs from 'express-handlebars'
 import session from 'express-session'
@@ -101,6 +103,16 @@ app.get('/',(req,res)=>{
         text: "Аренда ПК",
         pic: "pc.png",
     },
+    {
+        link: "https://rep.platoniks.ru/",
+        text: "Прогресс репорт",
+        pic: "grp.png",
+    },
+    {
+        link: "https://t.me/platonicsbot",
+        text: "Бот Платоникс",
+        pic: "tg.png",
+    },
    /* {
         link: "http://platon.teyhd.ru:88",
         text: "Закупки",
@@ -111,40 +123,32 @@ app.get('/',(req,res)=>{
       text: "Дневник",
       pic: "studyapp.png",
     },
-    {
-      link: "https://docs.google.com/spreadsheets/d/1JiMIcnklI7CGoP-Mfc_kqghuo71kFLfccVtsc6eH_Rw/edit?gid=1961581949#gid=1961581949",
-      text: "Расписание",
-      pic: "calend.png",
-    },
+
     {
         link: "https://teacher.platonics.ru/",
         text: "Платформа",
         pic: "platon.png",
     },
     {
-        link: "https://forms.gle/MmGPPEBr51uWj93Q9",
-        text: "Геймификация",
-        pic: "stud.png",
-    },
-    {
         link: "https://vote.platoniks.ru/",
         text: "Черный ящик",
         pic: "vote.png",
     },
-    {
-        link: "https://rep.platoniks.ru/",
-        text: "Прогресс репорт",
-        pic: "grp.png",
-    },
+
     {
       link: "/manual",
       text: "Инструкции",
       pic: "manu.png",
     },
     {
-        link: "https://t.me/platonicsbot",
-        text: "Бот Платоникс",
-        pic: "tg.png",
+        link: "https://forms.gle/MmGPPEBr51uWj93Q9",
+        text: "Геймификация",
+        pic: "stud.png",
+    },
+        {
+      link: "https://docs.google.com/spreadsheets/d/1JiMIcnklI7CGoP-Mfc_kqghuo71kFLfccVtsc6eH_Rw/edit?gid=1961581949#gid=1961581949",
+      text: "Расписание",
+      pic: "calend.png",
     }
     ]
 
@@ -342,7 +346,7 @@ async function start(){
     try {
         app.listen(PORT,()=> {
             mlog('Сервер - запущен')
-            say('Распределительный портал - запущен \nПорт: '+PORT)
+           // say('Распределительный портал - запущен \nПорт: '+PORT)
             mlog('Порт:',PORT);
         })
     } catch (e) {

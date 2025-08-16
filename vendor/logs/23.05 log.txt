@@ -319,3 +319,150 @@
  test:0
  22:16:28 ТЕСТ 0
  22:16:28 / 143.110.146.15
+ 00:45:38 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:45:38 Сервер - запущен
+ 00:45:38 Порт: 777
+ 00:46:09 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:46:09 Сервер - запущен
+ 00:46:09 Порт: 777
+ 00:47:34 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:47:34 Сервер - запущен
+ 00:47:34 Порт: 777
+ 00:47:54 Глобальный косяк приложения!!!  error: database "ьфштзщкефд" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:26:15)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 00:48:14 Глобальный косяк приложения!!!  error: database "ьфштзщкефд" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:26:15)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 00:48:58 Глобальный косяк приложения!!!  error: database "ьфштзщкефд" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:26:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 00:49:10 Глобальный косяк приложения!!!  error: relation "btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:26:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 00:50:37 Глобальный косяк приложения!!!  error: relation "btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:27:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 00:51:22 Глобальный косяк приложения!!!  error: relation "btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:28:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 00:51:34 Глобальный косяк приложения!!!  error: relation "btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:26:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 00:55:23 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:26:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 00:56:37 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:31:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 00:56:57 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:31:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 00:58:40 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:31:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 00:58:52 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:30:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 00:59:13 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:30:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 01:01:47 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:30:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 01:03:17 Глобальный косяк приложения!!!  error: relation "btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:30:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 01:04:02 Глобальный косяк приложения!!!  error: relation "btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:26:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 01:04:43 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:26:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 01:05:07 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:32:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 01:05:49 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:34:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 01:07:14 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:34:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 01:10:18 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:34:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 01:10:46 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:34:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 01:12:14 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:34:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 01:14:16 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:34:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 01:23:57 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:30:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 01:25:07 Глобальный косяк приложения!!!  error: relation "public.btns" does not exist
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.getUsers (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:36:16)
+    at async file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:7:6
+ 01:31:27 undefined
+ 01:31:27 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 01:31:27 Сервер - запущен
+ 01:31:27 Порт: 777
+ 01:31:41 undefined
+ 01:31:41 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 01:31:41 Сервер - запущен
+ 01:31:41 Порт: 777
