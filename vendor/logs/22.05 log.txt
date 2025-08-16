@@ -2252,3 +2252,877 @@
  test:0
  19:50:59 ТЕСТ 0
  19:50:59 / undefined
+ 18:51:32 /var/www/html/platonportal/public
+ 18:51:32 Сервер - запущен
+ 18:51:32 Порт: 777
+ 18:51:36 
+ cookie:[object Object] 
+ test:0
+ 18:51:36 ТЕСТ 0
+ 18:51:36 / 85.208.108.78
+ 18:51:45 
+ cookie:[object Object] 
+ test:0
+ 18:51:45 ТЕСТ 0
+ 18:51:45 /auth 85.208.108.78 
+ pass:pladmin
+ 18:51:45 
+ id:1 
+ name:Администратор 
+ role:2
+ 18:51:45 
+ cookie:[object Object] 
+ test:0
+ 18:51:45 ТЕСТ 0
+ 18:51:45 / 85.208.108.78
+ 18:52:14 
+ cookie:[object Object] 
+ test:0
+ 18:52:14 ТЕСТ 0
+ 18:52:14 /auth 85.208.108.78 
+ pass:pladmin
+ 18:52:14 
+ id:1 
+ name:Администратор 
+ role:2
+ 18:52:14 
+ cookie:[object Object] 
+ test:0
+ 18:52:14 ТЕСТ 0
+ 18:52:14 / 85.208.108.78
+ 18:52:21 
+ cookie:[object Object] 
+ test:0
+ 18:52:21 ТЕСТ 0
+ 18:52:21 / 85.208.108.78
+ 18:52:22 
+ cookie:[object Object] 
+ test:0
+ 18:52:22 ТЕСТ 0
+ 18:52:22 / 85.208.108.78
+ 18:52:25 
+ cookie:[object Object] 
+ test:0
+ 18:52:25 ТЕСТ 0
+ 18:52:25 / 85.208.108.78
+ 18:52:29 
+ cookie:[object Object] 
+ test:0
+ 18:52:29 ТЕСТ 0
+ 18:52:29 / 85.208.108.78
+ 18:52:29 
+ cookie:[object Object] 
+ test:0
+ 18:52:29 ТЕСТ 0
+ 18:52:29 / 203.55.131.3
+ 18:52:32 
+ cookie:[object Object] 
+ test:0
+ 18:52:32 ТЕСТ 0
+ 18:52:32 / 85.208.108.78
+ 18:52:36 
+ cookie:[object Object] 
+ test:0
+ 18:52:36 ТЕСТ 0
+ 18:52:36 / 85.208.108.78
+ 18:52:38 
+ cookie:[object Object] 
+ test:0
+ 18:52:38 ТЕСТ 0
+ 18:52:38 / 85.208.108.78
+ 18:52:42 
+ cookie:[object Object] 
+ test:0
+ 18:52:42 ТЕСТ 0
+ 18:52:42 / 85.208.108.78
+ 18:52:59 
+ cookie:[object Object] 
+ test:0
+ 18:52:59 ТЕСТ 0
+ 18:52:59 /robots.txt 87.250.224.25
+ 18:52:59 
+ cookie:[object Object] 
+ test:0
+ 18:52:59 ТЕСТ 0
+ 18:52:59 / 213.180.203.115
+ 18:54:11 /var/www/html/platonportal/public
+ 18:54:11 Сервер - запущен
+ 18:54:11 Порт: 777
+ 18:54:15 
+ cookie:[object Object] 
+ test:0
+ 18:54:15 ТЕСТ 0
+ 18:54:15 / 85.208.108.78
+ 18:54:27 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 18:54:27 ТЕСТ 1
+ 18:54:27 /auth 85.208.108.78 
+ pass:pladmin
+ 18:54:27 
+ id:1 
+ name:Администратор 
+ role:2
+ 18:54:27 
+ cookie:[object Object] 
+ test:2 
+ counter:0 
+ name:Администратор 
+ userid:1 
+ role:2
+ 18:54:27 ТЕСТ 2
+ 18:54:27 / 85.208.108.78
+ 18:57:38 /var/www/html/platonportal/public
+ 18:57:38 Сервер - запущен
+ 18:57:38 Порт: 777
+ 19:01:08 
+ cookie:[object Object] 
+ test:0
+ 19:01:08 ТЕСТ 0
+ 19:01:08 / 77.232.185.34
+ 19:01:54 
+ cookie:[object Object] 
+ test:0
+ 19:01:54 ТЕСТ 0
+ 19:01:54 /cgi-bin/authLogin.cgi 45.156.129.54
+ 19:18:39 
+ cookie:[object Object] 
+ test:0
+ 19:18:39 ТЕСТ 0
+ 19:18:39 /sitemap.xml 52.167.144.139
+ 19:27:01 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 19:27:01 ТЕСТ 1
+ 19:27:01 / 77.232.185.34
+ 19:30:03 
+ cookie:[object Object] 
+ test:0
+ 19:30:03 ТЕСТ 0
+ 19:30:03 /recordings/theme/main.css 185.224.128.52
+ 19:35:25 
+ cookie:[object Object] 
+ test:0
+ 19:35:25 ТЕСТ 0
+ 19:35:25 /platoniks.ru.gz 94.156.177.35
+ 19:35:44 
+ cookie:[object Object] 
+ test:0
+ 19:35:44 ТЕСТ 0
+ 19:35:44 / 185.242.226.88
+ 19:38:30 
+ cookie:[object Object] 
+ test:0
+ 19:38:30 ТЕСТ 0
+ 19:38:30 / 77.232.185.34
+ 19:48:31 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 19:48:31 ТЕСТ 2
+ 19:48:31 / 77.232.185.34
+ 19:48:55 
+ cookie:[object Object] 
+ test:0
+ 19:48:55 ТЕСТ 0
+ 19:48:55 / 85.208.108.78
+ 19:51:50 
+ cookie:[object Object] 
+ test:3 
+ counter:0
+ 19:51:50 ТЕСТ 3
+ 19:51:50 / 77.232.185.34
+ 19:53:10 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 19:53:10 ТЕСТ 1
+ 19:53:10 / 85.208.108.78
+ 20:10:14 
+ cookie:[object Object] 
+ test:0
+ 20:10:14 ТЕСТ 0
+ 20:10:14 / undefined
+ 20:10:16 
+ cookie:[object Object] 
+ test:0
+ 20:10:16 ТЕСТ 0
+ 20:10:16 / 139.162.142.167
+ 20:10:16 
+ cookie:[object Object] 
+ test:0
+ 20:10:16 ТЕСТ 0
+ 20:10:16 /Og2t undefined
+ 20:10:16 
+ cookie:[object Object] 
+ test:0
+ 20:10:16 ТЕСТ 0
+ 20:10:16 / undefined
+ 20:10:16 
+ cookie:[object Object] 
+ test:0
+ 20:10:16 ТЕСТ 0
+ 20:10:16 /nmaplowercheck1747933816 undefined
+ 20:10:16 
+ cookie:[object Object] 
+ test:0
+ 20:10:16 ТЕСТ 0
+ 20:10:16 / 139.162.142.167
+ 20:10:16 
+ cookie:[object Object] 
+ test:0
+ 20:10:16 ТЕСТ 0
+ 20:10:16 /rest/applinks/1.0/manifest 139.162.142.167
+ 20:10:16 
+ cookie:[object Object] 
+ test:0
+ 20:10:16 ТЕСТ 0
+ 20:10:16 /NmapUpperCheck1747933816 undefined
+ 20:10:17 
+ cookie:[object Object] 
+ test:0
+ 20:10:17 ТЕСТ 0
+ 20:10:17 /sdk 139.162.142.167
+ 20:10:17 
+ cookie:[object Object] 
+ test:0
+ 20:10:17 ТЕСТ 0
+ 20:10:17 /Nmap/folder/check1747933816 undefined
+ 20:10:17 
+ cookie:[object Object] 
+ test:0
+ 20:10:17 ТЕСТ 0
+ 20:10:17 / undefined
+ 20:10:17 
+ cookie:[object Object] 
+ test:0
+ 20:10:17 ТЕСТ 0
+ 20:10:17 /base.pl 139.162.142.167
+ 20:10:17 
+ cookie:[object Object] 
+ test:0
+ 20:10:17 ТЕСТ 0
+ 20:10:17 / undefined
+ 20:10:17 
+ cookie:[object Object] 
+ test:0
+ 20:10:17 ТЕСТ 0
+ 20:10:17 / 139.162.142.167
+ 20:10:17 
+ cookie:[object Object] 
+ test:0
+ 20:10:17 ТЕСТ 0
+ 20:10:17 /base.pl undefined
+ 20:10:17 
+ cookie:[object Object] 
+ test:0
+ 20:10:17 ТЕСТ 0
+ 20:10:17 /inicio.asp 139.162.142.167
+ 20:10:17 
+ cookie:[object Object] 
+ test:0
+ 20:10:17 ТЕСТ 0
+ 20:10:17 / undefined
+ 20:10:17 
+ cookie:[object Object] 
+ test:0
+ 20:10:17 ТЕСТ 0
+ 20:10:17 /inicio.asp undefined
+ 20:10:17 
+ cookie:[object Object] 
+ test:0
+ 20:10:17 ТЕСТ 0
+ 20:10:17 /start.pl 139.162.142.167
+ 20:10:18 
+ cookie:[object Object] 
+ test:0
+ 20:10:18 ТЕСТ 0
+ 20:10:18 /login.php 139.162.142.167
+ 20:10:18 
+ cookie:[object Object] 
+ test:0
+ 20:10:18 ТЕСТ 0
+ 20:10:18 /start.pl undefined
+ 20:10:18 
+ cookie:[object Object] 
+ test:0
+ 20:10:18 ТЕСТ 0
+ 20:10:18 / undefined
+ 20:10:18 
+ cookie:[object Object] 
+ test:0
+ 20:10:18 ТЕСТ 0
+ 20:10:18 /main.cfm 139.162.142.167
+ 20:10:18 
+ cookie:[object Object] 
+ test:0
+ 20:10:18 ТЕСТ 0
+ 20:10:18 /rest/applinks/1.0/manifest undefined
+ 20:10:18 
+ cookie:[object Object] 
+ test:0
+ 20:10:18 ТЕСТ 0
+ 20:10:18 /dniapi/userInfos 139.162.142.167
+ 20:10:18 
+ cookie:[object Object] 
+ test:0
+ 20:10:18 ТЕСТ 0
+ 20:10:18 /main.cfm undefined
+ 20:10:18 
+ cookie:[object Object] 
+ test:0
+ 20:10:18 ТЕСТ 0
+ 20:10:18 /menu.shtml 139.162.142.167
+ 20:10:18 
+ cookie:[object Object] 
+ test:0
+ 20:10:18 ТЕСТ 0
+ 20:10:18 /api/v2/about 139.162.142.167
+ 20:10:18 
+ cookie:[object Object] 
+ test:0
+ 20:10:18 ТЕСТ 0
+ 20:10:18 /menu.shtml undefined
+ 20:10:18 
+ cookie:[object Object] 
+ test:0
+ 20:10:18 ТЕСТ 0
+ 20:10:18 /.git/HEAD 139.162.142.167
+ 20:10:19 
+ cookie:[object Object] 
+ test:0
+ 20:10:19 ТЕСТ 0
+ 20:10:19 /webui 139.162.142.167
+ 20:10:19 
+ cookie:[object Object] 
+ test:0
+ 20:10:19 ТЕСТ 0
+ 20:10:19 /start.php 139.162.142.167
+ 20:10:19 
+ cookie:[object Object] 
+ test:0
+ 20:10:19 ТЕСТ 0
+ 20:10:19 /LOnS 139.162.142.167
+ 20:10:19 
+ cookie:[object Object] 
+ test:0
+ 20:10:19 ТЕСТ 0
+ 20:10:19 /start.php undefined
+ 20:10:19 
+ cookie:[object Object] 
+ test:0
+ 20:10:19 ТЕСТ 0
+ 20:10:19 /user 139.162.142.167
+ 20:10:19 
+ cookie:[object Object] 
+ test:0
+ 20:10:19 ТЕСТ 0
+ 20:10:19 /home.pl 139.162.142.167
+ 20:10:19 
+ cookie:[object Object] 
+ test:0
+ 20:10:19 ТЕСТ 0
+ 20:10:19 /home.pl undefined
+ 20:10:19 
+ cookie:[object Object] 
+ test:0
+ 20:10:19 ТЕСТ 0
+ 20:10:19 /human.aspx 139.162.142.167 
+ arg12:infotech
+ 20:10:20 
+ cookie:[object Object] 
+ test:0
+ 20:10:20 ТЕСТ 0
+ 20:10:20 /inicio.html undefined
+ 20:10:20 
+ cookie:[object Object] 
+ test:0
+ 20:10:20 ТЕСТ 0
+ 20:10:20 /inicio.html 139.162.142.167
+ 20:10:20 
+ cookie:[object Object] 
+ test:0
+ 20:10:20 ТЕСТ 0
+ 20:10:20 /dana-cached/hc/HostCheckerInstaller.osx 139.162.142.167
+ 20:10:20 
+ cookie:[object Object] 
+ test:0
+ 20:10:20 ТЕСТ 0
+ 20:10:20 /robots.txt undefined
+ 20:10:20 
+ cookie:[object Object] 
+ test:0
+ 20:10:20 ТЕСТ 0
+ 20:10:20 /robots.txt 139.162.142.167
+ 20:10:20 
+ cookie:[object Object] 
+ test:0
+ 20:10:20 ТЕСТ 0
+ 20:10:20 /dana-na/nc/nc_gina_ver.txt 139.162.142.167
+ 20:10:20 
+ cookie:[object Object] 
+ test:0
+ 20:10:20 ТЕСТ 0
+ 20:10:20 /indice.jhtml undefined
+ 20:10:20 
+ cookie:[object Object] 
+ test:0
+ 20:10:20 ТЕСТ 0
+ 20:10:20 /indice.jhtml 139.162.142.167
+ 20:10:20 
+ cookie:[object Object] 
+ test:0
+ 20:10:20 ТЕСТ 0
+ 20:10:20 /+CSCOE+/logon.html 139.162.142.167
+ 20:10:20 
+ cookie:[object Object] 
+ test:0
+ 20:10:20 ТЕСТ 0
+ 20:10:20 /home.jsp undefined
+ 20:10:21 
+ cookie:[object Object] 
+ test:0
+ 20:10:21 ТЕСТ 0
+ 20:10:21 /home.jsp 139.162.142.167
+ 20:10:21 
+ cookie:[object Object] 
+ test:0
+ 20:10:21 ТЕСТ 0
+ 20:10:21 /CFIDE/componentutils/ 139.162.142.167
+ 20:10:21 
+ cookie:[object Object] 
+ test:0
+ 20:10:21 ТЕСТ 0
+ 20:10:21 /home.jhtml undefined
+ 20:10:21 
+ cookie:[object Object] 
+ test:0
+ 20:10:21 ТЕСТ 0
+ 20:10:21 /home.jhtml 139.162.142.167
+ 20:10:21 
+ cookie:[object Object] 
+ test:0
+ 20:10:21 ТЕСТ 0
+ 20:10:21 /geoserver/index.html 139.162.142.167
+ 20:10:21 
+ cookie:[object Object] 
+ test:0
+ 20:10:21 ТЕСТ 0
+ 20:10:21 /scripts/WPnBr.dll 139.162.142.167
+ 20:10:21 
+ cookie:[object Object] 
+ test:0
+ 20:10:21 ТЕСТ 0
+ 20:10:21 /main.shtml undefined
+ 20:10:21 
+ cookie:[object Object] 
+ test:0
+ 20:10:21 ТЕСТ 0
+ 20:10:21 /main.shtml 139.162.142.167
+ 20:10:21 
+ cookie:[object Object] 
+ test:0
+ 20:10:21 ТЕСТ 0
+ 20:10:21 /geoserver/ 139.162.142.167
+ 20:10:21 
+ cookie:[object Object] 
+ test:0
+ 20:10:21 ТЕСТ 0
+ 20:10:21 / 139.162.142.167
+ 20:10:21 
+ cookie:[object Object] 
+ test:0
+ 20:10:21 ТЕСТ 0
+ 20:10:21 /home.shtml undefined
+ 20:10:21 
+ cookie:[object Object] 
+ test:0
+ 20:10:21 ТЕСТ 0
+ 20:10:21 /Portal/Portal.mwsl undefined
+ 20:10:22 
+ cookie:[object Object] 
+ test:0
+ 20:10:22 ТЕСТ 0
+ 20:10:22 /home.shtml 139.162.142.167
+ 20:10:22 
+ cookie:[object Object] 
+ test:0
+ 20:10:22 ТЕСТ 0
+ 20:10:22 /geoserver/web/wicket/bookmarkable/org.geoserver.web.AboutGeoServerPage 139.162.142.167
+ 20:10:22 
+ cookie:[object Object] 
+ test:0
+ 20:10:22 ТЕСТ 0
+ 20:10:22 /home.cgi undefined
+ 20:10:22 
+ cookie:[object Object] 
+ test:0
+ 20:10:22 ТЕСТ 0
+ 20:10:22 / 139.162.142.167
+ 20:10:22 
+ cookie:[object Object] 
+ test:0
+ 20:10:22 ТЕСТ 0
+ 20:10:22 /docs/cplugError.html/ undefined
+ 20:10:22 
+ cookie:[object Object] 
+ test:0
+ 20:10:22 ТЕСТ 0
+ 20:10:22 /home.cgi 139.162.142.167
+ 20:10:22 
+ cookie:[object Object] 
+ test:0
+ 20:10:22 ТЕСТ 0
+ 20:10:22 /Account/Login 139.162.142.167
+ 20:10:22 
+ cookie:[object Object] 
+ test:0
+ 20:10:22 ТЕСТ 0
+ 20:10:22 /menu.html undefined
+ 20:10:22 
+ cookie:[object Object] 
+ test:0
+ 20:10:22 ТЕСТ 0
+ 20:10:22 /menu.html 139.162.142.167
+ 20:10:22 
+ cookie:[object Object] 
+ test:0
+ 20:10:22 ТЕСТ 0
+ 20:10:22 /cgi-bin/info.cgi 139.162.142.167
+ 20:10:22 
+ cookie:[object Object] 
+ test:0
+ 20:10:22 ТЕСТ 0
+ 20:10:22 /index.jhtml undefined
+ 20:10:23 
+ cookie:[object Object] 
+ test:0
+ 20:10:23 ТЕСТ 0
+ 20:10:23 /index.jhtml 139.162.142.167
+ 20:10:23 
+ cookie:[object Object] 
+ test:0
+ 20:10:23 ТЕСТ 0
+ 20:10:23 /xml/info.xml 139.162.142.167
+ 20:10:23 
+ cookie:[object Object] 
+ test:0
+ 20:10:23 ТЕСТ 0
+ 20:10:23 /menu.jhtml undefined
+ 20:10:23 
+ cookie:[object Object] 
+ test:0
+ 20:10:23 ТЕСТ 0
+ 20:10:23 /menu.jhtml 139.162.142.167
+ 20:10:23 
+ cookie:[object Object] 
+ test:0
+ 20:10:23 ТЕСТ 0
+ 20:10:23 /admin.shtml undefined
+ 20:10:23 
+ cookie:[object Object] 
+ test:0
+ 20:10:23 ТЕСТ 0
+ 20:10:23 /magento_version 139.162.142.167
+ 20:10:23 
+ cookie:[object Object] 
+ test:0
+ 20:10:23 ТЕСТ 0
+ 20:10:23 /menu.aspx undefined
+ 20:10:23 
+ cookie:[object Object] 
+ test:0
+ 20:10:23 ТЕСТ 0
+ 20:10:23 /health undefined
+ 20:10:23 
+ cookie:[object Object] 
+ test:0
+ 20:10:23 ТЕСТ 0
+ 20:10:23 / undefined
+ 20:10:23 
+ cookie:[object Object] 
+ test:0
+ 20:10:23 ТЕСТ 0
+ 20:10:23 /admin.shtml 139.162.142.167
+ 20:10:23 
+ cookie:[object Object] 
+ test:0
+ 20:10:23 ТЕСТ 0
+ 20:10:23 /api/v1/check-version 139.162.142.167
+ 20:10:24 
+ cookie:[object Object] 
+ test:0
+ 20:10:24 ТЕСТ 0
+ 20:10:24 /index.php undefined
+ 20:10:24 
+ cookie:[object Object] 
+ test:0
+ 20:10:24 ТЕСТ 0
+ 20:10:24 /menu.aspx 139.162.142.167
+ 20:10:24 
+ cookie:[object Object] 
+ test:0
+ 20:10:24 ТЕСТ 0
+ 20:10:24 /fog/management/index.php 139.162.142.167 
+ node:client 
+ sub:logininfo
+ 20:10:24 
+ cookie:[object Object] 
+ test:0
+ 20:10:24 ТЕСТ 0
+ 20:10:24 /admin.pl undefined
+ 20:10:24 
+ cookie:[object Object] 
+ test:0
+ 20:10:24 ТЕСТ 0
+ 20:10:24 /index.php 139.162.142.167
+ 20:10:24 
+ cookie:[object Object] 
+ test:0
+ 20:10:24 ТЕСТ 0
+ 20:10:24 /helpdesk/WebObjects/Helpdesk.woa 139.162.142.167
+ 20:10:24 
+ cookie:[object Object] 
+ test:0
+ 20:10:24 ТЕСТ 0
+ 20:10:24 /localstart.pl undefined
+ 20:10:24 
+ cookie:[object Object] 
+ test:0
+ 20:10:24 ТЕСТ 0
+ 20:10:24 /admin.pl 139.162.142.167
+ 20:10:24 
+ cookie:[object Object] 
+ test:0
+ 20:10:24 ТЕСТ 0
+ 20:10:24 /cluster/list.query 139.162.142.167
+ 20:10:25 
+ cookie:[object Object] 
+ test:0
+ 20:10:25 ТЕСТ 0
+ 20:10:25 /index.asp undefined
+ 20:10:25 
+ cookie:[object Object] 
+ test:0
+ 20:10:25 ТЕСТ 0
+ 20:10:25 /localstart.pl 139.162.142.167
+ 20:10:25 
+ cookie:[object Object] 
+ test:0
+ 20:10:25 ТЕСТ 0
+ 20:10:25 /apps/zxtm/login.cgi 139.162.142.167
+ 20:10:25 
+ cookie:[object Object] 
+ test:0
+ 20:10:25 ТЕСТ 0
+ 20:10:25 /admin.php undefined
+ 20:10:25 
+ cookie:[object Object] 
+ test:0
+ 20:10:25 ТЕСТ 0
+ 20:10:25 / 139.162.142.167
+ 20:10:25 
+ cookie:[object Object] 
+ test:0
+ 20:10:25 ТЕСТ 0
+ 20:10:25 /index.asp 139.162.142.167
+ 20:10:25 
+ cookie:[object Object] 
+ test:0
+ 20:10:25 ТЕСТ 0
+ 20:10:25 /api/server/version 139.162.142.167
+ 20:10:25 
+ cookie:[object Object] 
+ test:0
+ 20:10:25 ТЕСТ 0
+ 20:10:25 /menu.jsp undefined
+ 20:10:25 
+ cookie:[object Object] 
+ test:0
+ 20:10:25 ТЕСТ 0
+ 20:10:25 /CSS/Miniweb.css undefined
+ 20:10:25 
+ cookie:[object Object] 
+ test:0
+ 20:10:25 ТЕСТ 0
+ 20:10:25 /admin.jsp undefined
+ 20:10:26 
+ cookie:[object Object] 
+ test:0
+ 20:10:26 ТЕСТ 0
+ 20:10:26 /administrator/manifests/files/joomla.xml 139.162.142.167
+ 20:10:26 
+ cookie:[object Object] 
+ test:0
+ 20:10:26 ТЕСТ 0
+ 20:10:26 /admin.php 139.162.142.167
+ 20:10:26 
+ cookie:[object Object] 
+ test:0
+ 20:10:26 ТЕСТ 0
+ 20:10:26 /base.php undefined
+ 20:10:26 
+ cookie:[object Object] 
+ test:0
+ 20:10:26 ТЕСТ 0
+ 20:10:26 / 139.162.142.167
+ 20:10:26 
+ cookie:[object Object] 
+ test:0
+ 20:10:26 ТЕСТ 0
+ 20:10:26 /menu.jsp 139.162.142.167
+ 20:10:26 
+ cookie:[object Object] 
+ test:0
+ 20:10:26 ТЕСТ 0
+ 20:10:26 /language/en-GB/en-GB.xml 139.162.142.167
+ 20:10:26 
+ cookie:[object Object] 
+ test:0
+ 20:10:26 ТЕСТ 0
+ 20:10:26 /CSS/Miniweb.css 139.162.142.167
+ 20:10:26 
+ cookie:[object Object] 
+ test:0
+ 20:10:26 ТЕСТ 0
+ 20:10:26 /base.cgi undefined
+ 20:10:26 
+ cookie:[object Object] 
+ test:0
+ 20:10:26 ТЕСТ 0
+ 20:10:26 /admin.jsp 139.162.142.167
+ 20:10:26 
+ cookie:[object Object] 
+ test:0
+ 20:10:26 ТЕСТ 0
+ 20:10:26 /versa/login 139.162.142.167
+ 20:10:26 
+ cookie:[object Object] 
+ test:0
+ 20:10:26 ТЕСТ 0
+ 20:10:26 /default.jsa undefined
+ 20:10:27 
+ cookie:[object Object] 
+ test:0
+ 20:10:27 ТЕСТ 0
+ 20:10:27 /login.html 139.162.142.167
+ 20:10:27 
+ cookie:[object Object] 
+ test:0
+ 20:10:27 ТЕСТ 0
+ 20:10:27 /base.php 139.162.142.167
+ 20:20:25 
+ cookie:[object Object] 
+ test:0
+ 20:20:25 ТЕСТ 0
+ 20:20:25 /sitemap.xml 40.77.167.131
+ 20:24:00 
+ cookie:[object Object] 
+ test:0
+ 20:24:00 ТЕСТ 0
+ 20:24:00 /xmlrpc.php 70.24.102.48
+ 20:25:47 
+ cookie:[object Object] 
+ test:0
+ 20:25:47 ТЕСТ 0
+ 20:25:47 /xmlrpc.php 173.91.40.51
+ 20:32:07 
+ cookie:[object Object] 
+ test:0
+ 20:32:07 ТЕСТ 0
+ 20:32:07 / 199.244.88.219
+ 20:44:18 
+ cookie:[object Object] 
+ test:0
+ 20:44:18 ТЕСТ 0
+ 20:44:18 /restore.php 208.110.70.42
+ 21:16:46 
+ cookie:[object Object] 
+ test:0
+ 21:16:46 ТЕСТ 0
+ 21:16:46 / 79.174.94.18
+ 21:17:38 
+ cookie:[object Object] 
+ test:0
+ 21:17:38 ТЕСТ 0
+ 21:17:38 / 135.237.124.6
+ 21:21:07 
+ cookie:[object Object] 
+ test:4 
+ counter:0
+ 21:21:07 ТЕСТ 4
+ 21:21:07 / 176.15.164.36
+ 22:05:24 
+ cookie:[object Object] 
+ test:0
+ 22:05:24 ТЕСТ 0
+ 22:05:24 / 3.149.59.26
+ 22:12:28 
+ cookie:[object Object] 
+ test:0
+ 22:12:28 ТЕСТ 0
+ 22:12:28 / 23.27.145.117
+ 22:22:46 
+ cookie:[object Object] 
+ test:0
+ 22:22:46 ТЕСТ 0
+ 22:22:46 / 212.33.255.53
+ 22:25:03 
+ cookie:[object Object] 
+ test:0
+ 22:25:03 ТЕСТ 0
+ 22:25:03 / 185.12.124.78
+ 22:59:12 
+ cookie:[object Object] 
+ test:0
+ 22:59:12 ТЕСТ 0
+ 22:59:12 / 79.124.58.198 
+ XDEBUG_SESSION_START:phpstorm
+ 23:11:03 
+ cookie:[object Object] 
+ test:0
+ 23:11:03 ТЕСТ 0
+ 23:11:03 / 51.159.23.43
+ 23:13:06 
+ cookie:[object Object] 
+ test:5 
+ counter:0
+ 23:13:06 ТЕСТ 5
+ 23:13:06 / 95.55.78.66
+ 23:16:07 
+ cookie:[object Object] 
+ test:0
+ 23:16:07 ТЕСТ 0
+ 23:16:07 /restore.php 208.110.70.42
+ 23:16:38 
+ cookie:[object Object] 
+ test:0
+ 23:16:38 ТЕСТ 0
+ 23:16:38 /robots.txt 95.108.213.92
+ 23:16:38 
+ cookie:[object Object] 
+ test:0
+ 23:16:38 ТЕСТ 0
+ 23:16:38 / 87.250.224.52
+ 23:30:26 
+ cookie:[object Object] 
+ test:0
+ 23:30:26 ТЕСТ 0
+ 23:30:26 /platoniksru.gz 94.156.177.35
+ 23:38:23 
+ cookie:[object Object] 
+ test:0
+ 23:38:23 ТЕСТ 0
+ 23:38:23 /cgi-bin/luci/;stok=/locale 141.98.11.27
+ 23:45:02 
+ cookie:[object Object] 
+ test:0
+ 23:45:02 ТЕСТ 0
+ 23:45:02 / 85.208.108.78
+ 23:51:18 
+ cookie:[object Object] 
+ test:0
+ 23:51:18 ТЕСТ 0
+ 23:51:18 / 157.230.53.174

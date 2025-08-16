@@ -64,3 +64,2051 @@
  counter:0
  23:14:54 ТЕСТ 1
  23:14:54 / 178.71.74.181
+ 11:18:06 /var/www/html/platonportal/public
+ 11:18:06 Сервер - запущен
+ 11:18:06 Порт: 777
+ 11:35:23 
+ cookie:[object Object] 
+ test:0
+ 11:35:23 ТЕСТ 0
+ 11:35:23 / 77.232.185.34
+ 11:37:14 
+ cookie:[object Object] 
+ test:0
+ 11:37:14 ТЕСТ 0
+ 11:37:14 / 38.60.255.30
+ 11:58:51 
+ cookie:[object Object] 
+ test:0
+ 11:58:51 ТЕСТ 0
+ 11:58:51 / 91.193.178.195
+ 12:18:28 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 12:18:28 ТЕСТ 1
+ 12:18:28 / 77.232.185.34
+ 12:20:18 
+ cookie:[object Object] 
+ test:0
+ 12:20:18 ТЕСТ 0
+ 12:20:18 / undefined
+ 12:32:58 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 12:32:58 ТЕСТ 1
+ 12:32:58 / 91.193.178.195
+ 12:33:22 
+ cookie:[object Object] 
+ test:0
+ 12:33:22 ТЕСТ 0
+ 12:33:22 / 43.165.65.75
+ 12:43:10 
+ cookie:[object Object] 
+ test:0
+ 12:43:10 ТЕСТ 0
+ 12:43:10 /restore.php 162.244.82.179
+ 12:43:10 
+ cookie:[object Object] 
+ test:0
+ 12:43:10 ТЕСТ 0
+ 12:43:10 /restore.php 162.244.82.179
+ 12:56:46 
+ cookie:[object Object] 
+ test:0
+ 12:56:46 ТЕСТ 0
+ 12:56:46 / 87.103.246.30
+ 12:57:10 
+ cookie:[object Object] 
+ test:0
+ 12:57:10 ТЕСТ 0
+ 12:57:10 / 170.106.72.93
+ 13:03:54 
+ cookie:[object Object] 
+ test:0
+ 13:03:54 ТЕСТ 0
+ 13:03:54 / 50.19.195.14
+ 13:06:58 
+ cookie:[object Object] 
+ test:0
+ 13:06:58 ТЕСТ 0
+ 13:06:58 / 167.94.138.126
+ 13:08:34 
+ cookie:[object Object] 
+ test:0
+ 13:08:34 ТЕСТ 0
+ 13:08:34 /.well-known/security.txt 167.94.138.126
+ 13:08:39 
+ cookie:[object Object] 
+ test:0
+ 13:08:39 ТЕСТ 0
+ 13:08:39 /wordpress 50.19.195.14
+ 13:09:07 
+ cookie:[object Object] 
+ test:0
+ 13:09:07 ТЕСТ 0
+ 13:09:07 /.env 217.160.203.165
+ 13:09:36 
+ cookie:[object Object] 
+ test:0
+ 13:09:36 ТЕСТ 0
+ 13:09:36 / 46.242.69.166
+ 13:10:23 
+ cookie:[object Object] 
+ test:0
+ 13:10:23 ТЕСТ 0
+ 13:10:23 / 90.188.131.103
+ 13:13:20 
+ cookie:[object Object] 
+ test:0
+ 13:13:20 ТЕСТ 0
+ 13:13:20 /Wordpress 50.19.195.14
+ 13:15:32 
+ cookie:[object Object] 
+ test:0
+ 13:15:32 ТЕСТ 0
+ 13:15:32 /WORDPRESS 50.19.195.14
+ 13:19:14 
+ cookie:[object Object] 
+ test:0
+ 13:19:14 ТЕСТ 0
+ 13:19:14 / 128.204.75.163
+ 13:20:32 
+ cookie:[object Object] 
+ test:0
+ 13:20:32 ТЕСТ 0
+ 13:20:32 /WordPress 50.19.195.14
+ 13:20:48 
+ cookie:[object Object] 
+ test:0
+ 13:20:48 ТЕСТ 0
+ 13:20:48 / 128.204.75.163
+ 13:23:25 
+ cookie:[object Object] 
+ test:0
+ 13:23:25 ТЕСТ 0
+ 13:23:25 /wp 50.19.195.14
+ 13:24:26 
+ cookie:[object Object] 
+ test:0
+ 13:24:26 ТЕСТ 0
+ 13:24:26 / 217.66.157.174
+ 13:26:49 
+ cookie:[object Object] 
+ test:0
+ 13:26:49 ТЕСТ 0
+ 13:26:49 /Wp 50.19.195.14
+ 13:27:32 
+ cookie:[object Object] 
+ test:0
+ 13:27:32 ТЕСТ 0
+ 13:27:32 /robots.txt 66.249.66.42
+ 13:31:18 
+ cookie:[object Object] 
+ test:0
+ 13:31:18 ТЕСТ 0
+ 13:31:18 /WP 50.19.195.14
+ 13:32:29 
+ cookie:[object Object] 
+ test:0
+ 13:32:29 ТЕСТ 0
+ 13:32:29 /_profiler/phpinfo 198.55.98.76
+ 13:35:08 
+ cookie:[object Object] 
+ test:0
+ 13:35:08 ТЕСТ 0
+ 13:35:08 /old 50.19.195.14
+ 13:39:09 
+ cookie:[object Object] 
+ test:0
+ 13:39:09 ТЕСТ 0
+ 13:39:09 /Old 50.19.195.14
+ 13:41:43 
+ cookie:[object Object] 
+ test:0
+ 13:41:43 ТЕСТ 0
+ 13:41:43 /OLD 50.19.195.14
+ 13:46:01 
+ cookie:[object Object] 
+ test:0
+ 13:46:01 ТЕСТ 0
+ 13:46:01 /oldsite 50.19.195.14
+ 13:48:45 
+ cookie:[object Object] 
+ test:0
+ 13:48:45 ТЕСТ 0
+ 13:48:45 / 185.157.214.24
+ 13:50:26 
+ cookie:[object Object] 
+ test:0
+ 13:50:26 ТЕСТ 0
+ 13:50:26 /new 50.19.195.14
+ 13:52:59 
+ cookie:[object Object] 
+ test:0
+ 13:52:59 ТЕСТ 0
+ 13:52:59 /New 50.19.195.14
+ 13:58:00 
+ cookie:[object Object] 
+ test:0
+ 13:58:00 ТЕСТ 0
+ 13:58:00 /restore.php 162.244.82.179
+ 13:58:01 
+ cookie:[object Object] 
+ test:0
+ 13:58:01 ТЕСТ 0
+ 13:58:01 /restore.php 162.244.82.179
+ 13:58:27 
+ cookie:[object Object] 
+ test:0
+ 13:58:27 ТЕСТ 0
+ 13:58:27 / 167.94.145.104
+ 13:58:44 
+ cookie:[object Object] 
+ test:0
+ 13:58:44 ТЕСТ 0
+ 13:58:44 /robots.txt 167.94.145.104
+ 13:59:23 
+ cookie:[object Object] 
+ test:0
+ 13:59:23 ТЕСТ 0
+ 13:59:23 /NEW 50.19.195.14
+ 14:03:14 
+ cookie:[object Object] 
+ test:0
+ 14:03:14 ТЕСТ 0
+ 14:03:14 /wp-old 50.19.195.14
+ 14:03:50 
+ cookie:[object Object] 
+ test:0
+ 14:03:50 ТЕСТ 0
+ 14:03:50 / 149.50.96.5
+ 14:05:24 
+ cookie:[object Object] 
+ test:0
+ 14:05:24 ТЕСТ 0
+ 14:05:24 /2022 50.19.195.14
+ 14:09:42 
+ cookie:[object Object] 
+ test:0
+ 14:09:42 ТЕСТ 0
+ 14:09:42 /2023 50.19.195.14
+ 14:14:06 
+ cookie:[object Object] 
+ test:0
+ 14:14:06 ТЕСТ 0
+ 14:14:06 /2024 50.19.195.14
+ 14:17:23 
+ cookie:[object Object] 
+ test:0
+ 14:17:23 ТЕСТ 0
+ 14:17:23 /auth 198.235.24.26
+ 14:18:45 
+ cookie:[object Object] 
+ test:0
+ 14:18:45 ТЕСТ 0
+ 14:18:45 /2017 50.19.195.14
+ 14:19:42 
+ cookie:[object Object] 
+ test:0
+ 14:19:42 ТЕСТ 0
+ 14:19:42 / 80.85.141.238
+ 14:20:34 
+ cookie:[object Object] 
+ test:0
+ 14:20:34 ТЕСТ 0
+ 14:20:34 /2020 50.19.195.14
+ 14:26:29 
+ cookie:[object Object] 
+ test:0
+ 14:26:29 ТЕСТ 0
+ 14:26:29 /2019 50.19.195.14
+ 14:26:58 
+ cookie:[object Object] 
+ test:0
+ 14:26:58 ТЕСТ 0
+ 14:26:58 /2018 50.19.195.14
+ 14:32:13 
+ cookie:[object Object] 
+ test:0
+ 14:32:13 ТЕСТ 0
+ 14:32:13 /backup 50.19.195.14
+ 14:34:24 
+ cookie:[object Object] 
+ test:0
+ 14:34:24 ТЕСТ 0
+ 14:34:24 /test 50.19.195.14
+ 14:37:45 
+ cookie:[object Object] 
+ test:0
+ 14:37:45 ТЕСТ 0
+ 14:37:45 /Test 50.19.195.14
+ 14:40:44 
+ cookie:[object Object] 
+ test:0
+ 14:40:44 ТЕСТ 0
+ 14:40:44 /owa/auth/logon.aspx 135.237.127.54
+ 14:42:19 
+ cookie:[object Object] 
+ test:0
+ 14:42:19 ТЕСТ 0
+ 14:42:19 /TEST 50.19.195.14
+ 14:44:03 
+ cookie:[object Object] 
+ test:0
+ 14:44:03 ТЕСТ 0
+ 14:44:03 / 64.62.156.122
+ 14:45:06 
+ cookie:[object Object] 
+ test:0
+ 14:45:06 ТЕСТ 0
+ 14:45:06 /demo 50.19.195.14
+ 14:48:55 
+ cookie:[object Object] 
+ test:0
+ 14:48:55 ТЕСТ 0
+ 14:48:55 /webui/ 64.62.156.122
+ 14:49:57 
+ cookie:[object Object] 
+ test:0
+ 14:49:57 ТЕСТ 0
+ 14:49:57 /bc 50.19.195.14
+ 14:52:39 
+ cookie:[object Object] 
+ test:0
+ 14:52:39 ТЕСТ 0
+ 14:52:39 /www 50.19.195.14
+ 14:53:25 
+ cookie:[object Object] 
+ test:0
+ 14:53:25 ТЕСТ 0
+ 14:53:25 / 64.62.156.125
+ 14:55:01 
+ cookie:[object Object] 
+ test:0
+ 14:55:01 ТЕСТ 0
+ 14:55:01 / 79.173.88.8
+ 14:55:18 
+ cookie:[object Object] 
+ test:0
+ 14:55:18 ТЕСТ 0
+ 14:55:18 /WWW 50.19.195.14
+ 14:59:32 
+ cookie:[object Object] 
+ test:0
+ 14:59:32 ТЕСТ 0
+ 14:59:32 / 173.249.59.227
+ 14:59:48 
+ cookie:[object Object] 
+ test:0
+ 14:59:48 ТЕСТ 0
+ 14:59:48 /developmentserver/metadatauploader 135.237.126.148
+ 15:00:51 
+ cookie:[object Object] 
+ test:0
+ 15:00:51 ТЕСТ 0
+ 15:00:51 /Www 50.19.195.14
+ 15:03:32 
+ cookie:[object Object] 
+ test:0
+ 15:03:32 ТЕСТ 0
+ 15:03:32 /geoserver/web/ 64.62.156.122
+ 15:04:10 
+ cookie:[object Object] 
+ test:0
+ 15:04:10 ТЕСТ 0
+ 15:04:10 /2021 50.19.195.14
+ 15:05:55 
+ cookie:[object Object] 
+ test:0
+ 15:05:55 ТЕСТ 0
+ 15:05:55 /main 50.19.195.14
+ 15:06:38 
+ cookie:[object Object] 
+ test:0
+ 15:06:38 ТЕСТ 0
+ 15:06:38 /.git/config 64.62.156.122
+ 15:12:11 
+ cookie:[object Object] 
+ test:0
+ 15:12:11 ТЕСТ 0
+ 15:12:11 /old-site 50.19.195.14
+ 15:13:25 
+ cookie:[object Object] 
+ test:0
+ 15:13:25 ТЕСТ 0
+ 15:13:25 /restore.php 162.244.82.179
+ 15:13:26 
+ cookie:[object Object] 
+ test:0
+ 15:13:26 ТЕСТ 0
+ 15:13:26 /restore.php 162.244.82.179
+ 15:13:58 
+ cookie:[object Object] 
+ test:0
+ 15:13:58 ТЕСТ 0
+ 15:13:58 /bk 50.19.195.14
+ 15:17:23 
+ cookie:[object Object] 
+ test:0
+ 15:17:23 ТЕСТ 0
+ 15:17:23 / 203.55.131.5
+ 15:17:36 
+ cookie:[object Object] 
+ test:0
+ 15:17:36 ТЕСТ 0
+ 15:17:36 /Backup 50.19.195.14
+ 15:21:52 
+ cookie:[object Object] 
+ test:0
+ 15:21:52 ТЕСТ 0
+ 15:21:52 /BACKUP 50.19.195.14
+ 15:24:59 
+ cookie:[object Object] 
+ test:0
+ 15:24:59 ТЕСТ 0
+ 15:24:59 /robots.txt 213.180.203.240
+ 15:25:03 
+ cookie:[object Object] 
+ test:0
+ 15:25:03 ТЕСТ 0
+ 15:25:03 /SHOP 50.19.195.14
+ 15:26:31 
+ cookie:[object Object] 
+ test:0
+ 15:26:31 ТЕСТ 0
+ 15:26:31 /admin/login.asp 149.50.96.5
+ 15:27:44 
+ cookie:[object Object] 
+ test:0
+ 15:27:44 ТЕСТ 0
+ 15:27:44 /Shop 50.19.195.14
+ 15:30:48 
+ cookie:[object Object] 
+ test:0
+ 15:30:48 ТЕСТ 0
+ 15:30:48 /shop 50.19.195.14
+ 15:35:26 
+ cookie:[object Object] 
+ test:0
+ 15:35:26 ТЕСТ 0
+ 15:35:26 /bak 50.19.195.14
+ 15:37:36 
+ cookie:[object Object] 
+ test:0
+ 15:37:36 ТЕСТ 0
+ 15:37:36 /sitio 50.19.195.14
+ 15:37:45 
+ cookie:[object Object] 
+ test:0
+ 15:37:45 ТЕСТ 0
+ 15:37:45 / 188.170.77.47
+ 15:38:06 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 15:38:06 ТЕСТ 1
+ 15:38:06 / 188.170.77.47
+ 15:39:56 
+ cookie:[object Object] 
+ test:0
+ 15:39:56 ТЕСТ 0
+ 15:39:56 /robots.txt 87.250.224.219
+ 15:39:56 
+ cookie:[object Object] 
+ test:0
+ 15:39:56 ТЕСТ 0
+ 15:39:56 / 141.8.143.1
+ 15:40:55 
+ cookie:[object Object] 
+ test:0
+ 15:40:55 ТЕСТ 0
+ 15:40:55 / 87.250.224.102
+ 15:42:39 
+ cookie:[object Object] 
+ test:0
+ 15:42:39 ТЕСТ 0
+ 15:42:39 /bac 50.19.195.14
+ 15:43:49 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 15:43:49 ТЕСТ 2
+ 15:43:49 / 188.170.77.47
+ 15:44:40 
+ cookie:[object Object] 
+ test:0
+ 15:44:40 ТЕСТ 0
+ 15:44:40 /sito 50.19.195.14
+ 15:48:41 
+ cookie:[object Object] 
+ test:0
+ 15:48:41 ТЕСТ 0
+ 15:48:41 /site 50.19.195.14
+ 15:50:50 
+ cookie:[object Object] 
+ test:0
+ 15:50:50 ТЕСТ 0
+ 15:50:50 /autodiscover/autodiscover.json 20.127.187.7 
+ @zdi/Powershell:
+ 15:54:05 
+ cookie:[object Object] 
+ test:0
+ 15:54:05 ТЕСТ 0
+ 15:54:05 /Site 50.19.195.14
+ 15:55:30 
+ cookie:[object Object] 
+ test:0
+ 15:55:30 ТЕСТ 0
+ 15:55:30 /SITE 50.19.195.14
+ 16:00:26 
+ cookie:[object Object] 
+ test:0
+ 16:00:26 ТЕСТ 0
+ 16:00:26 /blog 50.19.195.14
+ 16:02:34 
+ cookie:[object Object] 
+ test:0
+ 16:02:34 ТЕСТ 0
+ 16:02:34 /BLOG 50.19.195.14
+ 16:06:41 
+ cookie:[object Object] 
+ test:0
+ 16:06:41 ТЕСТ 0
+ 16:06:41 /Blog 50.19.195.14
+ 16:14:27 
+ cookie:[object Object] 
+ test:0
+ 16:14:27 ТЕСТ 0
+ 16:14:27 /pdown 35.234.240.212
+ 16:16:26 
+ cookie:[object Object] 
+ test:0
+ 16:16:26 ТЕСТ 0
+ 16:16:26 / 77.232.185.34
+ 16:16:40 
+ cookie:[object Object] 
+ test:0
+ 16:16:40 ТЕСТ 0
+ 16:16:40 / 213.199.47.87
+ 16:25:06 
+ cookie:[object Object] 
+ test:0
+ 16:25:06 ТЕСТ 0
+ 16:25:06 / 128.204.74.71
+ 16:26:24 
+ cookie:[object Object] 
+ test:0
+ 16:26:24 ТЕСТ 0
+ 16:26:24 / 80.85.247.161
+ 16:26:43 
+ cookie:[object Object] 
+ test:0
+ 16:26:43 ТЕСТ 0
+ 16:26:43 /admin/assets/css/jquery-ui.css 87.255.194.135
+ 16:28:25 
+ cookie:[object Object] 
+ test:0
+ 16:28:25 ТЕСТ 0
+ 16:28:25 /restore.php 162.244.82.179
+ 16:28:26 
+ cookie:[object Object] 
+ test:0
+ 16:28:26 ТЕСТ 0
+ 16:28:26 /restore.php 162.244.82.179
+ 16:32:39 
+ cookie:[object Object] 
+ test:0
+ 16:32:39 ТЕСТ 0
+ 16:32:39 / 176.62.85.115
+ 16:32:40 
+ cookie:[object Object] 
+ test:0
+ 16:32:40 ТЕСТ 0
+ 16:32:40 /HNAP1/ 176.62.85.115
+ 16:54:02 
+ cookie:[object Object] 
+ test:0
+ 16:54:02 ТЕСТ 0
+ 16:54:02 / 185.177.72.24
+ 16:54:02 
+ cookie:[object Object] 
+ test:0
+ 16:54:02 ТЕСТ 0
+ 16:54:02 / 185.177.72.24
+ 16:54:02 
+ cookie:[object Object] 
+ test:0
+ 16:54:02 ТЕСТ 0
+ 16:54:02 / 185.177.72.24
+ 16:54:02 
+ cookie:[object Object] 
+ test:0
+ 16:54:02 ТЕСТ 0
+ 16:54:02 / 185.177.72.24
+ 16:54:04 
+ cookie:[object Object] 
+ test:0
+ 16:54:04 ТЕСТ 0
+ 16:54:04 /phpinfo.php 185.177.72.24
+ 16:54:04 
+ cookie:[object Object] 
+ test:0
+ 16:54:04 ТЕСТ 0
+ 16:54:04 /phpinfo.php 185.177.72.24
+ 16:54:04 
+ cookie:[object Object] 
+ test:0
+ 16:54:04 ТЕСТ 0
+ 16:54:04 /phpinfo.php 185.177.72.24
+ 16:54:04 
+ cookie:[object Object] 
+ test:0
+ 16:54:04 ТЕСТ 0
+ 16:54:04 /phpinfo.php 185.177.72.24
+ 16:54:05 
+ cookie:[object Object] 
+ test:0
+ 16:54:05 ТЕСТ 0
+ 16:54:05 /info.php 185.177.72.24
+ 16:54:05 
+ cookie:[object Object] 
+ test:0
+ 16:54:05 ТЕСТ 0
+ 16:54:05 /info.php 185.177.72.24
+ 16:54:05 
+ cookie:[object Object] 
+ test:0
+ 16:54:05 ТЕСТ 0
+ 16:54:05 /info.php 185.177.72.24
+ 16:54:05 
+ cookie:[object Object] 
+ test:0
+ 16:54:05 ТЕСТ 0
+ 16:54:05 /info.php 185.177.72.24
+ 16:54:05 
+ cookie:[object Object] 
+ test:0
+ 16:54:05 ТЕСТ 0
+ 16:54:05 /phpinfo 185.177.72.24
+ 16:54:05 
+ cookie:[object Object] 
+ test:0
+ 16:54:05 ТЕСТ 0
+ 16:54:05 /phpinfo 185.177.72.24
+ 16:54:05 
+ cookie:[object Object] 
+ test:0
+ 16:54:05 ТЕСТ 0
+ 16:54:05 /phpinfo 185.177.72.24
+ 16:54:05 
+ cookie:[object Object] 
+ test:0
+ 16:54:05 ТЕСТ 0
+ 16:54:05 /phpinfo 185.177.72.24
+ 16:54:05 
+ cookie:[object Object] 
+ test:0
+ 16:54:05 ТЕСТ 0
+ 16:54:05 /.env 185.177.72.24
+ 16:54:05 
+ cookie:[object Object] 
+ test:0
+ 16:54:05 ТЕСТ 0
+ 16:54:05 /.env 185.177.72.24
+ 16:54:06 
+ cookie:[object Object] 
+ test:0
+ 16:54:06 ТЕСТ 0
+ 16:54:06 /.env 185.177.72.24
+ 16:54:06 
+ cookie:[object Object] 
+ test:0
+ 16:54:06 ТЕСТ 0
+ 16:54:06 /.env 185.177.72.24
+ 16:54:06 
+ cookie:[object Object] 
+ test:0
+ 16:54:06 ТЕСТ 0
+ 16:54:06 /config/.env 185.177.72.24
+ 16:54:06 
+ cookie:[object Object] 
+ test:0
+ 16:54:06 ТЕСТ 0
+ 16:54:06 /config/.env 185.177.72.24
+ 16:54:06 
+ cookie:[object Object] 
+ test:0
+ 16:54:06 ТЕСТ 0
+ 16:54:06 /config/.env 185.177.72.24
+ 16:54:06 
+ cookie:[object Object] 
+ test:0
+ 16:54:06 ТЕСТ 0
+ 16:54:06 /config/.env 185.177.72.24
+ 16:54:06 
+ cookie:[object Object] 
+ test:0
+ 16:54:06 ТЕСТ 0
+ 16:54:06 /api/.env 185.177.72.24
+ 16:54:06 
+ cookie:[object Object] 
+ test:0
+ 16:54:06 ТЕСТ 0
+ 16:54:06 /api/.env 185.177.72.24
+ 16:54:06 
+ cookie:[object Object] 
+ test:0
+ 16:54:06 ТЕСТ 0
+ 16:54:06 /api/.env 185.177.72.24
+ 16:54:06 
+ cookie:[object Object] 
+ test:0
+ 16:54:06 ТЕСТ 0
+ 16:54:06 /api/.env 185.177.72.24
+ 17:00:42 
+ cookie:[object Object] 
+ test:0
+ 17:00:42 ТЕСТ 0
+ 17:00:42 / 94.242.58.153
+ 17:01:05 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 17:01:05 ТЕСТ 1
+ 17:01:05 / 94.242.58.153
+ 17:11:14 
+ cookie:[object Object] 
+ test:0
+ 17:11:14 ТЕСТ 0
+ 17:11:14 /robots.txt 192.178.6.43
+ 17:11:15 
+ cookie:[object Object] 
+ test:0
+ 17:11:15 ТЕСТ 0
+ 17:11:15 / 192.178.6.43
+ 17:27:31 
+ cookie:[object Object] 
+ test:0
+ 17:27:31 ТЕСТ 0
+ 17:27:31 /.git/config 93.123.109.7
+ 17:27:33 
+ cookie:[object Object] 
+ test:0
+ 17:27:33 ТЕСТ 0
+ 17:27:33 / 185.247.137.46
+ 17:37:46 
+ cookie:[object Object] 
+ test:0
+ 17:37:46 ТЕСТ 0
+ 17:37:46 / 43.130.3.120
+ 17:43:43 
+ cookie:[object Object] 
+ test:0
+ 17:43:43 ТЕСТ 0
+ 17:43:43 /restore.php 162.244.82.179
+ 17:43:44 
+ cookie:[object Object] 
+ test:0
+ 17:43:44 ТЕСТ 0
+ 17:43:44 /restore.php 162.244.82.179
+ 17:49:04 
+ cookie:[object Object] 
+ test:0
+ 17:49:04 ТЕСТ 0
+ 17:49:04 /wp-content/plugins/seo-watcher/ofc/php-ofc-library/ofc_upload_image.php 194.145.227.125
+ 18:02:22 
+ cookie:[object Object] 
+ test:0
+ 18:02:22 ТЕСТ 0
+ 18:02:22 / 43.157.181.189
+ 18:10:42 
+ cookie:[object Object] 
+ test:0
+ 18:10:42 ТЕСТ 0
+ 18:10:42 /cgi-bin/luci/;stok=/locale 193.142.146.168
+ 18:15:37 
+ cookie:[object Object] 
+ test:0
+ 18:15:37 ТЕСТ 0
+ 18:15:37 /robots.txt 47.79.98.118
+ 18:37:38 
+ cookie:[object Object] 
+ test:0
+ 18:37:38 ТЕСТ 0
+ 18:37:38 /cgi-bin/luci/;stok=/locale 193.142.146.168
+ 18:57:31 
+ cookie:[object Object] 
+ test:0
+ 18:57:31 ТЕСТ 0
+ 18:57:31 / 103.4.250.79
+ 18:57:32 
+ cookie:[object Object] 
+ test:0
+ 18:57:32 ТЕСТ 0
+ 18:57:32 / 195.211.77.140
+ 18:57:37 
+ cookie:[object Object] 
+ test:0
+ 18:57:37 ТЕСТ 0
+ 18:57:37 / 103.196.9.191
+ 18:57:45 
+ cookie:[object Object] 
+ test:0
+ 18:57:45 ТЕСТ 0
+ 18:57:45 / 154.28.229.218
+ 18:57:47 
+ cookie:[object Object] 
+ test:0
+ 18:57:47 ТЕСТ 0
+ 18:57:47 / 103.196.9.234
+ 18:57:47 
+ cookie:[object Object] 
+ test:0
+ 18:57:47 ТЕСТ 0
+ 18:57:47 / 103.196.9.191
+ 18:57:51 
+ cookie:[object Object] 
+ test:0
+ 18:57:51 ТЕСТ 0
+ 18:57:51 / 5.161.204.20
+ 18:57:54 
+ cookie:[object Object] 
+ test:0
+ 18:57:54 ТЕСТ 0
+ 18:57:54 / 195.211.77.142
+ 18:57:58 
+ cookie:[object Object] 
+ test:0
+ 18:57:58 ТЕСТ 0
+ 18:57:58 / 205.169.39.49
+ 18:57:59 
+ cookie:[object Object] 
+ test:0
+ 18:57:59 ТЕСТ 0
+ 18:57:59 / 34.72.176.129
+ 18:58:00 
+ cookie:[object Object] 
+ test:0
+ 18:58:00 ТЕСТ 0
+ 18:58:00 / 104.197.69.115
+ 18:58:10 
+ cookie:[object Object] 
+ test:0
+ 18:58:10 ТЕСТ 0
+ 18:58:10 / 205.169.39.19
+ 18:58:11 
+ cookie:[object Object] 
+ test:0
+ 18:58:11 ТЕСТ 0
+ 18:58:11 / 205.169.39.180
+ 18:58:12 
+ cookie:[object Object] 
+ test:0
+ 18:58:12 ТЕСТ 0
+ 18:58:12 / 205.169.39.114
+ 18:58:14 
+ cookie:[object Object] 
+ test:0
+ 18:58:14 ТЕСТ 0
+ 18:58:14 / 195.211.77.140
+ 18:58:14 
+ cookie:[object Object] 
+ test:0
+ 18:58:14 ТЕСТ 0
+ 18:58:14 / 103.196.9.234
+ 18:58:16 
+ cookie:[object Object] 
+ test:0
+ 18:58:16 ТЕСТ 0
+ 18:58:16 / 195.211.77.140
+ 18:58:17 
+ cookie:[object Object] 
+ test:0
+ 18:58:17 ТЕСТ 0
+ 18:58:17 / 154.28.229.218
+ 18:58:19 
+ cookie:[object Object] 
+ test:0
+ 18:58:19 ТЕСТ 0
+ 18:58:19 / 205.169.39.20
+ 18:58:22 
+ cookie:[object Object] 
+ test:0
+ 18:58:22 ТЕСТ 0
+ 18:58:22 / 205.169.39.114
+ 18:58:24 
+ cookie:[object Object] 
+ test:0
+ 18:58:24 ТЕСТ 0
+ 18:58:24 / 205.169.39.180
+ 18:58:35 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 18:58:35 ТЕСТ 1
+ 18:58:35 /http:/cloud.platoniks.ru 154.28.229.218
+ 18:58:35 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 18:58:35 ТЕСТ 2
+ 18:58:35 /https:/vote.platoniks.ru/ 154.28.229.218
+ 18:58:35 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 18:58:35 ТЕСТ 2
+ 18:58:35 /https:/rep.platoniks.ru/ 154.28.229.218
+ 18:58:35 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 18:58:35 ТЕСТ 2
+ 18:58:35 /manual 154.28.229.218
+ 18:58:35 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 18:58:35 ТЕСТ 2
+ 18:58:35 /https:/t.me/platonicsbot 154.28.229.218
+ 18:58:35 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 18:58:35 ТЕСТ 2
+ 18:58:35 /https:/pc.platoniks.ru 154.28.229.218
+ 18:58:35 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 18:58:35 ТЕСТ 2
+ 18:58:35 /https:/teacher.platonics.ru/ 154.28.229.218
+ 18:58:35 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 18:58:35 ТЕСТ 2
+ 18:58:35 /https:/t.me/Sergej_Tierbach 154.28.229.218
+ 18:58:41 
+ cookie:[object Object] 
+ test:0
+ 18:58:41 ТЕСТ 0
+ 18:58:41 /robots.txt 213.180.203.94
+ 18:58:45 
+ cookie:[object Object] 
+ test:0
+ 18:58:45 ТЕСТ 0
+ 18:58:45 / 195.211.77.142
+ 18:58:50 
+ cookie:[object Object] 
+ test:0
+ 18:58:50 ТЕСТ 0
+ 18:58:50 / 195.211.77.142
+ 18:59:05 
+ cookie:[object Object] 
+ test:0
+ 18:59:05 ТЕСТ 0
+ 18:59:05 /restore.php 162.244.82.179
+ 18:59:05 
+ cookie:[object Object] 
+ test:0
+ 18:59:05 ТЕСТ 0
+ 18:59:05 /restore.php 162.244.82.179
+ 19:00:24 
+ cookie:[object Object] 
+ test:0
+ 19:00:24 ТЕСТ 0
+ 19:00:24 / 104.253.252.195
+ 19:00:24 
+ cookie:[object Object] 
+ test:0
+ 19:00:24 ТЕСТ 0
+ 19:00:24 / 152.39.190.179
+ 19:00:50 
+ cookie:[object Object] 
+ test:0
+ 19:00:50 ТЕСТ 0
+ 19:00:50 /robots.txt 213.180.203.62
+ 19:08:28 
+ cookie:[object Object] 
+ test:0
+ 19:08:28 ТЕСТ 0
+ 19:08:28 / 35.241.198.202
+ 19:12:57 
+ cookie:[object Object] 
+ test:0
+ 19:12:57 ТЕСТ 0
+ 19:12:57 / 91.184.244.208
+ 19:12:57 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 19:12:57 ТЕСТ 1
+ 19:12:57 / 91.184.244.208
+ 19:13:20 
+ cookie:[object Object] 
+ test:0
+ 19:13:20 ТЕСТ 0
+ 19:13:20 / 91.184.244.208
+ 19:13:25 
+ cookie:[object Object] 
+ test:0
+ 19:13:25 ТЕСТ 0
+ 19:13:25 / 91.184.244.208
+ 19:13:25 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 19:13:25 ТЕСТ 1
+ 19:13:25 / 91.184.244.208
+ 19:13:25 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 19:13:25 ТЕСТ 2
+ 19:13:25 / 91.184.244.208
+ 19:13:25 
+ cookie:[object Object] 
+ test:3 
+ counter:0
+ 19:13:25 ТЕСТ 3
+ 19:13:25 / 91.184.244.208
+ 19:13:54 
+ cookie:[object Object] 
+ test:0
+ 19:13:54 ТЕСТ 0
+ 19:13:54 / 62.113.113.43
+ 19:13:54 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 19:13:54 ТЕСТ 1
+ 19:13:54 / 62.113.113.43
+ 19:24:54 
+ cookie:[object Object] 
+ test:0
+ 19:24:54 ТЕСТ 0
+ 19:24:54 /actuator/health 135.237.126.210
+ 19:26:40 
+ cookie:[object Object] 
+ test:0
+ 19:26:40 ТЕСТ 0
+ 19:26:40 /cgi-bin/luci/;stok=/locale 193.142.146.168
+ 19:39:56 
+ cookie:[object Object] 
+ test:0
+ 19:39:56 ТЕСТ 0
+ 19:39:56 /robots.txt 213.180.203.202
+ 19:46:46 
+ cookie:[object Object] 
+ test:0
+ 19:46:46 ТЕСТ 0
+ 19:46:46 / 139.59.225.177
+ 19:52:07 
+ cookie:[object Object] 
+ test:0
+ 19:52:07 ТЕСТ 0
+ 19:52:07 / 205.210.31.132
+ 19:55:58 
+ cookie:[object Object] 
+ test:0
+ 19:55:58 ТЕСТ 0
+ 19:55:58 / 104.164.173.253
+ 19:56:01 
+ cookie:[object Object] 
+ test:0
+ 19:56:01 ТЕСТ 0
+ 19:56:01 / 154.28.229.193
+ 19:56:10 
+ cookie:[object Object] 
+ test:0
+ 19:56:10 ТЕСТ 0
+ 19:56:10 / 154.28.229.193
+ 19:56:13 
+ cookie:[object Object] 
+ test:0
+ 19:56:13 ТЕСТ 0
+ 19:56:13 / 104.252.191.35
+ 19:56:13 
+ cookie:[object Object] 
+ test:0
+ 19:56:13 ТЕСТ 0
+ 19:56:13 / 104.164.173.86
+ 19:56:19 
+ cookie:[object Object] 
+ test:0
+ 19:56:19 ТЕСТ 0
+ 19:56:19 / 104.164.173.86
+ 19:56:39 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 19:56:39 ТЕСТ 1
+ 19:56:39 /http:/cloud.platoniks.ru 104.164.173.86
+ 19:56:39 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 19:56:39 ТЕСТ 1
+ 19:56:39 /https:/teacher.platonics.ru/ 104.164.173.86
+ 19:56:39 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 19:56:39 ТЕСТ 2
+ 19:56:39 /https:/vote.platoniks.ru/ 104.164.173.86
+ 19:56:39 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 19:56:39 ТЕСТ 2
+ 19:56:39 /https:/pc.platoniks.ru 104.164.173.86
+ 19:56:40 
+ cookie:[object Object] 
+ test:3 
+ counter:0
+ 19:56:40 ТЕСТ 3
+ 19:56:40 /https:/rep.platoniks.ru/ 104.164.173.86
+ 19:56:40 
+ cookie:[object Object] 
+ test:4 
+ counter:0
+ 19:56:40 ТЕСТ 4
+ 19:56:40 /https:/t.me/Sergej_Tierbach 104.164.173.86
+ 19:56:40 
+ cookie:[object Object] 
+ test:5 
+ counter:0
+ 19:56:40 ТЕСТ 5
+ 19:56:40 /https:/t.me/platonicsbot 104.164.173.86
+ 19:56:40 
+ cookie:[object Object] 
+ test:6 
+ counter:0
+ 19:56:40 ТЕСТ 6
+ 19:56:40 /manual 104.164.173.86
+ 19:56:43 
+ cookie:[object Object] 
+ test:0
+ 19:56:43 ТЕСТ 0
+ 19:56:43 / 205.210.31.55
+ 19:57:15 
+ cookie:[object Object] 
+ test:0
+ 19:57:15 ТЕСТ 0
+ 19:57:15 /cgi-bin/luci/;stok=/locale 193.142.146.168
+ 19:58:49 
+ cookie:[object Object] 
+ test:0
+ 19:58:49 ТЕСТ 0
+ 19:58:49 / 194.127.199.95
+ 19:59:15 
+ cookie:[object Object] 
+ test:0
+ 19:59:15 ТЕСТ 0
+ 19:59:15 / 205.210.31.131
+ 20:08:39 
+ cookie:[object Object] 
+ test:0
+ 20:08:39 ТЕСТ 0
+ 20:08:39 /index.php 205.210.31.51 
+ user/login:
+ 20:13:52 
+ cookie:[object Object] 
+ test:0
+ 20:13:52 ТЕСТ 0
+ 20:13:52 /restore.php 162.244.82.179
+ 20:13:52 
+ cookie:[object Object] 
+ test:0
+ 20:13:52 ТЕСТ 0
+ 20:13:52 /restore.php 162.244.82.179
+ 20:15:02 
+ cookie:[object Object] 
+ test:0
+ 20:15:02 ТЕСТ 0
+ 20:15:02 / undefined
+ 20:15:19 
+ cookie:[object Object] 
+ test:0
+ 20:15:19 ТЕСТ 0
+ 20:15:19 / 205.210.31.13
+ 20:15:52 
+ cookie:[object Object] 
+ test:0
+ 20:15:52 ТЕСТ 0
+ 20:15:52 / 62.113.113.43
+ 20:15:53 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 20:15:53 ТЕСТ 1
+ 20:15:53 / 62.113.113.43
+ 20:16:03 
+ cookie:[object Object] 
+ test:0
+ 20:16:03 ТЕСТ 0
+ 20:16:03 / 62.113.113.43
+ 20:16:03 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 20:16:03 ТЕСТ 1
+ 20:16:03 / 62.113.113.43
+ 20:16:03 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 20:16:03 ТЕСТ 2
+ 20:16:03 / 62.113.113.43
+ 20:16:19 
+ cookie:[object Object] 
+ test:0
+ 20:16:19 ТЕСТ 0
+ 20:16:19 / 62.113.113.43
+ 20:16:19 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 20:16:19 ТЕСТ 1
+ 20:16:19 / 62.113.113.43
+ 20:16:20 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 20:16:20 ТЕСТ 2
+ 20:16:20 / 62.113.113.43
+ 20:16:20 
+ cookie:[object Object] 
+ test:3 
+ counter:0
+ 20:16:20 ТЕСТ 3
+ 20:16:20 / 62.113.113.43
+ 20:18:37 
+ cookie:[object Object] 
+ test:0
+ 20:18:37 ТЕСТ 0
+ 20:18:37 / 176.53.223.233
+ 20:19:15 
+ cookie:[object Object] 
+ test:0
+ 20:19:15 ТЕСТ 0
+ 20:19:15 / 89.104.111.164
+ 20:20:30 
+ cookie:[object Object] 
+ test:0
+ 20:20:30 ТЕСТ 0
+ 20:20:30 /js/elfinder/php/connector.php 185.153.199.135
+ 20:48:26 
+ cookie:[object Object] 
+ test:0
+ 20:48:26 ТЕСТ 0
+ 20:48:26 / 3.146.111.124
+ 20:49:27 
+ cookie:[object Object] 
+ test:0
+ 20:49:27 ТЕСТ 0
+ 20:49:27 /cgi-bin/luci/;stok=/locale 193.142.146.168
+ 20:57:43 
+ cookie:[object Object] 
+ test:0
+ 20:57:43 ТЕСТ 0
+ 20:57:43 /auth 198.235.24.178
+ 21:07:34 
+ cookie:[object Object] 
+ test:0
+ 21:07:34 ТЕСТ 0
+ 21:07:34 /robots.txt 104.210.140.131
+ 21:12:00 
+ cookie:[object Object] 
+ test:0
+ 21:12:00 ТЕСТ 0
+ 21:12:00 /cgi-bin/luci/;stok=/locale 89.42.231.140
+ 21:12:03 
+ cookie:[object Object] 
+ test:0
+ 21:12:03 ТЕСТ 0
+ 21:12:03 /cgi-bin/luci/;stok=/locale 45.194.66.13
+ 21:23:22 
+ cookie:[object Object] 
+ test:0
+ 21:23:22 ТЕСТ 0
+ 21:23:22 /cgi-bin/luci/;stok=/locale 193.142.146.168
+ 21:28:08 
+ cookie:[object Object] 
+ test:0
+ 21:28:08 ТЕСТ 0
+ 21:28:08 /restore.php 162.244.82.179
+ 21:28:09 
+ cookie:[object Object] 
+ test:0
+ 21:28:09 ТЕСТ 0
+ 21:28:09 /restore.php 162.244.82.179
+ 21:34:51 
+ cookie:[object Object] 
+ test:0
+ 21:34:51 ТЕСТ 0
+ 21:34:51 / undefined
+ 21:38:16 
+ cookie:[object Object] 
+ test:0
+ 21:38:16 ТЕСТ 0
+ 21:38:16 /cgi-bin/luci/;stok=/locale 193.142.146.168
+ 21:49:25 
+ cookie:[object Object] 
+ test:0
+ 21:49:25 ТЕСТ 0
+ 21:49:25 /cgi-bin/luci/;stok=/locale 89.42.231.140
+ 21:53:21 
+ cookie:[object Object] 
+ test:0
+ 21:53:21 ТЕСТ 0
+ 21:53:21 /owa/auth/x.js 172.203.234.251
+ 22:04:13 
+ cookie:[object Object] 
+ test:0
+ 22:04:13 ТЕСТ 0
+ 22:04:13 /cgi-bin/luci/;stok=/locale 45.194.66.13
+ 22:20:08 
+ cookie:[object Object] 
+ test:0
+ 22:20:08 ТЕСТ 0
+ 22:20:08 / 185.242.226.88
+ 22:22:24 
+ cookie:[object Object] 
+ test:0
+ 22:22:24 ТЕСТ 0
+ 22:22:24 / 52.10.168.58
+ 22:22:25 
+ cookie:[object Object] 
+ test:0
+ 22:22:25 ТЕСТ 0
+ 22:22:25 / 52.32.209.72
+ 22:25:00 
+ cookie:[object Object] 
+ test:0
+ 22:25:00 ТЕСТ 0
+ 22:25:00 / undefined
+ 22:27:00 
+ cookie:[object Object] 
+ test:0
+ 22:27:00 ТЕСТ 0
+ 22:27:00 / 3.131.215.38
+ 22:30:12 
+ cookie:[object Object] 
+ test:0
+ 22:30:12 ТЕСТ 0
+ 22:30:12 /cgi-bin/luci/;stok=/locale 193.142.146.168
+ 22:37:32 
+ cookie:[object Object] 
+ test:0
+ 22:37:32 ТЕСТ 0
+ 22:37:32 / 89.169.191.36
+ 22:42:49 
+ cookie:[object Object] 
+ test:0
+ 22:42:49 ТЕСТ 0
+ 22:42:49 /cgi-bin/luci/;stok=/locale 193.142.146.168
+ 22:43:19 
+ cookie:[object Object] 
+ test:0
+ 22:43:19 ТЕСТ 0
+ 22:43:19 /restore.php 162.244.82.179
+ 22:43:20 
+ cookie:[object Object] 
+ test:0
+ 22:43:20 ТЕСТ 0
+ 22:43:20 /restore.php 162.244.82.179
+ 22:45:15 
+ cookie:[object Object] 
+ test:0
+ 22:45:15 ТЕСТ 0
+ 22:45:15 /cgi-bin/luci/;stok=/locale 45.194.66.13
+ 22:58:05 
+ cookie:[object Object] 
+ test:0
+ 22:58:05 ТЕСТ 0
+ 22:58:05 / 185.39.19.49
+ 22:58:21 
+ cookie:[object Object] 
+ test:0
+ 22:58:21 ТЕСТ 0
+ 22:58:21 / 185.242.226.88
+ 23:02:21 
+ cookie:[object Object] 
+ test:0
+ 23:02:21 ТЕСТ 0
+ 23:02:21 /robots.txt 87.250.224.11
+ 23:02:21 
+ cookie:[object Object] 
+ test:0
+ 23:02:21 ТЕСТ 0
+ 23:02:21 /3BfduCI2JpxQvTTKHRCL 213.180.203.86
+ 23:02:22 
+ cookie:[object Object] 
+ test:0
+ 23:02:22 ТЕСТ 0
+ 23:02:22 /X01u8RDMgW09 87.250.224.10
+ 23:03:07 
+ cookie:[object Object] 
+ test:0
+ 23:03:07 ТЕСТ 0
+ 23:03:07 /cgi-bin/luci/;stok=/locale 89.42.231.140
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /backup.zip 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /.ssh/id_ed25519 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /etc/ssl/private/server.key 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /.env 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /feed 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /.svn/wc.db 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /api/.env 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /backup.tar.gz 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /cloud-config.yml 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /docker-compose.yml 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /phpinfo.php 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /.vscode/sftp.json 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /db/schema.rb 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /_vti_pvt/service.pwd 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /config.yaml 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /wp-admin/setup-config.php 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /.git/HEAD 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /database.sql 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /config.json 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /server.key 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /.ssh/id_rsa 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /.env.production 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /database_backup.sql 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /config.yml 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 / 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /secrets.json 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /server-status 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /settings.py 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /user_secrets.yml 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /wp-config.php 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /config.php 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /.ssh/id_ecdsa 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /backup.sql 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /config.xml 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /.aws/credentials 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /web.config 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /config/production.json 213.232.87.230
+ 23:26:06 
+ cookie:[object Object] 
+ test:0
+ 23:26:06 ТЕСТ 0
+ 23:26:06 /dump.sql 213.232.87.230
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /.aws/credentials 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /config.json 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /config.yaml 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 / 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /wp-admin/setup-config.php 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /config.yml 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /config.xml 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /backup.zip 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /user_secrets.yml 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /settings.py 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /wp-config.php 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /.env.production 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /config.php 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /.ssh/id_rsa 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /_vti_pvt/service.pwd 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /server-status 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /api/.env 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /.env 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /.ssh/id_ecdsa 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /web.config 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /backup.tar.gz 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /server.key 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /.svn/wc.db 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /backup.sql 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /database.sql 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /dump.sql 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /phpinfo.php 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /database_backup.sql 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /feed 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /.ssh/id_ed25519 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /docker-compose.yml 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /.git/HEAD 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /db/schema.rb 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /secrets.json 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /config/production.json 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /.vscode/sftp.json 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /etc/ssl/private/server.key 109.202.99.41
+ 23:27:37 
+ cookie:[object Object] 
+ test:0
+ 23:27:37 ТЕСТ 0
+ 23:27:37 /cloud-config.yml 109.202.99.41
+ 23:27:45 
+ cookie:[object Object] 
+ test:0
+ 23:27:45 ТЕСТ 0
+ 23:27:45 /.git/HEAD 109.202.99.46
+ 23:27:45 
+ cookie:[object Object] 
+ test:0
+ 23:27:45 ТЕСТ 0
+ 23:27:45 /config.yml 109.202.99.46
+ 23:27:45 
+ cookie:[object Object] 
+ test:0
+ 23:27:45 ТЕСТ 0
+ 23:27:45 /config/production.json 109.202.99.46
+ 23:27:45 
+ cookie:[object Object] 
+ test:0
+ 23:27:45 ТЕСТ 0
+ 23:27:45 /.ssh/id_rsa 109.202.99.46
+ 23:27:45 
+ cookie:[object Object] 
+ test:0
+ 23:27:45 ТЕСТ 0
+ 23:27:45 /.env 109.202.99.46
+ 23:27:45 
+ cookie:[object Object] 
+ test:0
+ 23:27:45 ТЕСТ 0
+ 23:27:45 /server-status 109.202.99.46
+ 23:27:45 
+ cookie:[object Object] 
+ test:0
+ 23:27:45 ТЕСТ 0
+ 23:27:45 /backup.tar.gz 109.202.99.46
+ 23:27:45 
+ cookie:[object Object] 
+ test:0
+ 23:27:45 ТЕСТ 0
+ 23:27:45 /.ssh/id_ed25519 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /.env.production 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /api/.env 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /wp-admin/setup-config.php 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /docker-compose.yml 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /database.sql 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /.svn/wc.db 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /.ssh/id_ecdsa 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /_vti_pvt/service.pwd 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /server.key 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /config.xml 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /database_backup.sql 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /backup.sql 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /wp-config.php 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /db/schema.rb 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /config.json 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 / 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /phpinfo.php 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /user_secrets.yml 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /etc/ssl/private/server.key 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /backup.zip 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /.vscode/sftp.json 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /config.php 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /cloud-config.yml 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /config.yaml 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /dump.sql 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /web.config 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /secrets.json 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /feed 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /.aws/credentials 109.202.99.46
+ 23:27:46 
+ cookie:[object Object] 
+ test:0
+ 23:27:46 ТЕСТ 0
+ 23:27:46 /settings.py 109.202.99.46
+ 23:33:56 
+ cookie:[object Object] 
+ test:0
+ 23:33:56 ТЕСТ 0
+ 23:33:56 /cgi-bin/luci/;stok=/locale 193.142.146.168
+ 23:34:44 
+ cookie:[object Object] 
+ test:0
+ 23:34:44 ТЕСТ 0
+ 23:34:44 / 62.113.113.43
+ 23:34:44 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 23:34:44 ТЕСТ 1
+ 23:34:44 / 62.113.113.43
+ 23:34:44 
+ cookie:[object Object] 
+ test:0
+ 23:34:44 ТЕСТ 0
+ 23:34:44 / 62.113.113.43
+ 23:34:44 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 23:34:44 ТЕСТ 1
+ 23:34:44 / 62.113.113.43
+ 23:34:44 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 23:34:44 ТЕСТ 2
+ 23:34:44 / 62.113.113.43
+ 23:34:44 
+ cookie:[object Object] 
+ test:3 
+ counter:0
+ 23:34:44 ТЕСТ 3
+ 23:34:44 / 62.113.113.43
+ 23:34:52 
+ cookie:[object Object] 
+ test:0
+ 23:34:52 ТЕСТ 0
+ 23:34:52 / 62.113.113.43
+ 23:34:52 
+ cookie:[object Object] 
+ test:1 
+ counter:0
+ 23:34:52 ТЕСТ 1
+ 23:34:52 / 62.113.113.43
+ 23:34:52 
+ cookie:[object Object] 
+ test:2 
+ counter:0
+ 23:34:52 ТЕСТ 2
+ 23:34:52 / 62.113.113.43
+ 23:48:44 
+ cookie:[object Object] 
+ test:0
+ 23:48:44 ТЕСТ 0
+ 23:48:44 / 45.156.128.41
+ 23:53:15 
+ cookie:[object Object] 
+ test:0
+ 23:53:15 ТЕСТ 0
+ 23:53:15 / 85.142.100.136
+ 23:53:33 
+ cookie:[object Object] 
+ test:0
+ 23:53:33 ТЕСТ 0
+ 23:53:33 /cgi-bin/luci/;stok=/locale 193.142.146.168
+ 23:54:44 
+ cookie:[object Object] 
+ test:0
+ 23:54:44 ТЕСТ 0
+ 23:54:44 /.env 196.251.83.51
+ 23:58:26 
+ cookie:[object Object] 
+ test:0
+ 23:58:26 ТЕСТ 0
+ 23:58:26 /restore.php 162.244.82.179
+ 23:58:26 
+ cookie:[object Object] 
+ test:0
+ 23:58:26 ТЕСТ 0
+ 23:58:26 /restore.php 162.244.82.179
