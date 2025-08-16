@@ -9,7 +9,7 @@
       if ($( "#pass" ).val()!=''){
        // $( "#btnl" ).submit();
         let tosend = $( "#pass" ).val();
-        $.get( "/auth", {pass: tosend} )
+        $.get( "/auth", {pin: tosend} )
         .done(function( data ) {
           console.log( "Data Loaded: " + data );
             if (data=='ok'){

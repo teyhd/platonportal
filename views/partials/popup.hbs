@@ -5,21 +5,135 @@
     <h3 class="text-xl font-semibold mb-4">Вход в систему</h3>
     <!-- Здесь форма авторизации -->
     <form>
-      <input id="pass" name="pin" type="password" placeholder="Пароль" class="w-full mb-4 p-2 rounded bg-gray-700 border border-gray-600 focus:outline-none" />
+      <input id="pass" name="pin" type="password" placeholder="PIN" class="w-full mb-4 p-2 rounded bg-gray-700 border border-gray-600 focus:outline-none" />
       <button id="btnlogin" class="w-full py-2 bg-blue-600 hover:bg-blue-500 rounded font-medium">Войти</button>
     </form>
   </div>
 </div>
 
+<div id="modal2" class="fixed inset-0 z-50 hidden">
+  <!-- overlay -->
+  <div id="modal2-overlay" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+  <!-- dialog -->
+  <div class="relative mx-auto my-8 w-full max-w-xl">
+    <div class="bg-gray-800 text-white shadow-xl rounded-2xl p-6 relative">
+      <button id="closeModal"
+              class="absolute top-3 right-3 h-9 w-9 flex items-center justify-center rounded-full text-gray-400 hover:text-white hover:bg-white/10">
+        &times;
+      </button>
+
+      <h3 class="text-xl font-semibold mb-2">Ссылка на конференцию</h3>
+      <p class="text-sm text-gray-300 mb-4">Скопируйте ссылку-приглашение и нажмите войти</p>
+
+      <!-- Поле для длинной ссылки -->
+      <div class="flex gap-2">
+        <textarea id="copy-link" readonly
+                  class="flex-1 h-28 resize-y rounded-xl bg-gray-900/70 border border-gray-700 p-3 text-sm leading-relaxed
+                         focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        <button id="copyBtn"
+                class="shrink-0 h-28 w-28 rounded-xl bg-gray-700 hover:bg-gray-600 text-sm font-medium">
+          Скопировать
+        </button>
+      </div>
+
+      <!-- Кнопка для входа -->
+      <div class="mt-4 flex flex-col sm:flex-row gap-2">
+        <button id="joinBtn"
+                class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 font-medium">
+          Зайти в конференцию
+        </button>
+        <button id="closeBtn"
+                class="w-full py-2.5 rounded-xl bg-gray-700 hover:bg-gray-600 font-medium">
+          Закрыть
+        </button>
+      </div>
+
+      <!-- toast -->
+      <div id="toast" class="pointer-events-none invisible opacity-0 transition
+                             fixed left-1/2 -translate-x-1/2 bottom-6
+                             bg-gray-900 text-white text-sm px-3 py-2 rounded-lg">
+        Ссылка скопирована
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   $(document).ready(function () {
-    $("#openModal").on("click", function () {
-      $("#modal").removeClass("hidden");
-    });
+  // ссылки для копирования и перехода задаются отдельно
+  let copyUrl = '';
+  let joinUrl = '';
 
-    $("#closeModal").on("click", function () {
-      $("#modal").addClass("hidden");
-    });
+  function openModal2(copy, join) {
+    copyUrl = copy || '';
+    joinUrl = join || '';
+    document.getElementById('copy-link').value = copyUrl;
+    document.getElementById('modal2').classList.remove('hidden');
+  }
+  function closeModal2() {
+    document.getElementById('modal2').classList.add('hidden');
+  }
+
+  // кнопки
+  const copyBtn  = document.getElementById('copyBtn');
+  const joinBtn  = document.getElementById('joinBtn');
+  const closeBtn = document.getElementById('closeBtn');
+  const closeX   = document.getElementById('closeModal');
+  const overlay  = document.getElementById('modal2-overlay');
+  const toast    = document.getElementById('toast');
+
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(copyUrl);
+    } catch {
+      const ta = document.getElementById('copy-link');
+      ta.select(); document.execCommand('copy');
+    }
+    toast.classList.remove('invisible','opacity-0');
+    setTimeout(()=>toast.classList.add('opacity-0'),1200);
+    setTimeout(()=>toast.classList.add('invisible'),1600);
   });
+
+  joinBtn.addEventListener('click', () => {
+    if (joinUrl) window.open(joinUrl,'_blank','noopener');
+  });
+  [closeBtn, closeX, overlay].forEach(el=>el.addEventListener('click', closeModal2));
+  document.addEventListener('keydown', e=>{if(e.key==='Escape') closeModal2();});
+
+  // Отслеживаем клик по ссылке с href="#lesson"
+  $('a[href="#lesson"]').on("click", function (e) {
+    e.preventDefault(); // отменяем переход по ссылке
+    $.ajax({
+      type: 'GET',
+      url: '/getvlinks',
+      contentType: 'application/json',
+      //data: JSON.stringify(payload),
+      xhrFields: {
+        withCredentials: true
+      },
+      success: function (datas) {
+        console.log(datas);
+        datas.roomid = window.location.href.split('#')[0] + datas.roomid
+        openModal2(datas.roomid, datas.link);
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.error("Ошибка отправки:", textStatus, errorThrown);
+      }
+    });
+   // 
+
+    
+  });
+
+  
+  $("#openModal").on("click", function () {
+    $("#modal").removeClass("hidden");
+  });
+
+  $("#closeModal").on("click", function () {
+    $("#modal").addClass("hidden");
+  });
+});
 </script>
 
