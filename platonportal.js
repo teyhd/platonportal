@@ -335,6 +335,20 @@ app.get('/jointo',async (req,res)=>{
     res.redirect(ans.link)
     
 })
+app.get('/vcalllogg',async (req,res)=>{
+    mlog(req.query)
+    res.send('ok')
+})
+app.get('/rooms',async (req,res)=>{
+    if (req.session.role>1){
+        let ans = await vcall.rooms_info() 
+        console.log(ans);
+        res.send(ans)
+    } else{
+        res.sendStatus(403)
+    }
+
+})
 app.get('/auth',async (req,res)=>{
     console.log(req.query);
     if (req.query.pin!=undefined){
@@ -342,10 +356,10 @@ app.get('/auth',async (req,res)=>{
         if (ans!=undefined){
             req.session.uid = ans.id
             req.session.name = ans.name
-            let roles = await db.get_roles(req.session.uid)
+           /* let roles = await db.get_roles(req.session.uid)
             console.log(roles);
-            mlog(roles[0].role)
-            req.session.role = roles[0].role
+            mlog(roles[0].role)*/
+            req.session.role = ans.role//roles[0].role
             res.send('ok')
         } else {
             res.send('nok')

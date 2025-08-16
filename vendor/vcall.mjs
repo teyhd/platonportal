@@ -19,9 +19,11 @@ export async function openroom(room_id,usr_name,usr_id,admin) {
                         "metadata": {
                         "room_title": "V.CALL",
                         "welcome_message": "Онлайн уроки",
+                        "webhook_url": "https://platoniks.ru/vcalllogg",
+                        "logout_url": "https://platoniks.ru/",
                         "room_features": {
                         "allow_webcams": true,
-                        "mute_on_start": true,
+                        "mute_on_start": false,
                         "allow_screen_share": true,
                         "allow_rtmp": true,
                         "admin_only_webcams": false,
@@ -76,9 +78,9 @@ export async function openroom(room_id,usr_name,usr_id,admin) {
                         "default_lock_settings": {
                         "lock_microphone": false,
                         "lock_webcam": false,
-                        "lock_screen_sharing": true,
-                        "lock_whiteboard": true,
-                        "lock_shared_notepad": true,
+                        "lock_screen_sharing": false,
+                        "lock_whiteboard": false,
+                        "lock_shared_notepad": false,
                         "lock_chat": false,
                         "lock_chat_send_message": false,
                         "lock_chat_file_share": false,
@@ -120,4 +122,8 @@ export async function get_link(room_id,usr_name,usr_id,admin){
     })
     res.link = `https://meet.platoniks.ru/?access_token=${res.token}`
     return res
+}
+
+export async function rooms_info() {
+    return await pnm.getActiveRoomsInfo()
 }

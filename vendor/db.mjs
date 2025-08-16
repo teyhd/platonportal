@@ -16,7 +16,7 @@ let sets = {
 const pool = mysql.createPool(sets).promise()
 
 export async function auth_user(pin){
-    const qer = `SELECT id,name FROM users WHERE pin = ${pin}`
+    const qer = `SELECT id,name,type as role FROM users WHERE pin = ${pin}`
     const [rows, fields] = await pool.query(qer)
     return rows[0];
 }
