@@ -105,7 +105,7 @@ app.get('/',(req,res)=>{
         link: "http://platon.teyhd.ru:88",
         text: "Закупки",
         pic: "order.png",
-    },*/
+    },
     {
       link: "http://club8899.studyapps.ru/user/login?ReturnUrl=%2f",
       text: "Дневник",
@@ -115,17 +115,17 @@ app.get('/',(req,res)=>{
       link: "https://docs.google.com/spreadsheets/d/1JiMIcnklI7CGoP-Mfc_kqghuo71kFLfccVtsc6eH_Rw/edit?gid=1961581949#gid=1961581949",
       text: "Расписание",
       pic: "calend.png",
-    },
+    },*/
     {
         link: "https://teacher.platonics.ru/",
         text: "Платформа",
         pic: "platon.png",
     },
-    {
+   /* {
         link: "https://forms.gle/MmGPPEBr51uWj93Q9",
         text: "Геймификация",
         pic: "stud.png",
-    },
+    }, */
     {
         link: "https://vote.platoniks.ru/",
         text: "Черный ящик",
