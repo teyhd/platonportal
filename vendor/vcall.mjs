@@ -15,6 +15,7 @@ export async function openroom(room_id,usr_name,usr_id,admin) {
      else {//Создать
         let result = await pnm.createRoom(
             {"room_id": room_id,
+                "empty_timeout": 20,
                         "metadata": {
                         "room_title": "V.CALL",
                         "welcome_message": "Онлайн уроки",
