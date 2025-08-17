@@ -13,9 +13,23 @@ let sets = {
     enableKeepAlive: false,
     keepAliveInitialDelay: 0
 }
+let setss = {
+    host: process.env.MDBHOST,
+    user: process.env.DBUSER,
+    password : process.env.DBPASS,
+    database: process.env.DBNAMES,
+    charset : 'utf8mb4_general_ci',
+    waitForConnections: true,
+    connectionLimit: 100,
+    maxIdle: 100, // max idle connections, the default value is the same as `connectionLimit`
+    idleTimeout: 200, // idle connections timeout, in milliseconds, the default value 60000
+    queueLimit: 0,
+    enableKeepAlive: false,
+    keepAliveInitialDelay: 0
+}
 const usr = mysql.createPool(sets).promise()
-sets.database = process.env.DBNAMES
-const portal = mysql.createPool(sets).promise()
+
+const portal = mysql.createPool(setss).promise()
 
 export async function auth_user(pin){
     const qer = `SELECT id,name,type as role FROM users WHERE pin = ${pin}`
