@@ -172,35 +172,21 @@ export function makeSsoRouter(config = {}) {
     });
   })
   // --- Единый выход ---
-  router.get("/logout", (req, res) => {
-    try {
-      mlog(req.session.name,"вышел из системы");
-      req.session.uid = null;
-      req.session.name = null
-      req.session.right = null
-      res.clearCookie("sso.sid", {
-      //path: "/",
-      httpOnly: true,
-      sameSite: "none",       // если фронт на другом домене — можно 'none' + secure:true
-      secure: false          // true если HTTPS
+// sso mainportal
+  router.get('/logout', (req, res) => {
+    const { post_logout_redirect_uri, client_id } = req.query;
+    const allowed = (CLIENTS?.[client_id]?.post_logout_redirect_uris) || [];
+    const redirectOk = allowed.includes(post_logout_redirect_uri);
+
+    try { mlog(req.session.name, 'вышел из системы'); } catch {}
+    req.session.uid = req.session.name = req.session.right = null;
+
+    req.session.destroy(() => {
+      res.clearCookie('sso.sid', { path: '/' /* , domain: process.env.SSO_COOKIE_DOMAIN если задавали */ });
+      res.redirect(redirectOk ? post_logout_redirect_uri : (process.env.SSO_DEFAULT_REDIRECT || '/'));
     });
-     res.clearCookie("wherepc", {
-        //path: "/",
-        httpOnly: true,
-        sameSite: "none",       // если фронт на другом домене — можно 'none' + secure:true
-        secure: false          // true если HTTPS
-      });
-      req.session.destroy()
-      console.log(req.session);
-      
-      res.redirect('/')
-      //res.send('ok');
-    } catch (error) {
-       res.redirect('/')
-    }
-    
-    // => res.send("SSO logout ok"));
   });
+
 
   router.get("/", (_req, res) => res.send("SSO is up"));
   return router;
