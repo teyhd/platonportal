@@ -1,0 +1,72 @@
+<main class="pt-12 px-4 max-w-7xl mx-auto space-y-8">
+  <!-- Hero / Error block -->
+  <section>
+    <div class="mx-auto max-w-2xl bg-gray-800 text-white rounded-2xl shadow-lg p-8 md:p-10
+                transition-all duration-200 ease-in-out hover:-translate-y-1 hover:shadow-xl group">
+      <!-- Иконка-иллюстрация -->
+      <div class="flex justify-center mb-6">
+        <div class="w-20 h-20 rounded-2xl bg-gray-700 flex items-center justify-center
+                    transition-transform duration-200 group-hover:scale-105">
+          <!-- Lock SVG -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+               fill="currentColor" class="w-10 h-10 text-gray-300">
+            <path fill-rule="evenodd"
+              d="M12 2a5 5 0 00-5 5v3H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2h-1V7a5 5 0 00-5-5zm-3 8V7a3 3 0 116 0v3H9zm3 4a1.5 1.5 0 00-1 2.598V18a1 1 0 002 0v-1.402A1.5 1.5 0 0012 14z"
+              clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Текст -->
+      {{#if err}}
+        <h1 class="text-2xl md:text-3xl font-semibold text-center mb-3">Ваш аккаунт заблокирован!</h1>
+        <p class="text-gray-300 text-center">Свяжитесь с администратором.</p>
+      {{else}}
+        <h1 class="text-2xl md:text-3xl font-semibold text-center mb-3">У вас нет доступа к этой странице!</h1>
+        <p class="text-gray-300 text-center">Свяжитесь с администратором.</p>
+      {{/if}}
+
+        <!-- Кнопки -->
+        <div class="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:justify-center">
+        <a href="/"
+            class="inline-flex justify-center items-center px-5 py-3 rounded-xl bg-gray-700 hover:bg-gray-600
+                    shadow transition-all duration-200 hover:-translate-y-0.5">
+            На главную
+        </a>
+        <button onclick="window.history.back()"
+            class="inline-flex justify-center items-center px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-500
+                    shadow transition-all duration-200 hover:-translate-y-0.5">
+            Вернуться назад
+        </button>
+        <a href="/sso/logout"
+            class="inline-flex justify-center items-center px-5 py-3 rounded-xl bg-red-600 hover:bg-red-500
+                    shadow transition-all duration-200 hover:-translate-y-0.5">
+            Выйти из аккаунта
+        </a>
+
+        </div>
+
+  </section>
+
+  <!-- Подсказки/ССЫЛКИ (опционально) -->
+  <section class="max-w-7xl mx-auto px-0">
+    <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <article class="bg-gray-800 hover:bg-gray-700 rounded-xl shadow-lg text-white p-6 transition-colors">
+        <h3 class="text-lg font-semibold mb-2">Почему это могло произойти?</h3>
+        <p class="text-sm text-gray-300">Недостаточно прав, истёкшая сессия или блокировка профиля.</p>
+      </article>
+      <article class="bg-gray-800 hover:bg-gray-700 rounded-xl shadow-lg text-white p-6 transition-colors">
+        <h3 class="text-lg font-semibold mb-2">Что делать?</h3>
+        <p class="text-sm text-gray-300">Свяжитесь с администратором и сообщите адрес страницы и время ошибки.</p>
+      </article>
+      <article class="bg-gray-800 hover:bg-gray-700 rounded-xl shadow-lg text-white p-6 transition-colors">
+        <h3 class="text-lg font-semibold mb-2">Быстрые действия</h3>
+        <p class="text-sm text-gray-300">Попробуйте вернуться на главную или выполните выход и вход снова.</p>
+      </article>
+    </div>
+  </section>
+</main>
+
+<footer class="mt-16 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+  © 2025 Гармония образования
+</footer>

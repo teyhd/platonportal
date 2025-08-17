@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import * as db from './db.mjs';
+import {mlog,say} from './logs.js'
 
 export function makeSsoRouter(config = {}) {
   const router = express.Router();
@@ -162,23 +163,37 @@ export function makeSsoRouter(config = {}) {
     });
   });
 
+  router.get('/err',async (req,res)=>{
+    let err = 1
+    if (req.query.err == undefined) err = 0
+    res.render('accerr',{
+      title: 'Ошибка',
+      err:err
+    });
+  })
   // --- Единый выход ---
   router.get("/logout", (req, res) => {
-        mlog( req.session.name,"вышел из системы");
-        req.session.uid = null;
-        req.session.name = null
-        req.session.uid = null
-        req.session.roles = null
-        //res.send('ok');
-        console.dir(req.session)
-        req.session.save(function (err) {
-          if (err) next(err)
-          req.session.regenerate(function (err) {
-            if (err) next(err)
-            res.redirect('/')
-          })
-        })
-    req.session.destroy(() => res.send("SSO logout ok"));
+    try {
+      mlog(req.session.name,"вышел из системы");
+      req.session.uid = null;
+      req.session.name = null
+      req.session.right = null
+      res.clearCookie("sso.sid", {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",       // если фронт на другом домене — можно 'none' + secure:true
+      secure: false          // true если HTTPS
+    });
+      req.session.destroy()
+      console.log(req.session);
+      
+      res.redirect('/')
+      //res.send('ok');
+    } catch (error) {
+       res.redirect('/')
+    }
+    
+    // => res.send("SSO logout ok"));
   });
 
   router.get("/", (_req, res) => res.send("SSO is up"));

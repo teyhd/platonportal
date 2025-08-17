@@ -132,7 +132,7 @@ app.use("/sso", makeSsoRouter({
   issuer: process.env.SSOADR,
   jwtSecret: process.env.JWTSECRET,
   clients: {
-    "bookpc": { client_secret: "pcbigsectet", redirect_uri: "http://localhost:81/cb", srv_name: 'bookpc' },
+    "bookpc": { client_secret: "pcbigsectet", redirect_uri: "https://pc.platoniks.ru/cb", srv_name: 'bookpc' },
   }
 }));
 
@@ -404,6 +404,7 @@ app.get('/auth',async (req,res)=>{
         });
     }
 })  
+
 app.get('/logout', function(req, res) {
     mlog( req.session.name,"вышел из системы");
     req.session.uid = null;
