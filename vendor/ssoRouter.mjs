@@ -181,9 +181,15 @@ export function makeSsoRouter(config = {}) {
       res.clearCookie("sso.sid", {
       //path: "/",
       httpOnly: true,
-      sameSite: "lax",       // если фронт на другом домене — можно 'none' + secure:true
+      sameSite: "none",       // если фронт на другом домене — можно 'none' + secure:true
       secure: false          // true если HTTPS
     });
+     res.clearCookie("wherepc", {
+        //path: "/",
+        httpOnly: true,
+        sameSite: "none",       // если фронт на другом домене — можно 'none' + secure:true
+        secure: false          // true если HTTPS
+      });
       req.session.destroy()
       console.log(req.session);
       
