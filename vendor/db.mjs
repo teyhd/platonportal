@@ -36,12 +36,19 @@ export async function auth_user(pin){
     return rows[0];
 }
 
-export async function get_roles(uid){
-  const qer = `SELECT max(ROLE) as role FROM roles WHERE user_id = ${uid}`
-  const [rows, fields] = await usr.query(qer)
-  return rows;
+export async function getUserRolesForsrvnam(usrId, srvNmae) {
+  const [rows] = await usr.query(
+    `SELECT r.role_id
+      FROM rights r
+      JOIN srvs srv ON r.srv_id = srv.id
+      WHERE r.usr_id = ? AND srv.name = ?;`,
+    [usrId, srvNmae]
+  );
+  // Уберём null/дубликаты на всякий случай
+  const ids = Array.from(new Set(rows.map(r => r.role_id).filter(v => Number.isInteger(v))));
+  return ids;
 }
-
+///console.log(await getUserRolesForServiceById(147, 'portal'))
 // ==== USERS ====
 export async function get_types() {
   const sql = `
@@ -51,7 +58,7 @@ export async function get_types() {
 }
 export async function get_users() {
   const sql = `
-    SELECT id, name, kaf, type, status, pin
+    SELECT *
     FROM users
     ORDER BY id DESC
   `;
@@ -61,7 +68,7 @@ export async function get_users() {
 
 export async function get_user_by_id(id) {
   const [rows] = await usr.query(
-    `SELECT id, name, kaf, type, status, pin FROM users WHERE id = ? LIMIT 1`,
+    `SELECT * FROM users WHERE id = ? LIMIT 1`,
     [id]
   );
   return rows[0] ?? null;

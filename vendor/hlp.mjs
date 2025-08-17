@@ -1,7 +1,15 @@
 export function getCurrentUnixTime() {
     return Math.floor(new Date().getTime() / 1000);
   }
+export function getRolesBySrvId(roles,srv_id) {
+  const found = roles
+    .filter(r => r.srv_id === srv_id)
+    .map(r => r.role_id);
 
+  if (found.length === 0) return null;         // если вообще нет ролей
+  if (found.length === 1) return found[0];     // если одна роль → число
+  return found;                                // если несколько → массив
+}
 export function formatUnixTime(unixTime) {
 // Преобразование Unix time в миллисекунды
 var dateTime = new Date(unixTime * 1000);

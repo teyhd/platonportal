@@ -1,6 +1,31 @@
-<section class="max-w-md mx-auto mt-24 px-4 text-center text-white">
-  <h2 class="text-2xl font-semibold mb-6">Авторизуйтесь, чтобы получить доступ к системе</h2>
-  <button class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 transition shadow-lg text-white font-medium text-base" data-bs-toggle="modal" data-bs-target="#modal1">
+<div id="modale" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+  <div class="bg-gray-800 text-white p-6 rounded-2xl max-w-md w-full shadow-xl relative">
+    <h3 class="text-xl font-semibold mb-4">Вход в систему</h3>
+    <!-- Здесь форма авторизации -->
+   <form method="POST" action="/sso/auth">
+  <input 
+    name="pin" 
+    type="password" 
+    placeholder="PIN" 
+    class="w-full mb-4 p-2 rounded bg-gray-700 border border-gray-600 focus:outline-none" 
+  />
+  
+  <button 
+    type="submit" 
+    class="w-full py-2 bg-blue-600 hover:bg-blue-500 rounded font-medium"
+  >
     Войти
   </button>
-</section>
+
+  <br><br>
+
+  <a 
+    href="/" 
+    class="block w-full py-2 text-center bg-blue-900 hover:bg-blue-500 rounded font-medium"
+  >
+    На главную
+  </a>
+</form>
+
+  </div>
+</div>

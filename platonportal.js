@@ -8,7 +8,7 @@ import bcrypt from 'bcrypt';
 import * as db from './vendor/db.mjs';
 import * as hlp from './vendor/hlp.mjs';
 import * as vcall from './vendor/vcall.mjs';
-
+import { makeSsoRouter } from "./vendor/ssoRouter.mjs";
 import express from 'express'
 import exphbs from 'express-handlebars'
 import session from 'express-session'
@@ -123,36 +123,26 @@ app.use(express.static(publicPath));
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
-app.use(session({resave:true,saveUninitialized:false, secret: 'hardcode_secret_teyhd', cookie: 
+app.use(session({name: 'sso.sid',resave:true,saveUninitialized:false, secret: 'hardcode_secret_teyhd', cookie: 
   {secure: false, // ⚠️ обязательно false на HTTP!
   httpOnly: true}
 }))
+
+app.use("/sso", makeSsoRouter({
+  issuer: process.env.SSOADR,
+  jwtSecret: process.env.JWTSECRET,
+  clients: {
+    "bookpc": { client_secret: "pcbigsectet", redirect_uri: "http://localhost:81/cb", srv_name: 'bookpc' },
+  }
+}));
 
 app.use(express.json()); // для application/json
 app.use(async function (req, res, next) {
     let page = req._parsedOriginalUrl.pathname;
     //console.log('Cookie:', req.headers);
     //.log('Session:', req.session);
-    if (page!='/data') {
-        mlog(page,req.session.uid,req.session.name,req.session.info,req.headers['nip'],hlp.getcurip(req.socket.remoteAddress),req.query)
-    }
-    
-    //next();
-    //return 1
-    if (page=='/data') {
-        next();
-        //return 1
-    }
-
-    if (req.session.uid==undefined) { // 
-        if (page!='/auth' && page!='/bauth' && page!='/data' && page!='/api/update_soft_skills' && page!='/api/update_self_prep' && page!='/api/update_individual_track' && page!='/api/update_progress_card') {
-           next(); //res.redirect("/auth")
-        } else next();
-    } else {
-        if (page=='/auth') {
-            res.redirect("/")
-        } else next();
-    } 
+     mlog(page,req.session.uid,req.session.name,req.session.info,req.headers['nip'],hlp.getcurip(req.socket.remoteAddress),req.query)
+     next();
 })
 
 app.get('/e',(req,res)=>{
@@ -161,22 +151,28 @@ app.get('/e',(req,res)=>{
 })
 
 app.get('/',async (req,res)=>{
-    let rolen = req.session.role ?? 0;
+    let rolen = 0
+    try {
+        rolen = req.session.right ?? 0;
+        rolen = hlp.getRolesBySrvId(rolen,1)
+        
+    } catch (error) {
+        mlog(error);
+    }
+    console.log(rolen);
     let cards = await db.get_cards(rolen)
-
     res.render('new',{
       title: 'Гармония Образования',
       menu:cards.filter(c => c.type === 0),
       info:cards.filter(c => c.type === 1),
-      auth: req.session.role
+      auth: req.session.right
     });
   })
 
-
 // === Страница users.hbs (добавляем allRoles, services для панели) ===
 app.get('/users', async (req, res) => {
-  const rolen = Number(req.session?.role ?? 0);
-  if (rolen === 0) return res.redirect('/');
+  const rolen = Number(req.session?.right ?? 0);
+  if (rolen < 5) return res.redirect('/');
 
   try {
     const users    = await db.get_users();
@@ -190,7 +186,7 @@ app.get('/users', async (req, res) => {
       types,
       services,
       allRoles,
-      auth: rolen
+      auth: req.session.right
     });
   } catch (e) {
     console.error(e);
@@ -220,7 +216,7 @@ app.put('/api/srvs-roles', async (req, res) => {
   if (rolen === 0) return res.status(403).json({ ok:false, message:'forbidden' });
 
   const pairs = Array.isArray(req.body?.pairs) ? req.body.pairs : [];
-  // ожидается: [{ srv_id: <number>, role_id: <number> }, ...]
+  // ожидается: [{ srv_name: <number>, role_id: <number> }, ...]
 
   try {
     await db.replace_srvs_roles(pairs);
@@ -292,7 +288,7 @@ app.put('/api/users/:id', async (req, res) => {
 app.put('/api/users/:id/rights', async (req, res) => {
   const id = Number(req.params.id);
   const pairs = Array.isArray(req.body?.pairs) ? req.body.pairs : [];
-  // ожидается массив объектов {srv_id, role_id}
+  // ожидается массив объектов {srv_name, role_id}
 
   if (!id) return res.status(400).json({ ok:false, message:'bad id' });
   try {
@@ -308,7 +304,7 @@ app.put('/api/users/:id/rights', async (req, res) => {
 app.put('/api/users/:id/logins', async (req, res) => {
   const id = Number(req.params.id);
   const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
-  // ожидается массив {srv_id, login, new_password}
+  // ожидается массив {srv_name, login, new_password}
 
   if (!id) return res.status(400).json({ ok:false, message:'bad id' });
 
@@ -347,7 +343,7 @@ app.get('/manual',(req,res)=>{
     console.log(files);
     res.render('manual',{
         title: 'Инструкции',
-        // auth: auth,
+        auth: req.session.right,
         files:files
     });
 })
@@ -378,7 +374,7 @@ app.get('/vcalllogg',async (req,res)=>{
     res.send('ok')
 })
 app.get('/rooms',async (req,res)=>{
-    if (req.session.role>1){
+    if (req.session.right>1){
         let ans = await vcall.rooms_info() 
         console.log(ans);
         res.send(ans)
@@ -388,14 +384,15 @@ app.get('/rooms',async (req,res)=>{
 })
 app.get('/auth',async (req,res)=>{
     console.log(req.query);
-    if (req.query.pin!=undefined){
+    if (req.query.pins!=undefined){
         let ans = await db.auth_user(req.query.pin);
         if (ans!=undefined){
             let right = await db.get_user_rights(ans.id)
             let logins = await db.get_user_logins(ans.id)
             req.session.uid = ans.id
             req.session.name = ans.name
-            req.session.role = ans.type//roles[0].role
+            req.session.role = ans.role//roles[0].role
+            req.session.right = ans.role
             res.send('ok')
         } else {
             res.send('nok')
