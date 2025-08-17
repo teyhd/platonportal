@@ -28,7 +28,6 @@ let setss = {
     keepAliveInitialDelay: 0
 }
 const usr = mysql.createPool(sets).promise()
-
 const portal = mysql.createPool(setss).promise()
 
 export async function auth_user(pin){
@@ -41,6 +40,210 @@ export async function get_roles(uid){
   const qer = `SELECT max(ROLE) as role FROM roles WHERE user_id = ${uid}`
   const [rows, fields] = await usr.query(qer)
   return rows;
+}
+
+// ==== USERS ====
+export async function get_types() {
+  const sql = `
+    SELECT * FROM role_name`;
+  const [rows] = await usr.query(sql);
+  return rows;
+}
+export async function get_users() {
+  const sql = `
+    SELECT id, name, kaf, type, status, pin
+    FROM users
+    ORDER BY id DESC
+  `;
+  const [rows] = await usr.query(sql);
+  return rows;
+}
+
+export async function get_user_by_id(id) {
+  const [rows] = await usr.query(
+    `SELECT id, name, kaf, type, status, pin FROM users WHERE id = ? LIMIT 1`,
+    [id]
+  );
+  return rows[0] ?? null;
+}
+
+export async function create_user({ name, kaf, type, status, pin }) {
+  const [res] = await usr.query(
+    `INSERT INTO users (name, kaf, type, status, pin) VALUES (?, ?, ?, ?, ?)`,
+    [name, kaf, type, status, pin]
+  );
+  return res.insertId;
+}
+
+export async function update_user(id, { name, kaf, type, status, pin }) {
+  const [res] = await usr.query(
+    `UPDATE users SET name = ?, kaf = ?, type = ?, status = ?, pin = ? WHERE id = ?`,
+    [name, kaf, type, status, pin, id]
+  );
+  return res.affectedRows > 0;
+}
+
+export async function delete_user(id) {
+  const [res] = await usr.query(`DELETE FROM users WHERE id = ?`, [id]);
+  return res.affectedRows > 0;
+}
+
+// ==== SERVICES & ROLES (для отрисовки вкладок) ====
+// ===== ROLES DICTIONARY =====
+export async function get_all_roles() {
+  const [rows] = await usr.query(
+    'SELECT id, name FROM role_name ORDER BY name'
+  );
+  return rows;
+}
+
+// ===== SERVICES + ALLOWED ROLES (srvs_roles) =====
+export async function get_services_with_allowed_roles() {
+  // базовые сервисы
+  const [srvs] = await usr.query(
+    'SELECT * FROM srvs ORDER BY name;'
+  );
+  // связки "какие роли разрешены в сервисе"
+  const [rels] = await usr.query(`
+    SELECT sr.srvs_id AS srv_id, rn.id AS role_id, rn.name AS role_name
+    FROM srvs_roles sr
+    JOIN role_name rn ON rn.id = sr.role_id
+    ORDER BY rn.name
+  `);
+
+  const bySrv = new Map(srvs.map(s => [s.id, { ...s, roles: [] }]));
+  for (const r of rels) {
+    const s = bySrv.get(r.srv_id);
+    if (s) s.roles.push({ id: r.role_id, name: r.role_name });
+  }
+  return Array.from(bySrv.values());
+}
+
+// Полная замена справочника srvs_roles
+export async function replace_srvs_roles(pairs) {
+  // pairs: [{srv_id, role_id}]
+  const filtered = (pairs || [])
+    .filter(p => Number.isInteger(p?.srv_id) && Number.isInteger(p?.role_id))
+    .map(p => [p.srv_id, p.role_id]);
+
+  const conn = await usr.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // Полностью очищаем и вставляем заново (подходит под текущий UI, который шлёт полный набор)
+    await conn.query('DELETE FROM srvs_roles');
+
+    if (filtered.length) {
+      await conn.query('INSERT INTO srvs_roles (srvs_id, role_id) VALUES ?', [filtered]);
+    }
+
+    await conn.commit();
+  } catch (e) {
+    await conn.rollback();
+    throw e;
+  } finally {
+    conn.release();
+  }
+}
+export async function get_services_with_roles() {
+  const [srvs] = await usr.query(`SELECT id, name FROM srvs ORDER BY name`);
+  const [rels] = await usr.query(`
+    SELECT sr.srvs_id AS srv_id, rn.id AS role_id, rn.name AS role_name
+    FROM srvs_roles sr
+    JOIN role_name rn ON rn.id = sr.role_id
+    ORDER BY rn.name
+  `);
+
+  // Собираем структуру: [{id, name, roles:[{id,name}]}]
+  const bySrv = new Map(srvs.map(s => [s.id, { ...s, roles: [] }]));
+  for (const r of rels) {
+    const s = bySrv.get(r.srv_id);
+    if (s) s.roles.push({ id: r.role_id, name: r.role_name });
+  }
+  return Array.from(bySrv.values());
+}
+
+// ==== RIGHTS ====
+
+export async function get_user_rights(userId) {
+  const [rows] = await usr.query(
+    `SELECT srv_id, role_id FROM rights WHERE usr_id = ?`,
+    [userId]
+  );
+  return rows;
+}
+
+export async function replace_user_rights(userId, pairs) {
+  // pairs: [{srv_id, role_id}]
+  // Проще/надежнее — заменить весь набор:
+  await usr.query(`DELETE FROM rights WHERE usr_id = ?`, [userId]);
+
+  if (!pairs?.length) return;
+
+  // Вставка батчем
+  const values = pairs
+    .filter(p => Number.isInteger(p.srv_id) && Number.isInteger(p.role_id))
+    .map(p => [userId, p.srv_id, p.role_id]);
+
+  if (values.length) {
+    await usr.query(`INSERT INTO rights (usr_id, srv_id, role_id) VALUES ?`, [values]);
+  }
+}
+
+// ==== LOGINS ====
+
+export async function get_user_logins(userId) {
+  const [rows] = await usr.query(
+    `SELECT srvs_id AS srv_id, login FROM logins WHERE usr_id = ?`,
+    [userId]
+  );
+  return rows;
+}
+
+export async function upsert_user_logins(userId, rows) {
+  // rows: [{srv_id, login, pass_hash?}]
+  if (!Array.isArray(rows)) return;
+
+  for (const r of rows) {
+    const srv = Number(r.srv_id);
+    const login = String(r.login ?? '').trim();
+    const pass = r.pass_hash ? String(r.pass_hash) : null;
+
+    if (!Number.isInteger(srv)) continue;
+
+    // если пусто — удаляем запись логина для этого сервиса
+    if (!login && !pass) {
+      await usr.query(`DELETE FROM logins WHERE usr_id = ? AND srvs_id = ?`, [userId, srv]);
+      continue;
+    }
+
+    // ищем, есть ли уже логин в этом сервисе
+    const [ex] = await usr.query(
+      `SELECT id FROM logins WHERE usr_id = ? AND srvs_id = ? LIMIT 1`,
+      [userId, srv]
+    );
+
+    if (ex.length) {
+      // апдейт
+      if (pass) {
+        await usr.query(
+          `UPDATE logins SET login = ?, pass = ? WHERE id = ?`,
+          [login, pass, ex[0].id]
+        );
+      } else {
+        await usr.query(
+          `UPDATE logins SET login = ? WHERE id = ?`,
+          [login, ex[0].id]
+        );
+      }
+    } else {
+      // инсерт
+      await usr.query(
+        `INSERT INTO logins (srvs_id, usr_id, login, pass) VALUES (?, ?, ?, ?)`,
+        [srv, userId, login, pass]
+      );
+    }
+  }
 }
 
 export async function get_cards(role=0){

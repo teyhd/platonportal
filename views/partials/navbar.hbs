@@ -56,3 +56,127 @@ $(function () {
 });
 
 </script>
+
+
+
+
+<div id="tg-inapp-banner"
+     class="sticky top-0 z-[1000] hidden"
+     role="region" aria-label="Ограничения встроенного браузера">
+  <div class="w-full pointer-events-auto" style="padding-top: env(safe-area-inset-top);">
+    <div class="mx-auto max-w-6xl">
+      <div class="m-2 rounded-xl bg-gray-900 text-white shadow-lg ring-1 ring-white/10">
+        <div class="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-sm leading-5">
+            <strong class="font-semibold">Вы открыли сайт внутри Telegram!</strong><br>
+            Часть функций (единый вход, V.CALL) может не работать корректно.
+            Откройте сайт в обычном браузере. 
+            <br>Как открыть (кнопка в правом верхнем углу):<br>iPhone: нажмите ••• → «Открыть в браузере» (Safari).<br>Android: меню ⋮ → «Открыть в Chrome».
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" id="tg-open-external"
+              class="inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm
+                     bg-white text-gray-900 hover:bg-gray-100 focus-visible:outline-none
+                     focus-visible:ring-2 focus-visible:ring-blue-500">
+              Открыть в браузере
+            </button>
+            <button type="button" id="tg-copy-link"
+              class="inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm
+                     bg-transparent text-white ring-1 ring-inset ring-white/30 hover:bg-white/10
+                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+              Скопировать ссылку
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const banner = document.getElementById('tg-inapp-banner');
+
+  // --- Клиентские эвристики (фолбэк для iOS/случаев без заголовка) ---
+  function clientHeuristics() {
+    const ua = navigator.userAgent || '';
+    const ref = document.referrer || '';
+    const isAndroid = /Android/i.test(ua);
+    const isiOS = /iPhone|iPad|iPod/i.test(ua);
+
+    const isTGUA   = /\b(Telegram|TgApp)\b/i.test(ua);
+    const isTGRef  = /\b(t\.me|telegram\.me)\b/i.test(ref);
+    const isAndroidWV = isAndroid && (/\bwv\b/i.test(ua) || /Android.*Version\/\d+\./i.test(ua));
+    const hasSafariToken = /Safari/i.test(ua);
+    const hasCriOS = /CriOS/i.test(ua);
+    const isIOSWV = isiOS && /AppleWebKit/i.test(ua) && !hasSafariToken && !hasCriOS;
+
+    return (isTGUA || isTGRef || isAndroidWV || isIOSWV);
+  }
+
+  async function shouldShowBanner() {
+    // 1) Сначала пробуем серверный сигнал (главный критерий)
+    try {
+      const r = await fetch('/tg-probe', {
+        method: 'GET',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { 'Accept': 'application/json' }
+      });
+      if (r.ok) {
+        const j = await r.json();
+        if (j.isTelegramHeader === true) return true;   // точное попадание (Android Telegram)
+        // Если сервер также отдаёт isTelegramUA/isTMeRef — можно усилить решение:
+        if (j.isTelegramUA || j.isTMeRef) return true;
+      }
+    } catch (_) {}
+
+    // 2) Фолбэк: клиентские эвристики (iOS / нет доступа к заголовкам)
+    return clientHeuristics();
+  }
+
+  // Показ баннера
+  (async () => {
+    if (!banner) return;
+    if (await shouldShowBanner()) {
+      banner.classList.remove('hidden');
+    }
+  })();
+
+  // Действия кнопок
+  const openBtn = document.getElementById("tg-open-external");
+  const copyBtn = document.getElementById("tg-copy-link");
+
+  openBtn?.addEventListener("click", () => {
+    const ua = navigator.userAgent || "";
+    const url = location.href;
+
+    if (/Android/i.test(ua)) {
+      // Попытка открыть Chrome через intent (работает на многих прошивках Telegram)
+      const intent = `intent://${location.host}${location.pathname}${location.search}#Intent;scheme=${location.protocol.replace(':','')};package=com.android.chrome;end`;
+      try { location.href = intent; } catch {}
+      setTimeout(() => window.open(url, "_blank"), 300);
+      return;
+    }
+    // iOS: прямого способа нет
+    try { navigator.clipboard?.writeText(url); } catch {}
+    alert('На iOS нажмите ••• → «Открыть в браузере» (Safari). Ссылка скопирована.');
+    window.open(url, "_blank");
+  });
+
+  copyBtn?.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(location.href);
+      copyBtn.textContent = "Ссылка скопирована";
+      setTimeout(() => (copyBtn.textContent = "Скопировать ссылку"), 2000);
+    } catch {
+      prompt("Скопируйте ссылку:", location.href);
+    }
+  });
+
+  // Respect reduced motion
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    banner.classList.remove("transition-all","duration-200");
+  }
+})();
+</script>

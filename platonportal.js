@@ -3,6 +3,8 @@ process.on('uncaughtException', (err) => {
 mlog('Глобальный косяк приложения!!! ', err.stack);
 }); //Если все пошло по ***, спасет ситуацию
 import 'dotenv/config'
+
+import bcrypt from 'bcrypt';
 import * as db from './vendor/db.mjs';
 import * as hlp from './vendor/hlp.mjs';
 import * as vcall from './vendor/vcall.mjs';
@@ -24,6 +26,50 @@ extname: 'hbs',
 helpers: {
     OK: function(){
     i_count = 1
+    },
+     // простой счётчик (если вдруг пригодится в списках)
+    inc() {
+        return i_count++;
+    },
+    reset() {
+        i_count = 1;
+        return '';
+    },
+
+    // взять подстроку: {{substr name 0 1}}
+    substr(str, start, len) {
+        str = (str ?? '').toString();
+        const s = Number(start) || 0;
+        const l = (len == null) ? undefined : Number(len);
+        return str.substring(s, l ? s + l : undefined);
+    },
+
+    // поиск объекта по id в массиве: {{#with (findById types this.type)}}{{name}}{{/with}}
+    findById(arr, id) {
+        if (!Array.isArray(arr)) return null;
+        const target = arr.find(x => String(x?.id) === String(id));
+        return target || null;
+    },
+
+    // сравнения на всякий случай
+    eq(a, b) { return String(a) === String(b); },
+    ne(a, b) { return String(a) !== String(b); },
+    gt(a, b) { return Number(a) > Number(b); },
+    lt(a, b) { return Number(a) < Number(b); },
+
+    // логика
+    and() {
+        const args = Array.from(arguments).slice(0, -1);
+        return args.every(Boolean);
+    },
+    or() {
+        const args = Array.from(arguments).slice(0, -1);
+        return args.some(Boolean);
+    },
+
+    // отладка/быстрый вывод json
+    json(ctx) {
+        try { return JSON.stringify(ctx); } catch { return 'null'; }
     },
     I_C: function (opts){
     let anso = ''
@@ -77,7 +123,7 @@ app.use(express.static(publicPath));
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
-app.use(session({resave:true,saveUninitialized:false, secret: 'keyboard cat', cookie: 
+app.use(session({resave:true,saveUninitialized:false, secret: 'hardcode_secret_teyhd', cookie: 
   {secure: false, // ⚠️ обязательно false на HTTP!
   httpOnly: true}
 }))
@@ -85,8 +131,8 @@ app.use(session({resave:true,saveUninitialized:false, secret: 'keyboard cat', co
 app.use(express.json()); // для application/json
 app.use(async function (req, res, next) {
     let page = req._parsedOriginalUrl.pathname;
-    console.log('Cookie:', req.headers.cookie);
-
+    //console.log('Cookie:', req.headers);
+    //.log('Session:', req.session);
     if (page!='/data') {
         mlog(page,req.session.uid,req.session.name,req.session.info,req.headers['nip'],hlp.getcurip(req.socket.remoteAddress),req.query)
     }
@@ -117,15 +163,184 @@ app.get('/e',(req,res)=>{
 app.get('/',async (req,res)=>{
     let rolen = req.session.role ?? 0;
     let cards = await db.get_cards(rolen)
-    let menu = cards.filter(c => c.type === 0);
-    let info = cards.filter(c => c.type === 1);
+
     res.render('new',{
       title: 'Гармония Образования',
-      menu:menu,
-      info:info,
+      menu:cards.filter(c => c.type === 0),
+      info:cards.filter(c => c.type === 1),
       auth: req.session.role
     });
   })
+
+
+// === Страница users.hbs (добавляем allRoles, services для панели) ===
+app.get('/users', async (req, res) => {
+  const rolen = Number(req.session?.role ?? 0);
+  if (rolen === 0) return res.redirect('/');
+
+  try {
+    const users    = await db.get_users();
+    const types    = await db.get_types();
+    const services = await db.get_services_with_allowed_roles(); // для вкладок/панели
+    const allRoles = await db.get_all_roles();
+
+    res.render('users', {
+      title: 'Пользователи',
+      users,
+      types,
+      services,
+      allRoles,
+      auth: rolen
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).render('errors/500', { title:'Ошибка сервера' });
+  }
+});
+
+// === API для справочника "какие роли доступны в каждом сервисе" ===
+// Требуем хотя бы роль > 0. Для UI-страницы можно поставить redirect, для API — 403.
+app.get('/api/srvs-roles', async (req, res) => {
+  const rolen = Number(req.session?.role ?? 0);
+  if (rolen === 0) return res.status(403).json({ ok:false, message:'forbidden' });
+
+  try {
+    const services = await db.get_services_with_allowed_roles(); // [{id,name,roles:[{id,name}]}]
+    const allRoles = await db.get_all_roles();                   // [{id,name}]
+    res.json({ ok:true, services, allRoles });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok:false, message:'db error' });
+  }
+});
+
+// Сохранить связки целиком (UI отправляет полный набор pairs)
+app.put('/api/srvs-roles', async (req, res) => {
+  const rolen = Number(req.session?.role ?? 0);
+  if (rolen === 0) return res.status(403).json({ ok:false, message:'forbidden' });
+
+  const pairs = Array.isArray(req.body?.pairs) ? req.body.pairs : [];
+  // ожидается: [{ srv_id: <number>, role_id: <number> }, ...]
+
+  try {
+    await db.replace_srvs_roles(pairs);
+    res.json({ ok:true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok:false, message:'db error' });
+  }
+});
+
+// Получить полный профиль пользователя (для шторки)
+app.get('/api/users/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  const user = await db.get_user_by_id(id);
+  if (!user) return res.status(404).json({ ok:false, message: 'Not found' });
+
+  const rights = await db.get_user_rights(id);
+  const logins = await db.get_user_logins(id);
+  res.json({ ok:true, user, rights, logins });
+});
+
+// Создать пользователя
+app.post('/api/users', async (req, res) => {
+  const body = req.body || {};
+  const data = {
+    name: String(body.name ?? '').trim(),
+    kaf:  String(body.kaf ?? '').trim(),
+    type: Number(body.type ?? 0),
+    status: Number(body.status ?? 0),
+    pin:  String(body.pin ?? '').trim(),
+  };
+  if (!data.name) return res.status(400).json({ ok:false, message:'name required' });
+  try {
+    const id = await db.create_user(data);
+    res.json({ ok:true, id });
+  } catch (e) {
+    if (e.code === 'ER_DUP_ENTRY') return res.status(409).json({ ok:false, message:'PIN уже используется' });
+    console.error(e);
+    res.status(500).json({ ok:false, message:'db error' });
+  }
+});
+
+// Обновить пользователя
+app.put('/api/users/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  const body = req.body || {};
+  const data = {
+    name: String(body.name ?? '').trim(),
+    kaf:  String(body.kaf ?? '').trim(),
+    type: Number(body.type ?? 0),
+    status: Number(body.status ?? 0),
+    pin:  String(body.pin ?? '').trim(),
+  };
+  if (!id) return res.status(400).json({ ok:false, message:'bad id' });
+  if (!data.name) return res.status(400).json({ ok:false, message:'name required' });
+
+  try {
+    const ok = await db.update_user(id, data);
+    if (!ok) return res.status(404).json({ ok:false, message:'Not found' });
+    res.json({ ok:true });
+  } catch (e) {
+    if (e.code === 'ER_DUP_ENTRY') return res.status(409).json({ ok:false, message:'PIN уже используется' });
+    console.error(e);
+    res.status(500).json({ ok:false, message:'db error' });
+  }
+});
+
+// Заменить набор ролей пользователя целиком
+app.put('/api/users/:id/rights', async (req, res) => {
+  const id = Number(req.params.id);
+  const pairs = Array.isArray(req.body?.pairs) ? req.body.pairs : [];
+  // ожидается массив объектов {srv_id, role_id}
+
+  if (!id) return res.status(400).json({ ok:false, message:'bad id' });
+  try {
+    await db.replace_user_rights(id, pairs);
+    res.json({ ok:true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok:false, message:'db error' });
+  }
+});
+
+// Сохранить логины по сервисам (батч)
+app.put('/api/users/:id/logins', async (req, res) => {
+  const id = Number(req.params.id);
+  const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
+  // ожидается массив {srv_id, login, new_password}
+
+  if (!id) return res.status(400).json({ ok:false, message:'bad id' });
+
+  // Хэшируй только если пароль передан
+  for (const r of rows) {
+    if (r.new_password) {
+      r.pass_hash = String(r.new_password)//await bcrypt.hash(String(r.new_password), 10);
+      delete r.new_password;
+    }
+  }
+  try {
+    await db.upsert_user_logins(id, rows);
+    res.json({ ok:true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok:false, message:'db error' });
+  }
+});
+
+// Удалить пользователя
+app.delete('/api/users/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!id) return res.status(400).json({ ok:false, message:'bad id' });
+  try {
+    const ok = await db.delete_user(id);
+    if (!ok) return res.status(404).json({ ok:false, message:'Not found' });
+    res.json({ ok:true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok:false, message:'db error' });
+  }
+});
 
 app.get('/manual',(req,res)=>{
     let files = fs.readdirSync(path.join(appDir,"public/docs"))
@@ -170,19 +385,17 @@ app.get('/rooms',async (req,res)=>{
     } else{
         res.sendStatus(403)
     }
-
 })
 app.get('/auth',async (req,res)=>{
     console.log(req.query);
     if (req.query.pin!=undefined){
         let ans = await db.auth_user(req.query.pin);
         if (ans!=undefined){
+            let right = await db.get_user_rights(ans.id)
+            let logins = await db.get_user_logins(ans.id)
             req.session.uid = ans.id
             req.session.name = ans.name
-           /* let roles = await db.get_roles(req.session.uid)
-            console.log(roles);
-            mlog(roles[0].role)*/
-            req.session.role = ans.role//roles[0].role
+            req.session.role = ans.type//roles[0].role
             res.send('ok')
         } else {
             res.send('nok')
@@ -211,6 +424,26 @@ app.get('/logout', function(req, res) {
     })
 })
 
+// server/tg-probe.js
+app.get('/tg-probe', (req, res) => {
+  const ua  = req.get('user-agent') || '';
+  const ref = req.get('referer') || '';
+  const xrw = (req.get('x-requested-with') || '').toLowerCase();
+
+  const isTelegramHeader =
+    xrw === 'org.telegram.messenger' || xrw === 'org.telegram.messenger.web';
+
+  const isTelegramUA = /\b(Telegram|TgApp)\b/i.test(ua);
+  const isTMeRef     = /\b(t\.me|telegram\.me)\b/i.test(ref);
+
+  res.set('Cache-Control', 'no-store');
+  res.json({
+    xrw,
+    isTelegramHeader,
+    isTelegramUA,
+    isTMeRef
+  });
+});
 
 app.get('*',async function(req, res){
     res.render('404', { 
