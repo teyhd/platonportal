@@ -132,9 +132,8 @@ app.use("/sso", makeSsoRouter({
   issuer: process.env.SSOADR,
   jwtSecret: process.env.JWTSECRET,
   clients: {
-    "bookpc": { client_secret: "pcbigsectet", redirect_uri: "https://pc.platoniks.ru/cb",post_logout_redirect_uris: [
-      process.env.BOOKPC_BASE + '/'
-    ], srv_name: 'bookpc' },
+    "bookpc": { client_secret: "pcbigsectet", redirect_uri: "https://pc.platoniks.ru/cb",
+      post_logout_redirect_uris: ['https://pc.platoniks.ru'], srv_name: 'bookpc' },
   }
 }));
 
