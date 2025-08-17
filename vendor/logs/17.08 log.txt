@@ -128,3 +128,280 @@
  test:0
  23:37:45 ТЕСТ 0
  23:37:45 / 92.100.172.129
+ 02:39:51 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 02:39:51 Сервер - запущен
+ 02:39:51 Порт: 777
+ 02:42:39 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 02:42:39 Сервер - запущен
+ 02:42:39 Порт: 777
+ 02:43:40 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 02:43:40 Сервер - запущен
+ 02:43:40 Порт: 777
+ 02:43:45 / undefined undefined undefined undefined 1
+ 02:43:45 undefined
+ 02:43:53 /rooms undefined undefined undefined undefined 1
+ 02:44:02 /auth undefined undefined undefined undefined 1 
+ pin:1701
+ 02:44:03 
+ id:152 
+ name:Елена Евгеньевна 
+ role:2
+ 02:44:03 / 152 Елена Евгеньевна undefined undefined 1
+ 02:44:03 2
+ 02:44:09 /rooms 152 Елена Евгеньевна undefined undefined 1
+ 02:44:09 Глобальный косяк приложения!!!  TypeError: vcall.get_rooms is not a function
+    at file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:340:31
+    at Layer.handle [as handle_request] (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\route.js:144:13)
+    at Route.dispatch (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\route.js:114:3)
+    at Layer.handle [as handle_request] (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:108:16
+    at Layer.handle [as handle_request] (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\layer.js:95:5)
+ 02:44:24 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 02:44:24 Сервер - запущен
+ 02:44:24 Порт: 777
+ 02:44:24 /rooms undefined undefined undefined undefined 1
+ 02:44:31 / undefined undefined undefined undefined 127.0.0.1
+ 02:44:31 undefined
+ 02:44:37 /auth undefined undefined undefined undefined 1 
+ pin:1701
+ 02:44:37 
+ id:152 
+ name:Елена Евгеньевна 
+ role:2
+ 02:44:37 / 152 Елена Евгеньевна undefined undefined 1
+ 02:44:37 2
+ 02:44:45 /rooms 152 Елена Евгеньевна undefined undefined 1
+ 02:45:34 /rooms 152 Елена Евгеньевна undefined undefined 1
+ 02:47:12 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 02:47:12 Сервер - запущен
+ 02:47:12 Порт: 777
+ 02:48:56 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 02:48:56 Сервер - запущен
+ 02:48:56 Порт: 777
+ 02:49:07 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 02:49:07 Сервер - запущен
+ 02:49:07 Порт: 777
+ 02:52:11 /rooms undefined undefined undefined undefined 1
+ 02:52:29 / undefined undefined undefined undefined 1
+ 02:52:29 undefined
+ 02:52:39 /auth undefined undefined undefined undefined 1 
+ pin:10101
+ 02:52:39 
+ id:104 
+ name:Владислав Сергеевич 
+ role:2
+ 02:52:39 / 104 Владислав Сергеевич undefined undefined 1
+ 02:52:39 2
+ 02:52:42 /getvlinks 104 Владислав Сергеевич undefined undefined 1
+ 02:54:02 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 02:54:02 Сервер - запущен
+ 02:54:02 Порт: 777
+ 04:12:09 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:12:09 Сервер - запущен
+ 04:12:09 Порт: 777
+ 04:21:47 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:21:47 Сервер - запущен
+ 04:21:47 Порт: 777
+ 04:22:20 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:22:20 Сервер - запущен
+ 04:22:20 Порт: 777
+ 04:23:06 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:23:06 Сервер - запущен
+ 04:23:06 Порт: 777
+ 04:25:40 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:25:40 Сервер - запущен
+ 04:25:40 Порт: 777
+ 04:25:50 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:25:50 Сервер - запущен
+ 04:25:50 Порт: 777
+ 04:25:57 / undefined undefined undefined undefined 1
+ 04:27:07 / undefined undefined undefined undefined 1
+ 04:28:40 / undefined undefined undefined undefined 1
+ 04:28:55 /auth undefined undefined undefined undefined 1 
+ pin:5050
+ 04:28:55 
+ id:151 
+ name:Наталья Александровна 
+ role:5
+ 04:28:55 / 151 Наталья Александровна undefined undefined 1
+ 04:30:07 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:30:07 Сервер - запущен
+ 04:30:07 Порт: 777
+ 04:31:34 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:31:34 Сервер - запущен
+ 04:31:34 Порт: 777
+ 04:31:36 / undefined undefined undefined undefined 1
+ 04:31:45 /auth undefined undefined undefined undefined 1 
+ pin:10101
+ 04:31:46 
+ id:104 
+ name:Владислав Сергеевич 
+ role:2
+ 04:31:46 / 104 Владислав Сергеевич undefined undefined 1
+ 04:31:46 Глобальный косяк приложения!!!  ReferenceError: Cannot access 'menu' before initialization
+    at file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:120:9
+    at Layer.handle [as handle_request] (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\route.js:144:13)
+    at Route.dispatch (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\route.js:114:3)
+    at Layer.handle [as handle_request] (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:108:16
+    at Layer.handle [as handle_request] (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\layer.js:95:5)
+ 04:32:17 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:32:17 Сервер - запущен
+ 04:32:17 Порт: 777
+ 04:32:17 / undefined undefined undefined undefined 1
+ 04:32:24 /auth undefined undefined undefined undefined 127.0.0.1 
+ pin:10101
+ 04:32:24 
+ id:104 
+ name:Владислав Сергеевич 
+ role:2
+ 04:32:24 / 104 Владислав Сергеевич undefined undefined 127.0.0.1
+ 04:32:51 / 104 Владислав Сергеевич undefined undefined 1
+ 04:33:36 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:33:36 Сервер - запущен
+ 04:33:36 Порт: 777
+ 04:33:40 / undefined undefined undefined undefined 1
+ 04:33:46 /auth undefined undefined undefined undefined 1 
+ pin:10101
+ 04:33:46 
+ id:104 
+ name:Владислав Сергеевич 
+ role:2
+ 04:33:46 / 104 Владислав Сергеевич undefined undefined 1
+ 04:33:56 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:33:56 Сервер - запущен
+ 04:33:56 Порт: 777
+ 04:34:00 / undefined undefined undefined undefined 1
+ 04:34:07 /auth undefined undefined undefined undefined 1 
+ pin:1701
+ 04:34:07 
+ id:152 
+ name:Елена Евгеньевна 
+ role:2
+ 04:34:07 / 152 Елена Евгеньевна undefined undefined 1
+ 04:38:42 / 152 Елена Евгеньевна undefined undefined 1
+ 04:39:20 / 152 Елена Евгеньевна undefined undefined 1
+ 04:40:14 / 152 Елена Евгеньевна undefined undefined 1
+ 04:41:12 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:41:12 Сервер - запущен
+ 04:41:12 Порт: 777
+ 04:41:54 / undefined undefined undefined undefined 1
+ 04:41:54 Глобальный косяк приложения!!!  Error: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'order desc' at line 1
+    at PromisePool.query (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\mysql2\lib\promise\pool.js:36:22)
+    at Module.get_cards (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:34:39)
+    at file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:120:26
+    at Layer.handle [as handle_request] (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\route.js:144:13)
+    at Route.dispatch (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\route.js:114:3)
+    at Layer.handle [as handle_request] (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\index.js:280:10)
+ 04:42:32 / undefined undefined undefined undefined 1
+ 04:42:32 Глобальный косяк приложения!!!  Error: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'order desc' at line 1
+    at PromisePool.query (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\mysql2\lib\promise\pool.js:36:22)
+    at Module.get_cards (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/db.mjs:34:39)
+    at file:///C:/Users/mit/Documents/0.Projects/mainportal/platonportal.js:120:26
+    at Layer.handle [as handle_request] (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\route.js:144:13)
+    at Route.dispatch (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\route.js:114:3)
+    at Layer.handle [as handle_request] (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\router\index.js:280:10)
+ 04:42:35 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:42:35 Сервер - запущен
+ 04:42:35 Порт: 777
+ 04:42:35 / undefined undefined undefined undefined 1
+ 04:43:13 / undefined undefined undefined undefined 1
+ 04:43:49 / undefined undefined undefined undefined 1
+ 04:45:03 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:45:03 Сервер - запущен
+ 04:45:03 Порт: 777
+ 04:45:17 /auth undefined undefined undefined undefined 1 
+ pin:5050
+ 04:45:17 
+ id:151 
+ name:Наталья Александровна 
+ role:5
+ 04:45:17 / 151 Наталья Александровна undefined undefined 1
+ 04:45:56 / 151 Наталья Александровна undefined undefined 1
+ 04:46:21 / 151 Наталья Александровна undefined undefined 1
+ 04:46:41 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:46:41 Сервер - запущен
+ 04:46:41 Порт: 777
+ 04:46:43 / undefined undefined undefined undefined 1
+ 04:46:49 /auth undefined undefined undefined undefined 1 
+ pin:10101
+ 04:46:50 
+ id:104 
+ name:Владислав Сергеевич 
+ role:5
+ 04:46:50 / 104 Владислав Сергеевич undefined undefined 1
+ 04:47:21 / 104 Владислав Сергеевич undefined undefined 1
+ 04:47:23 / 104 Владислав Сергеевич undefined undefined 1
+ 04:47:40 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:47:40 Сервер - запущен
+ 04:47:40 Порт: 777
+ 04:47:42 / undefined undefined undefined undefined 1
+ 04:47:49 /auth undefined undefined undefined undefined 1 
+ pin:10101
+ 04:47:49 
+ id:104 
+ name:Владислав Сергеевич 
+ role:5
+ 04:47:49 / 104 Владислав Сергеевич undefined undefined 1
+ 04:48:13 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:48:13 Сервер - запущен
+ 04:48:13 Порт: 777
+ 04:49:32 / undefined undefined undefined undefined 1
+ 04:49:45 /auth undefined undefined undefined undefined 1 
+ pin:10101
+ 04:49:45 
+ id:104 
+ name:Владислав Сергеевич 
+ role:5
+ 04:49:46 / 104 Владислав Сергеевич undefined undefined 1
+ 04:50:15 / 104 Владислав Сергеевич undefined undefined 1
+ 04:50:50 / 104 Владислав Сергеевич undefined undefined 1
+ 04:51:40 / 104 Владислав Сергеевич undefined undefined 1
+ 04:51:40 /logout 104 Владислав Сергеевич undefined undefined 1
+ 04:51:40 Владислав Сергеевич вышел из системы
+ 04:51:40 / undefined undefined undefined undefined 1
+ 04:51:43 /logout undefined undefined undefined undefined 1
+ 04:51:43 undefined вышел из системы
+ 04:51:43 / undefined undefined undefined undefined 1
+ 04:51:43 / undefined undefined undefined undefined 1
+ 04:51:51 /auth undefined undefined undefined undefined 1 
+ pin:10101
+ 04:51:51 
+ id:104 
+ name:Владислав Сергеевич 
+ role:5
+ 04:51:51 / 104 Владислав Сергеевич undefined undefined 1
+ 04:52:11 /logout 104 Владислав Сергеевич undefined undefined 1
+ 04:52:11 Владислав Сергеевич вышел из системы
+ 04:52:12 / undefined undefined undefined undefined 1
+ 04:52:12 / undefined undefined undefined undefined 1
+ 04:52:17 /auth undefined undefined undefined undefined 1 
+ pin:71231
+ 04:52:17 
+ id:138 
+ name:Наталья Николаевна 
+ role:5
+ 04:52:17 / 138 Наталья Николаевна undefined undefined 1
+ 04:52:23 /getvlinks 138 Наталья Николаевна undefined undefined 1
+ 04:55:22 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 04:55:22 Сервер - запущен
+ 04:55:22 Порт: 777
+ 05:01:39 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 05:01:39 Сервер - запущен
+ 05:01:39 Порт: 777
