@@ -179,7 +179,7 @@ export function makeSsoRouter(config = {}) {
       req.session.name = null
       req.session.right = null
       res.clearCookie("sso.sid", {
-      path: "/",
+      //path: "/",
       httpOnly: true,
       sameSite: "lax",       // если фронт на другом домене — можно 'none' + secure:true
       secure: false          // true если HTTPS
