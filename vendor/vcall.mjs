@@ -1,4 +1,5 @@
 import pkg from "plugnmeet-sdk-js";
+import { mlog } from "./logs.js";
 const { PlugNmeet } = pkg;
 
 const pnm = new PlugNmeet(
@@ -17,9 +18,9 @@ export async function openroom(room_id,usr_name,usr_id,admin) {
             {"room_id": room_id,
                 "empty_timeout": 20,
                         "metadata": {
-                        "room_title": "V.CALL",
-                        "welcome_message": "Онлайн уроки",
-                        "webhook_url": "https://platoniks.ru/vcalllogg",
+                        "room_title": `${usr_name}`,
+                        "welcome_message": "V.CALL - Онлайн уроки",
+                        "webhook_url": "https://platoniks.ru/vcalllog",
                         "logout_url": "https://platoniks.ru/",
                         "room_features": {
                         "allow_webcams": true,
@@ -31,14 +32,14 @@ export async function openroom(room_id,usr_name,usr_id,admin) {
                         "allow_view_other_users_list": true,
                         "allow_polls": true,
                         "enable_analytics": true,
-                        "allow_virtual_bg": true,
+                        "allow_virtual_bg": false,
                         "allow_raise_hand": true,
-                        "auto_gen_user_id": false,
+                        "auto_gen_user_id": true,
                         "room_duration": 0,
                         "recording_features": {
-                            "is_allow": true,
-                            "is_allow_cloud": true,
-                            "is_allow_local": true,
+                            "is_allow": false,
+                            "is_allow_cloud": false,
+                            "is_allow_local": false,
                             "enable_auto_cloud_recording": false
                         },
                         "chat_features": {
@@ -91,7 +92,7 @@ export async function openroom(room_id,usr_name,usr_id,admin) {
             }
         )
 
-        console.log(result);
+        mlog(result);
         return await get_link(room_id,usr_name,usr_id,admin)
         
     }
@@ -108,15 +109,16 @@ export async function get_link(room_id,usr_name,usr_id,admin){
                     "is_admin": admin,
                     "is_hidden": false,
                     "user_metadata": {
+                        "preferred_lang":"ru-RU",
                     //"profile_pic": "https://profile.pic/im.jpg",
-                    "lock_settings": {
-                        "lock_microphone": false,
-                        "lock_webcam": false,
-                        "lock_screen_sharing": false,
-                        "lock_chat": false,
-                        "lock_chat_send_message": false,
-                        "lock_chat_file_share": false
-                    }
+                        "lock_settings": {
+                            "lock_microphone": false,
+                            "lock_webcam": false,
+                            "lock_screen_sharing": false,
+                            "lock_chat": false,
+                            "lock_chat_send_message": false,
+                            "lock_chat_file_share": false
+                        }
                     }
                 }
     })
@@ -124,6 +126,27 @@ export async function get_link(room_id,usr_name,usr_id,admin){
     return res
 }
 
+
 export async function rooms_info() {
     return await pnm.getActiveRoomsInfo()
+}
+
+export async function get_analytic(room_id) {
+    let ans = await pnm.fetchAnalytics({
+        "room_ids": [room_id],
+        "from": 0,
+        "limit": 1,
+        "order_by": "DESC"
+        })
+        mlog(ans);
+        mlog(ans.result)
+        console.dir(ans.result.analytics_list)
+        let result = await pnm.getAnalyticsDownloadToken({"file_id": ans.result.analytics_list[0].file_id})
+        result = `https://meet.platoniks.ru/download/analytics/${result.token}`
+        return result
+}
+
+
+export async function close_room(room_id) {
+    return await pnm.endRoom({"room_id": room_id})
 }

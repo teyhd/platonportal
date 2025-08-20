@@ -156,7 +156,7 @@ app.get('/',async (req,res)=>{
     try {
         rolen = req.session.right ?? 0;
         rolen = hlp.getRolesBySrvId(rolen,1)
-        
+        req.session.right = rolen
     } catch (error) {
         mlog(error);
     }
@@ -370,12 +370,16 @@ app.get('/jointo',async (req,res)=>{
     res.redirect(ans.link)
     
 })
-app.get('/vcalllogg',async (req,res)=>{
-    mlog(req.query)
+app.post('/vcalllog',async (req,res)=>{
+    const body = req.body || {};
+    mlog(body)
+    say(body)
     res.send('ok')
 })
+
 app.get('/rooms',async (req,res)=>{
-    if (req.session.right>1){
+    mlog(req.session.right)
+    if (req.session.right>=1){
         let ans = await vcall.rooms_info() 
         console.log(ans);
         res.send(ans)
@@ -383,6 +387,35 @@ app.get('/rooms',async (req,res)=>{
         res.sendStatus(403)
     }
 })
+
+app.get('/getanalyt',async (req,res)=>{
+    mlog(req.session.right)
+    if (req.session.right==5){
+        const query = req.query.roomid || {};
+        let ans = await vcall.get_analytic(query)
+        console.log(ans);
+        res.send(ans)
+    } else{
+        res.sendStatus(403)
+    }
+})
+/*
+.header-logo {
+    background-image: url(./assets/imgs/app-banner.jpg) !important;
+}
+*/
+app.get('/closeroom',async (req,res)=>{
+    mlog(req.session.right)
+    if (req.session.right==5){
+        const query = req.query.roomid || {};
+        let ans = await vcall.close_room(query)
+        console.log(ans);
+        res.send(ans)
+    } else{
+        res.sendStatus(403)
+    }
+})
+
 app.get('/auth',async (req,res)=>{
     console.log(req.query);
     if (req.query.pins!=undefined){
