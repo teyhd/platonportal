@@ -34,7 +34,7 @@ export async function openroom(room_id,usr_name,usr_id,admin) {
                         "enable_analytics": true,
                         "allow_virtual_bg": false,
                         "allow_raise_hand": true,
-                        "auto_gen_user_id": true,
+                        "auto_gen_user_id": false,
                         "room_duration": 0,
                         "recording_features": {
                             "is_allow": false,
