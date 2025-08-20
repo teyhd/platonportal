@@ -1,5 +1,6 @@
 import pkg from "plugnmeet-sdk-js";
 import { mlog } from "./logs.js";
+import { log } from "console";
 const { PlugNmeet } = pkg;
 
 const pnm = new PlugNmeet(
@@ -9,6 +10,8 @@ const pnm = new PlugNmeet(
 );
 export async function openroom(room_id,usr_name,usr_id,admin) {
     let result = await pnm.isRoomActive({"room_id": room_id})
+    console.log(result);
+    
     if (result.is_active) {
         return await get_link(room_id,usr_name,usr_id,admin)
      //Получили активную комнату
@@ -93,6 +96,7 @@ export async function openroom(room_id,usr_name,usr_id,admin) {
         )
 
         mlog(result);
+        console.dir(result);
         return await get_link(room_id,usr_name,usr_id,admin)
         
     }
@@ -122,7 +126,14 @@ export async function get_link(room_id,usr_name,usr_id,admin){
                     }
                 }
     })
-    res.link = `https://meet.platoniks.ru/?access_token=${res.token}`
+    const custom = {
+  custom_css_url: "https://platoniks.ru/pgm/plugnmeet.css?v=1",
+// custom_logo: "https://platoniks.ru/pgm/logo.png",
+  //background_image: "https://platoniks.ru/pgm/0.jpg"
+};
+   
+
+    res.link = `https://meet.platoniks.ru/?access_token=${res.token}&custom_design=${encodeURIComponent(JSON.stringify(custom))}`;//`https://meet.platoniks.ru/?access_token=${res.token}&custom_design={"custom_css_url":"https://platoniks.ru/pgm/plugnmeet.css"}`
     return res
 }
 
