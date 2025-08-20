@@ -16,6 +16,7 @@ import cookieParser from 'cookie-parser'
 import path from 'path'
 import fs from 'fs-extra'
 import { fileURLToPath } from 'url';
+import { console } from 'inspector/promises';
 
 var PORT = process.env.PORT || 777;
  //PORT = process.env.PORT || 80;
@@ -372,8 +373,8 @@ app.get('/jointo',async (req,res)=>{
 })
 app.post('/vcalllog',async (req,res)=>{
     const body = req.body || {};
-    mlog(body)
-    say(body)
+    console.dir(body)
+    //say(body)
     res.send('ok')
 })
 
