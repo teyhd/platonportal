@@ -344,3 +344,311 @@
  test:0
  23:07:53 ТЕСТ 0
  23:07:53 / 95.108.213.118
+ 00:00:27 /err undefined undefined undefined undefined 1
+ 00:00:27 /tg-probe undefined undefined undefined undefined 1
+ 00:00:29 /tg-probe undefined undefined undefined undefined 1
+ 00:00:31 /tg-probe undefined undefined undefined undefined 1
+ 00:01:08 /err undefined undefined undefined undefined 1
+ 00:01:08 /tg-probe undefined undefined undefined undefined 1
+ 00:01:38 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:01:38 Сервер - запущен
+ 00:01:38 Порт: 777
+ 00:01:41 undefined вышел из системы
+ 00:01:41 Глобальный косяк приложения!!!  TypeError: Cannot read properties of undefined (reading 'regenerate')
+    at Immediate.<anonymous> (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/ssoRouter.mjs:177:23)
+    at process.processImmediate (node:internal/timers:485:21)
+ 00:02:15 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:02:15 Сервер - запущен
+ 00:02:15 Порт: 777
+ 00:02:17 undefined вышел из системы
+ 00:02:17 / undefined undefined undefined undefined 1
+ 00:02:17
+ 00:02:18 /tg-probe undefined undefined undefined undefined 1
+ 00:02:23 /err undefined undefined undefined undefined 1
+ 00:02:23 /tg-probe undefined undefined undefined undefined 1
+ 00:02:24 undefined вышел из системы
+ 00:02:24 / undefined undefined undefined undefined 1
+ 00:02:24
+ 00:02:25 /tg-probe undefined undefined undefined undefined 1
+ 00:02:29 / 100 Владислав Сергеевич undefined undefined 1
+ 00:02:29 /img/ 100 Владислав Сергеевич undefined undefined 1
+ 00:02:29 /tg-probe 100 Владислав Сергеевич undefined undefined 1
+ 00:02:33 /err 100 Владислав Сергеевич undefined undefined 1
+ 00:02:33 /tg-probe 100 Владислав Сергеевич undefined undefined 1
+ 00:04:27 Владислав Сергеевич вышел из системы
+ 00:04:27 / undefined undefined undefined undefined 1
+ 00:04:27
+ 00:04:27 /tg-probe undefined undefined undefined undefined 1
+ 00:04:29 /auth undefined undefined undefined undefined 1
+ 00:04:29 /tg-probe undefined undefined undefined undefined 1
+ 00:05:19 undefined вышел из системы
+ 00:05:19 / undefined undefined undefined undefined 1
+ 00:05:19
+ 00:05:27 /sso/err 147 Елена Евгеньевна undefined undefined 1
+ 00:05:27 /sso/jquery.js 147 Елена Евгеньевна undefined undefined 1
+ 00:05:27 /sso/lib.js 147 Елена Евгеньевна undefined undefined 1
+ 00:05:27 /sso/main.js 147 Елена Евгеньевна undefined undefined 1
+ 00:05:27 /tg-probe 147 Елена Евгеньевна undefined undefined 1
+ 00:05:47 /sso/err 147 Елена Евгеньевна undefined undefined 1
+ 00:05:47 /sso/jquery.js 147 Елена Евгеньевна undefined undefined 1
+ 00:05:47 /sso/lib.js 147 Елена Евгеньевна undefined undefined 1
+ 00:05:47 /sso/main.js 147 Елена Евгеньевна undefined undefined 1
+ 00:05:48 /tg-probe 147 Елена Евгеньевна undefined undefined 1
+ 00:05:53 /sso/err 147 Елена Евгеньевна undefined undefined 1
+ 00:05:53 /sso/jquery.js 147 Елена Евгеньевна undefined undefined 1
+ 00:05:53 /sso/lib.js 147 Елена Евгеньевна undefined undefined 1
+ 00:05:53 /sso/main.js 147 Елена Евгеньевна undefined undefined 1
+ 00:05:53 /tg-probe 147 Елена Евгеньевна undefined undefined 1
+ 00:06:46 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:06:46 Сервер - запущен
+ 00:06:46 Порт: 777
+ 00:06:57 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:06:57 Сервер - запущен
+ 00:06:57 Порт: 777
+ 00:07:01 /sso/jquery.js undefined undefined undefined undefined 1
+ 00:07:01 /sso/lib.js undefined undefined undefined undefined 1
+ 00:07:01 /sso/main.js undefined undefined undefined undefined 1
+ 00:07:02 /tg-probe undefined undefined undefined undefined 1
+ 00:07:10 /sso/jquery.js undefined undefined undefined undefined 1
+ 00:07:10 /sso/lib.js undefined undefined undefined undefined 1
+ 00:07:10 /sso/main.js undefined undefined undefined undefined 1
+ 00:07:10 /tg-probe undefined undefined undefined undefined 1
+ 00:07:13 / undefined undefined undefined undefined 1
+ 00:07:13
+ 00:07:13 /tg-probe undefined undefined undefined undefined 1
+ 00:07:18 / 100 Владислав Сергеевич undefined undefined 1
+ 00:07:19 /img/ 100 Владислав Сергеевич undefined undefined 1
+ 00:07:19 /tg-probe 100 Владислав Сергеевич undefined undefined 1
+ 00:07:49 undefined вышел из системы
+ 00:07:49 / undefined undefined undefined undefined 1
+ 00:07:49
+ 00:07:52 undefined вышел из системы
+ 00:07:52 / undefined undefined undefined undefined 1
+ 00:07:52
+ 00:08:55 undefined вышел из системы
+ 00:08:55 / undefined undefined undefined undefined 1
+ 00:08:55
+ 00:10:02 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:10:02 Сервер - запущен
+ 00:10:02 Порт: 777
+ 00:10:06 undefined вышел из системы
+ 00:10:06 Глобальный косяк приложения!!!  TypeError: Cannot read properties of undefined (reading 'regenerate')
+    at Immediate.<anonymous> (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/ssoRouter.mjs:185:23)
+    at process.processImmediate (node:internal/timers:485:21)
+ 00:11:28 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:11:28 Сервер - запущен
+ 00:11:28 Порт: 777
+ 00:11:28 /auth undefined undefined undefined undefined 1
+ 00:11:29 /tg-probe undefined undefined undefined undefined 1
+ 00:11:32 / undefined undefined undefined undefined 1
+ 00:11:32
+ 00:11:33 /tg-probe undefined undefined undefined undefined 1
+ 00:11:38 / 147 Елена Евгеньевна undefined undefined 1
+ 00:11:38 /tg-probe 147 Елена Евгеньевна undefined undefined 1
+ 00:12:48 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:12:48 Сервер - запущен
+ 00:12:48 Порт: 777
+ 00:12:54 undefined вышел из системы
+ 00:12:54 Глобальный косяк приложения!!!  TypeError: Cannot read properties of undefined (reading 'regenerate')
+    at Immediate.<anonymous> (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/ssoRouter.mjs:186:21)
+    at process.processImmediate (node:internal/timers:485:21)
+ 00:13:08 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:13:08 Сервер - запущен
+ 00:13:08 Порт: 777
+ 00:13:09 /auth undefined undefined undefined undefined 1
+ 00:13:10 /tg-probe undefined undefined undefined undefined 127.0.0.1
+ 00:13:16 /auth undefined undefined undefined undefined 1
+ 00:13:16 /tg-probe undefined undefined undefined undefined 1
+ 00:13:24 undefined вышел из системы
+ 00:13:24 Глобальный косяк приложения!!!  TypeError: Cannot read properties of undefined (reading 'regenerate')
+    at Immediate.<anonymous> (file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/ssoRouter.mjs:186:21)
+    at process.processImmediate (node:internal/timers:485:21)
+ 00:14:11 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:14:11 Сервер - запущен
+ 00:14:11 Порт: 777
+ 00:14:11 /auth undefined undefined undefined undefined 1
+ 00:14:12 /tg-probe undefined undefined undefined undefined 1
+ 00:14:17 undefined вышел из системы
+ 00:14:17 / undefined undefined undefined undefined 1
+ 00:14:17
+ 00:15:09 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:15:09 Сервер - запущен
+ 00:15:09 Порт: 777
+ 00:15:26 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:15:26 Сервер - запущен
+ 00:15:26 Порт: 777
+ 00:15:29 undefined вышел из системы
+ 00:15:29 Глобальный косяк приложения!!!  Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
+    at ServerResponse.setHeader (node:_http_outgoing:699:11)
+    at ServerResponse.header (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\response.js:794:10)
+    at ServerResponse.location (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\response.js:925:15)
+    at ServerResponse.redirect (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express\lib\response.js:963:18)
+    at file:///C:/Users/mit/Documents/0.Projects/mainportal/vendor/ssoRouter.mjs:185:15
+    at Immediate.<anonymous> (C:\Users\mit\Documents\0.Projects\mainportal\node_modules\express-session\session\store.js:54:5)
+    at process.processImmediate (node:internal/timers:485:21)
+ 00:15:29 / undefined undefined undefined undefined 1
+ 00:15:29
+ 00:15:29 /auth undefined undefined undefined undefined 1
+ 00:15:30 /tg-probe undefined undefined undefined undefined 1
+ 00:15:49 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:15:49 Сервер - запущен
+ 00:15:49 Порт: 777
+ 00:15:52 / 100 Владислав Сергеевич undefined undefined 1
+ 00:15:52 /img/ 100 Владислав Сергеевич undefined undefined 1
+ 00:15:52 /tg-probe 100 Владислав Сергеевич undefined undefined 1
+ 00:16:03 undefined вышел из системы
+ 00:16:03 / undefined undefined undefined undefined 1
+ 00:16:03
+ 00:16:06 undefined вышел из системы
+ 00:16:06 / undefined undefined undefined undefined 1
+ 00:16:06
+ 00:17:09 undefined вышел из системы
+ 00:17:09 / undefined undefined undefined undefined 1
+ 00:17:09
+ 00:17:11 undefined вышел из системы
+ 00:17:11 / undefined undefined undefined undefined 1
+ 00:17:11
+ 00:17:52 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:17:52 Сервер - запущен
+ 00:17:52 Порт: 777
+ 00:17:57 undefined вышел из системы
+ 00:17:57 / undefined undefined undefined undefined 1
+ 00:17:57
+ 00:17:57 /auth undefined undefined undefined undefined 1
+ 00:17:58 /tg-probe undefined undefined undefined undefined 1
+ 00:18:04 undefined вышел из системы
+ 00:18:04 / undefined undefined undefined undefined 1
+ 00:18:05
+ 00:19:09 undefined вышел из системы
+ 00:19:09 / undefined undefined undefined undefined 1
+ 00:19:09
+ 00:19:12 undefined вышел из системы
+ 00:19:12 / undefined undefined undefined undefined 1
+ 00:19:12
+ 00:21:04 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:21:04 Сервер - запущен
+ 00:21:04 Порт: 777
+ 00:21:09 undefined вышел из системы
+ 00:21:09 / undefined undefined undefined undefined 1
+ 00:21:10
+ 00:21:10 /auth undefined undefined undefined undefined 1
+ 00:21:10 /tg-probe undefined undefined undefined undefined 1
+ 00:21:16 undefined вышел из системы
+ 00:21:16 / undefined undefined undefined undefined 1
+ 00:21:16
+ 00:22:01 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:22:01 Сервер - запущен
+ 00:22:01 Порт: 777
+ 00:22:04 undefined вышел из системы
+ 00:22:04 /auth undefined undefined undefined undefined 1
+ 00:22:05 /tg-probe undefined undefined undefined undefined 1
+ 00:22:10 undefined вышел из системы
+ 00:22:40 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:22:41 Сервер - запущен
+ 00:22:41 Порт: 777
+ 00:22:42 undefined вышел из системы
+ 00:22:43 /auth undefined undefined undefined undefined 1
+ 00:22:43 /tg-probe undefined undefined undefined undefined 1
+ 00:22:48 undefined вышел из системы
+ 00:23:21 undefined вышел из системы
+ 00:23:37 undefined вышел из системы
+ 00:23:41 undefined вышел из системы
+ 00:27:04 /tg-probe 100 Владислав Сергеевич undefined undefined 1
+ 00:27:12 undefined вышел из системы
+ 00:30:20 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:30:20 Сервер - запущен
+ 00:30:20 Порт: 777
+ 00:31:55 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:31:55 Сервер - запущен
+ 00:31:55 Порт: 777
+ 00:32:19 /auth undefined undefined undefined undefined 1
+ 00:32:19 /tg-probe undefined undefined undefined undefined 1
+ 00:32:26 undefined вышел из системы
+ 00:34:05 undefined вышел из системы
+ 00:34:08 /auth undefined undefined undefined undefined 1
+ 00:34:09 /tg-probe undefined undefined undefined undefined 1
+ 00:34:34 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:34:34 Сервер - запущен
+ 00:34:34 Порт: 777
+ 00:34:44 /auth undefined undefined undefined undefined 1
+ 00:34:45 /tg-probe undefined undefined undefined undefined 1
+ 00:34:55 undefined вышел из системы
+ 00:34:55 /auth undefined undefined undefined undefined 1
+ 00:34:55 /tg-probe undefined undefined undefined undefined 1
+ 00:35:02 undefined вышел из системы
+ 00:35:02 /auth undefined undefined undefined undefined 1
+ 00:35:03 /tg-probe undefined undefined undefined undefined 1
+ 00:35:05 / undefined undefined undefined undefined 1
+ 00:35:05
+ 00:35:06 /tg-probe undefined undefined undefined undefined 1
+ 00:35:11 / 147 Елена Евгеньевна undefined undefined 1
+ 00:35:11 /tg-probe 147 Елена Евгеньевна undefined undefined 1
+ 00:35:24 undefined вышел из системы
+ 00:35:24 /auth undefined undefined undefined undefined 1
+ 00:35:24 /tg-probe undefined undefined undefined undefined 1
+ 00:35:32 /sso/jquery.js 147 Елена Евгеньевна undefined undefined 1
+ 00:35:32 /sso/lib.js 147 Елена Евгеньевна undefined undefined 1
+ 00:35:32 /sso/main.js 147 Елена Евгеньевна undefined undefined 1
+ 00:35:32 /tg-probe 147 Елена Евгеньевна undefined undefined 1
+ 00:35:36 / 147 Елена Евгеньевна undefined undefined 1
+ 00:35:36 /tg-probe 147 Елена Евгеньевна undefined undefined 1
+ 00:36:35 / 147 Елена Евгеньевна undefined undefined 1
+ 00:36:36 /tg-probe 147 Елена Евгеньевна undefined undefined 1
+ 00:36:40 undefined вышел из системы
+ 00:36:40 /auth undefined undefined undefined undefined 1
+ 00:36:40 /tg-probe undefined undefined undefined undefined 1
+ 00:36:47 /auth undefined undefined undefined undefined 1
+ 00:36:47 /tg-probe undefined undefined undefined undefined 1
+ 00:36:55 /sso/jquery.js undefined undefined undefined undefined 1
+ 00:36:55 /sso/lib.js undefined undefined undefined undefined 1
+ 00:36:55 /sso/main.js undefined undefined undefined undefined 1
+ 00:36:55 /tg-probe undefined undefined undefined undefined 1
+ 00:36:58 undefined вышел из системы
+ 00:37:19 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:37:19 Сервер - запущен
+ 00:37:19 Порт: 777
+ 00:37:20 undefined вышел из системы
+ 00:37:20 / undefined undefined undefined undefined 1
+ 00:37:20
+ 00:37:21 /tg-probe undefined undefined undefined undefined 1
+ 00:37:34 /auth undefined undefined undefined undefined 1
+ 00:37:35 /tg-probe undefined undefined undefined undefined 1
+ 00:37:40 /sso/jquery.js undefined undefined undefined undefined 1
+ 00:37:40 /sso/lib.js undefined undefined undefined undefined 1
+ 00:37:40 /sso/main.js undefined undefined undefined undefined 1
+ 00:37:41 /tg-probe undefined undefined undefined undefined 1
+ 00:38:33 undefined вышел из системы
+ 00:38:33 / undefined undefined undefined undefined 1
+ 00:38:33
+ 00:38:34 /tg-probe undefined undefined undefined undefined 1
+ 00:38:38 / 100 Владислав Сергеевич undefined undefined 1
+ 00:38:38 /img/ 100 Владислав Сергеевич undefined undefined 1
+ 00:38:38 /tg-probe 100 Владислав Сергеевич undefined undefined 1
+ 00:52:28 undefined вышел из системы
+ 00:52:28 / undefined undefined undefined undefined 1
+ 00:52:28
+ 00:52:28 /auth undefined undefined undefined undefined 1
+ 00:52:28 /.well-known/appspecific/com.chrome.devtools.json undefined undefined undefined undefined 1
+ 00:52:28 /tg-probe undefined undefined undefined undefined 1
+ 00:52:31 / undefined undefined undefined undefined 1
+ 00:52:31
+ 00:52:31 /.well-known/appspecific/com.chrome.devtools.json undefined undefined undefined undefined 1
+ 00:52:31 /tg-probe undefined undefined undefined undefined 1
+ 00:55:35 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 00:55:35 Сервер - запущен
+ 00:55:35 Порт: 777
+ 01:17:43 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 01:17:43 Сервер - запущен
+ 01:17:43 Порт: 777
+ 01:18:15 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 01:18:15 Сервер - запущен
+ 01:18:15 Порт: 777
+ 01:28:36 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 01:28:37 Сервер - запущен
+ 01:28:37 Порт: 777
+ 01:28:58 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 01:28:58 Сервер - запущен
+ 01:28:58 Порт: 777
+ 01:31:12 C:\Users\mit\Documents\0.Projects\mainportal\public
+ 01:31:12 Сервер - запущен
+ 01:31:12 Порт: 777

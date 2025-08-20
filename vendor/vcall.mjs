@@ -127,12 +127,9 @@ export async function get_link(room_id,usr_name,usr_id,admin){
                 }
     })
     const custom = {
-  custom_css_url: "https://platoniks.ru/pgm/plugnmeet.css?v=1",
-// custom_logo: "https://platoniks.ru/pgm/logo.png",
-  //background_image: "https://platoniks.ru/pgm/0.jpg"
-};
+        custom_css_url: "https://platoniks.ru/pgm/plugnmeet.css?v=1",
+    };
    
-
     res.link = `https://meet.platoniks.ru/?access_token=${res.token}&custom_design=${encodeURIComponent(JSON.stringify(custom))}`;//`https://meet.platoniks.ru/?access_token=${res.token}&custom_design={"custom_css_url":"https://platoniks.ru/pgm/plugnmeet.css"}`
     return res
 }
