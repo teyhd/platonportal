@@ -7,6 +7,5 @@
     background-size: cover;       /* растянуть по всей области */
     background-position: center;  /* центрировать */
     background-repeat: no-repeat; /* не повторять */
-    width: 100vw;                 /* ширина окна */
-    height: 100vh;                /* высота окна */
+
 }
