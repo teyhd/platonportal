@@ -157,7 +157,7 @@ app.get('/',async (req,res)=>{
     try {
         rolen = req.session.right ?? 0;
         rolen = hlp.getRolesBySrvId(rolen,1)
-        req.session.right = rolen
+        req.session.rolen = rolen
     } catch (error) {
         mlog(error);
     }
@@ -167,7 +167,7 @@ app.get('/',async (req,res)=>{
       title: 'Гармония Образования',
       menu:cards.filter(c => c.type === 0),
       info:cards.filter(c => c.type === 1),
-      auth: req.session.right
+      auth: rolen
     });
   })
 
@@ -188,7 +188,7 @@ app.get('/users', async (req, res) => {
       types,
       services,
       allRoles,
-      auth: req.session.right
+      auth: req.session.rolen
     });
   } catch (e) {
     console.error(e);
@@ -345,7 +345,7 @@ app.get('/manual',(req,res)=>{
     console.log(files);
     res.render('manual',{
         title: 'Инструкции',
-        auth: req.session.right,
+        auth: req.session.rolen,
         files:files
     });
 })
@@ -379,8 +379,8 @@ app.post('/vcalllog',async (req,res)=>{
 })
 
 app.get('/rooms',async (req,res)=>{
-    mlog(req.session.right)
-    if (req.session.right>=1){
+    mlog(req.session.rolen)
+    if (req.session.rolen>=1){
         let ans = await vcall.rooms_info() 
         console.log(ans);
         res.send(ans)
@@ -390,8 +390,8 @@ app.get('/rooms',async (req,res)=>{
 })
 
 app.get('/getanalyt',async (req,res)=>{
-    mlog(req.session.right)
-    if (req.session.right==5){
+    mlog(req.session.rolen)
+    if (req.session.rolen==5){
         const query = req.query.roomid || {};
         let ans = await vcall.get_analytic(query)
         console.log(ans);
@@ -406,8 +406,8 @@ app.get('/getanalyt',async (req,res)=>{
 }
 */
 app.get('/closeroom',async (req,res)=>{
-    mlog(req.session.right)
-    if (req.session.right==5){
+    mlog(req.session.rolen)
+    if (req.session.rolen==5){
         const query = req.query.roomid || {};
         let ans = await vcall.close_room(query)
         console.log(ans);
