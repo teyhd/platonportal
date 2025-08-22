@@ -46,14 +46,15 @@ async function fetchKodboxToken({ name, password }) {
         timeout: 4000,
         httpsAgent
       });
-
+     // console.dir(data);
       // Ответы kodbox бывают разных видов: ищем accessToken во всех популярных местах
       const token =
         data?.data?.accessToken ||
         data?.info ||
         data?.accessToken ||
+        data?.data ||
         data?.token;
-
+        //console.dir(token);
       if (typeof token === "string" && token.trim()) return token.trim();
       throw new Error("accessToken not found in response");
     } catch (e) {
@@ -110,7 +111,7 @@ router.get("/cloud", async (req, res) => {
             // Первый заход — чтобы kodbox поставил cookie сессии
             const resp = await fetch(${JSON.stringify(loginUrl)}, { credentials: "include" });
             // После входа — отправляем на желаемую страницу
-            //alert(resp)
+            alert(resp)
             location.replace(${JSON.stringify(toUrl.href)});
           } catch (e) {
            // location.href = ${JSON.stringify(`${KODBOX_URL}/#user/login`)};
