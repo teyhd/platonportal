@@ -473,7 +473,10 @@ app.get('/tg-probe', (req, res) => {
 
   const isTelegramUA = /\b(Telegram|TgApp)\b/i.test(ua);
   const isTMeRef     = /\b(t\.me|telegram\.me)\b/i.test(ref);
-
+  mlog(xrw,
+    isTelegramHeader,
+    isTelegramUA,
+    isTMeRef)
   res.set('Cache-Control', 'no-store');
   res.json({
     xrw,
