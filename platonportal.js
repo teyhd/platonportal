@@ -524,24 +524,54 @@ app.get("/diary", (req, res) => {
 
     res.setHeader("Cache-Control", "no-store");
     res.type("html").send(`<!doctype html>
-  <html lang="ru"><head>
-    <meta charset="utf-8">
-    <title>Вход в дневник…</title>
-    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
-  </head>
-  <body>
-    <form id="f" method="POST" action="${ACTION}">
-      <input type="hidden" name="Login" value="${creds.login}">
-      <input type="hidden" name="Password" value="${creds.password}">
-    </form>
-    <script>document.getElementById('f').submit();</script>
-    <noscript>
-      <p>Нажмите кнопку для входа:</p>
-      <button type="submit" form="f">Войти</button>
-    </noscript>
-  </body></html>`);
+      <html lang="ru"><head>
+        <meta charset="utf-8">
+        <title>Вход в дневник…</title>
+        <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+      </head>
+      <body>
+        <form id="f" method="POST" action="${ACTION}">
+          <input type="hidden" name="Login" value="${creds.login}">
+          <input type="hidden" name="Password" value="${creds.password}">
+        </form>
+        <script>document.getElementById('f').submit();</script>
+        <noscript>
+          <p>Нажмите кнопку для входа:</p>
+          <button type="submit" form="f">Войти</button>
+        </noscript>
+      </body></html>`);
 } else {
   return res.redirect(302, `https://club8899.studyapps.ru/user/login?ReturnUrl=%2f`);
+}
+
+});
+
+app.get("/tplatform", (req, res) => {
+  let creds = hlp.getLoginByService(req.session.logins, 6) 
+  if (creds) {
+    mlog('Логин:', creds.login, 'Пароль:', creds.pass);
+    const ACTION = "https://api.platonics.ru/teacher/login"; // если есть HTTPS — лучше https://
+
+    res.setHeader("Cache-Control", "no-store");
+    res.type("html").send(`<!doctype html>
+      <html lang="ru"><head>
+        <meta charset="utf-8">
+        <title>Вход в дневник…</title>
+        <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+      </head>
+      <body>
+        <form id="f" method="POST" action="${ACTION}">
+          <input type="hidden" name="username" value="${creds.login}">
+          <input type="hidden" name="password" value="${creds.password}">
+        </form>
+        <script>document.getElementById('f').submit();</script>
+        <noscript>
+          <p>Нажмите кнопку для входа:</p>
+          <button type="submit" form="f">Войти</button>
+        </noscript>
+      </body></html>`);
+} else {
+  return res.redirect(302, `https://api.platonics.ru/`);
 }
 
 });
