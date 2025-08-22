@@ -485,7 +485,7 @@ app.get('/tg-probe', (req, res) => {
     isTMeRef
   });
 });
-
+//SSO
 app.get("/cloud", (req, res) => {
   let login = process.env.KID_CLOUD
   let pass = process.env.KID_CLOUD
@@ -515,6 +515,37 @@ app.get("/cloud", (req, res) => {
   mlog(cloud_url)
   return res.redirect(302, cloud_url);
 });
+
+app.get("/diary", (req, res) => {
+
+  let login = 'vdyakonov'
+  let password = 'Tl147258000'
+  if (!login || !password) {
+    return res.status(400).send("Нет учётных данных для дневника.");
+  }
+
+  const ACTION = "http://club8899.studyapps.ru/user/login?ReturnUrl=%2f"; // если есть HTTPS — лучше https://
+
+  res.setHeader("Cache-Control", "no-store");
+  res.type("html").send(`<!doctype html>
+<html lang="ru"><head>
+  <meta charset="utf-8">
+  <title>Вход в дневник…</title>
+  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+</head>
+<body>
+  <form id="f" method="POST" action="${ACTION}">
+    <input type="hidden" name="Login" value="${login}">
+    <input type="hidden" name="Password" value="${password}">
+  </form>
+  <script>document.getElementById('f').submit();</script>
+  <noscript>
+    <p>Нажмите кнопку для входа:</p>
+    <button type="submit" form="f">Войти</button>
+  </noscript>
+</body></html>`);
+});
+
 app.get('*',async function(req, res){
     res.render('404', { 
         url: req.url,
