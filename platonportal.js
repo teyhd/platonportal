@@ -9,7 +9,7 @@ import * as db from './vendor/db.mjs';
 import * as hlp from './vendor/hlp.mjs';
 import * as vcall from './vendor/vcall.mjs';
 import { makeSsoRouter } from "./vendor/ssoRouter.mjs";
-import kodSsoRouter from "./vendor/kod-sso.mjs";
+//import kodSsoRouter from "./vendor/kod-sso.mjs";
 
 import express from 'express'
 import exphbs from 'express-handlebars'
@@ -140,8 +140,6 @@ app.use("/sso", makeSsoRouter({
   }
 }));
 
-
-
 app.use(express.json()); // для application/json
 app.use(async function (req, res, next) {
     let page = req._parsedOriginalUrl.pathname;
@@ -151,7 +149,7 @@ app.use(async function (req, res, next) {
      next();
 })
 
-app.use(kodSsoRouter);
+//app.use(kodSsoRouter);
 app.get('/e',(req,res)=>{
     req.session.test = 0
     res.sendStatus(200)
@@ -485,6 +483,33 @@ app.get('/tg-probe', (req, res) => {
   });
 });
 
+app.get("/cloud", (req, res) => {
+  let login = process.env.KID_CLOUD
+  let pass = process.env.KID_CLOUD
+  
+  mlog(req.session.rolen)
+  switch (req.session.rolen) {
+    case 1:
+      login = process.env.KID_CLOUD
+      pass = process.env.KID_CLOUD
+    break;
+    case 2,3,4:
+      login = process.env.KID_CLOUD
+      pass = process.env.TEACH_CLOUD
+    break;
+    case 5:
+      login = process.env.DEV_KOD_USER
+      pass = process.env.DEV_KOD_PASS
+    break;
+  default:
+    res.redirect(302, process.env.KODBOX_URL);
+    return 0;
+  }
+
+  let cloud_url = `${process.env.KODBOX_URL}?user/loginSubmit&name=${login}&password=${pass}&auto=1`
+  mlog(cloud_url)
+  return res.redirect(302, cloud_url);
+});
 app.get('*',async function(req, res){
     res.render('404', { 
         url: req.url,

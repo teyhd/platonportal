@@ -18,6 +18,8 @@ function buildLoginToken(username) {
 }
 
 router.get("/cloud", (req, res) => {
+
+    
   // 1) Маппинг твоего пользователя на пользователя kodbox
   let name = req.user?.kodUser || req.user?.email || req.user?.login; // подстрой под себя
   name = process.env.DEV_KOD_USER
