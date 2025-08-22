@@ -10,6 +10,16 @@ export function getRolesBySrvId(roles,srv_id) {
   if (found.length === 1) return found[0];     // если одна роль → число
   return found;                                // если несколько → массив
 }
+
+export function getLoginByService(logins, srvId) {
+  if (!Array.isArray(logins)) return null;
+  
+  const item = logins.find(l => String(l.srv_id) === String(srvId));
+  if (!item || !item.login || !item.pass) return null;
+
+  return { login: item.login, pass: item.pass };
+}
+
 export function formatUnixTime(unixTime) {
 // Преобразование Unix time в миллисекунды
 var dateTime = new Date(unixTime * 1000);

@@ -403,7 +403,7 @@
                     </td>
                     <td class="px-4 py-3">
                         <div class="flex items-center gap-2">
-                        <input type="password"
+                        <input type="text"
                                 class="pass-input w-full rounded-lg bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2
                                         focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
                                 placeholder="Новый пароль">
@@ -527,12 +527,15 @@ function clearLogins(){
     qs('.pass-input', tr).value  = '';
   });
 }
-function fillLogins(logins){
-  const map = new Map((logins||[]).map(l => [String(l.srv_id), l.login || '']));
+// logins = [{ srv_id, login, pass }]
+function fillLogins(logins) {
+  const lmap = new Map((logins || []).map(l => [String(l.srv_id), l.login || '']));
+  const pmap = new Map((logins || []).map(l => [String(l.srv_id), l.pass  || '']));
+
   qsa('#logins-tbody tr', userDrawer).forEach(tr => {
     const k = tr.dataset.srvId;
-    qs('.login-input', tr).value = map.get(k) || '';
-    qs('.pass-input', tr).value  = '';
+    qs('.login-input', tr).value = lmap.get(k) || '';
+    qs('.pass-input',  tr).value = pmap.get(k) || '';
   });
 }
 

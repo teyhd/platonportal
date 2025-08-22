@@ -201,7 +201,7 @@ export async function replace_user_rights(userId, pairs) {
 
 export async function get_user_logins(userId) {
   const [rows] = await usr.query(
-    `SELECT srvs_id AS srv_id, login FROM logins WHERE usr_id = ?`,
+    `SELECT srvs_id AS srv_id, login, pass FROM logins WHERE usr_id = ?`,
     [userId]
   );
   return rows;

@@ -166,7 +166,7 @@ app.get('/',async (req,res)=>{
         mlog(error);
     }
     console.log(rolen);
-
+    console.log(req.session.logins)
     let cards = await db.get_cards(rolen)
     res.render('new',{
       title: 'Гармония Образования',
@@ -242,7 +242,7 @@ app.get('/api/users/:id', async (req, res) => {
 
   const rights = await db.get_user_rights(id);
   const logins = await db.get_user_logins(id);
-  res.json({ ok:true, user, rights, logins });
+  res.json({ ok:true, user, rights, logins});
 });
 
 // Создать пользователя
@@ -517,33 +517,33 @@ app.get("/cloud", (req, res) => {
 });
 
 app.get("/diary", (req, res) => {
+  let creds = hlp.getLoginByService(req.session.logins, 4) 
+  if (creds) {
+    mlog('Логин:', creds.login, 'Пароль:', creds.pass);
+    const ACTION = "http://club8899.studyapps.ru/user/login?ReturnUrl=%2f"; // если есть HTTPS — лучше https://
 
-  let login = 'vdyakonov'
-  let password = 'Tl147258000'
-  if (!login || !password) {
-    return res.status(400).send("Нет учётных данных для дневника.");
-  }
+    res.setHeader("Cache-Control", "no-store");
+    res.type("html").send(`<!doctype html>
+  <html lang="ru"><head>
+    <meta charset="utf-8">
+    <title>Вход в дневник…</title>
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+  </head>
+  <body>
+    <form id="f" method="POST" action="${ACTION}">
+      <input type="hidden" name="Login" value="${creds.login}">
+      <input type="hidden" name="Password" value="${creds.password}">
+    </form>
+    <script>document.getElementById('f').submit();</script>
+    <noscript>
+      <p>Нажмите кнопку для входа:</p>
+      <button type="submit" form="f">Войти</button>
+    </noscript>
+  </body></html>`);
+} else {
+  return res.redirect(302, `http://club8899.studyapps.ru/user/login?ReturnUrl=%2f`);
+}
 
-  const ACTION = "http://club8899.studyapps.ru/user/login?ReturnUrl=%2f"; // если есть HTTPS — лучше https://
-
-  res.setHeader("Cache-Control", "no-store");
-  res.type("html").send(`<!doctype html>
-<html lang="ru"><head>
-  <meta charset="utf-8">
-  <title>Вход в дневник…</title>
-  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
-</head>
-<body>
-  <form id="f" method="POST" action="${ACTION}">
-    <input type="hidden" name="Login" value="${login}">
-    <input type="hidden" name="Password" value="${password}">
-  </form>
-  <script>document.getElementById('f').submit();</script>
-  <noscript>
-    <p>Нажмите кнопку для входа:</p>
-    <button type="submit" form="f">Войти</button>
-  </noscript>
-</body></html>`);
 });
 
 app.get('*',async function(req, res){
