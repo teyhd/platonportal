@@ -102,7 +102,13 @@ router.get("/cloud", async (req, res) => {
     // Трюк с промежуточной страницей:
     // 1) Логиним через ?accessToken, 2) затем JS-редирект на toUrl —
     //     так гарантируем попадание в нужную секцию UI после установки сессии.
-    const html = `<!doctype html><meta charset="utf-8">
+    return res.redirect(302, loginUrl);
+  } catch (e) {
+    console.error("Kodbox SSO error:", e?.message);
+    return res.redirect(`${KODBOX_URL}/#user/login`);
+  }
+});
+  /*  const html = `<!doctype html><meta charset="utf-8">
       <title>Вход в облако…</title>
       <link rel="icon" href="data:,">
       <script>
@@ -124,6 +130,6 @@ router.get("/cloud", async (req, res) => {
     console.error("Kodbox SSO error:", e?.message);
     return res.redirect(`${KODBOX_URL}/#user/login`);
   }
-});
+});*/
 
 export default router;
