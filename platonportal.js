@@ -562,7 +562,7 @@ app.get("/tplatform", (req, res) => {
       <body>
         <form id="f" method="POST" action="${ACTION}">
           <input type="hidden" name="username" value="${creds.login}">
-          <input type="hidden" name="password" value="${creds.password}">
+          <input type="hidden" name="password" value="${creds.pass}">
         </form>
         <script>document.getElementById('f').submit();</script>
         <noscript>
