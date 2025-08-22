@@ -486,14 +486,16 @@ app.get('/tg-probe', (req, res) => {
 app.get("/cloud", (req, res) => {
   let login = process.env.KID_CLOUD
   let pass = process.env.KID_CLOUD
-  
+
   mlog(req.session.rolen)
   switch (req.session.rolen) {
     case 1:
       login = process.env.KID_CLOUD
       pass = process.env.KID_CLOUD
     break;
-    case 2,3,4:
+    case 2:
+    case 3:
+    case 4:
       login = process.env.KID_CLOUD
       pass = process.env.TEACH_CLOUD
     break;
