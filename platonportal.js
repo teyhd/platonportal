@@ -139,7 +139,8 @@ app.use("/sso", makeSsoRouter({
       post_logout_redirect_uris: ['https://pc.platoniks.ru'], srv_name: 'bookpc' },
   }
 }));
-app.use(kodSsoRouter);
+
+
 
 app.use(express.json()); // для application/json
 app.use(async function (req, res, next) {
@@ -150,12 +151,14 @@ app.use(async function (req, res, next) {
      next();
 })
 
+app.use(kodSsoRouter);
 app.get('/e',(req,res)=>{
     req.session.test = 0
     res.sendStatus(200)
 })
 
 app.get('/',async (req,res)=>{
+   
     let rolen = 0
     try {
         rolen = req.session.right ?? 0;
@@ -165,6 +168,7 @@ app.get('/',async (req,res)=>{
         mlog(error);
     }
     console.log(rolen);
+
     let cards = await db.get_cards(rolen)
     res.render('new',{
       title: 'Гармония Образования',
