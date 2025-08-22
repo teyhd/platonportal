@@ -496,7 +496,7 @@ app.get("/cloud", (req, res) => {
     case 2:
     case 3:
     case 4:
-      login = process.env.KID_CLOUD
+      login = process.env.TEACH_CLOUD
       pass = process.env.TEACH_CLOUD
     break;
     case 5:
