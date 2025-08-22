@@ -9,7 +9,7 @@ import * as db from './vendor/db.mjs';
 import * as hlp from './vendor/hlp.mjs';
 import * as vcall from './vendor/vcall.mjs';
 import { makeSsoRouter } from "./vendor/ssoRouter.mjs";
-//import kodSsoRouter from "./vendor/kod-sso.mjs";
+import platformsso from "./vendor/platformsso.mjs";
 
 import express from 'express'
 import exphbs from 'express-handlebars'
@@ -18,7 +18,7 @@ import cookieParser from 'cookie-parser'
 import path from 'path'
 import fs from 'fs-extra'
 import { fileURLToPath } from 'url';
-import { console } from 'inspector/promises';
+//import { console } from 'inspector/promises';
 
 var PORT = process.env.PORT || 777;
  //PORT = process.env.PORT || 80;
@@ -139,6 +139,7 @@ app.use("/sso", makeSsoRouter({
       post_logout_redirect_uris: ['https://pc.platoniks.ru'], srv_name: 'bookpc' },
   }
 }));
+app.use(platformsso)
 
 app.use(express.json()); // для application/json
 app.use(async function (req, res, next) {
@@ -610,8 +611,6 @@ app.get("/tplatform", (req, res) => {
 </body></html>`);
 
 });
-
-
 
 app.get('*',async function(req, res){
     res.render('404', { 
