@@ -43,6 +43,46 @@
           Скопировать
         </button>
       </div>
+      
+      <!-- Приватность и авторизация -->
+      <div class="mt-4 grid gap-3 sm:grid-cols-2">
+        <!-- Сегменты: Публичная / Частная -->
+        <fieldset id="privacyGroup" role="radiogroup" aria-label="Тип комнаты"
+          class="rounded-xl bg-gray-800 border border-gray-700 p-2">
+          <input type="hidden" id="privacyInput" name="privacy" value="public">
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" role="radio" aria-checked="true" data-value="public"
+              class="seg active inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm transition
+                    bg-blue-600 text-white">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"><path d="M12 3a9 9 0 100 18 9 9 0 000-18Zm0 4.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3ZM9 17h6a3 3 0 00-6 0Z" stroke="currentColor" stroke-width="1.5"/></svg>
+              Публичная
+            </button>
+            <button type="button" role="radio" aria-checked="false" data-value="private"
+              class="seg inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm transition
+                    bg-gray-700 text-gray-200 hover:bg-gray-600">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"><path d="M17 11V8a5 5 0 10-10 0v3M6 11h12v8H6v-8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Частная
+            </button>
+          </div>
+          <p id="privacyHint" class="mt-2 text-xs text-gray-400">Ссылку видят все с доступом к странице.</p>
+        </fieldset>
+
+        <!-- Тумблер: Требовать авторизацию -->
+        <label class="group flex items-center justify-between gap-3 rounded-xl bg-gray-800 border border-gray-700 p-3">
+          <div>
+            <div class="text-sm text-gray-200">Требовать авторизацию</div>
+            <div class="text-xs text-gray-400">Гости войдут только под аккаунтом.</div>
+          </div>
+          <span class="relative inline-flex h-7 w-12 items-center">
+            <input id="requireAuth" name="require_auth" type="checkbox" class="peer sr-only">
+            <span aria-hidden="true"
+              class="absolute inset-0 rounded-full bg-gray-600 peer-checked:bg-blue-600 transition-colors"></span>
+            <span aria-hidden="true"
+              class="absolute left-1 h-5 w-5 rounded-full bg-white shadow transition-transform
+                    peer-checked:translate-x-5"></span>
+          </span>
+        </label>
+      </div>
 
       <!-- Кнопка для входа -->
       <div class="mt-4 flex flex-col sm:flex-row gap-2">
@@ -72,7 +112,11 @@
   let copyUrl = '';
   let joinUrl = '';
 
-  function openModal2(copy, join) {
+  function openModal2(copy, join,acc={pub:true,need_auth:false}) {
+    $("#requireAuth").val(acc.need_auth)
+    if (acc.pub){
+      $("#privacyInput").val("public");
+    } else $("#privacyInput").val("private");
     copyUrl = copy || '';
     joinUrl = join || '';
     document.getElementById('copy-link').value = copyUrl;
@@ -122,7 +166,7 @@
       success: function (datas) {
         console.log(datas);
         datas.roomid = window.location.href.split('#')[0] + datas.roomid
-        openModal2(datas.roomid, datas.link);
+        openModal2(datas.roomid, datas.link, datas.acc);
       },
       error: function (jqXHR, textStatus, errorThrown) {
         console.error("Ошибка отправки:", textStatus, errorThrown);
@@ -143,3 +187,61 @@
   });
 });
 </script>
+
+<script>
+(()=>{const g=document.getElementById('privacyGroup');if(!g)return;
+const btns=[...g.querySelectorAll('.seg')],hint=document.getElementById('privacyHint'),inp=document.getElementById('privacyInput');
+const texts={public:'Все ученики видят вашу комнату.',private:'Доступ только по ссылке.'};
+function set(v){inp.value=v;btns.forEach(b=>{const on=b.dataset.value===v;b.setAttribute('aria-checked',on);
+b.classList.toggle('active',on);
+b.className='seg inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm transition '+
+(on?'bg-blue-600 text-white':'bg-gray-700 text-gray-200 hover:bg-gray-600');
+});hint.textContent=texts[v]||'';}
+btns.forEach(b=>b.addEventListener('click',()=>set(b.dataset.value)));
+g.addEventListener('keydown',e=>{const i=btns.findIndex(b=>b.getAttribute('aria-checked')==='true');
+if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();
+const n=e.key==='ArrowRight'?(i+1)%btns.length:(i-1+btns.length)%btns.length;set(btns[n].dataset.value);btns[n].focus();}});
+set('public');
+})();
+
+
+</script>
+
+<script>
+$(function(){
+  function sendState(){
+    let pub = $("#privacyInput").val() === "public";
+    let needAuth = $("#requireAuth").is(":checked");
+    
+    $.ajax({
+      type: 'GET',
+      url: `/getvlinks`,
+      data: {
+        pub: pub,
+        need_auth: needAuth
+      },
+      contentType: 'application/json',
+      xhrFields: { withCredentials: true },
+      success: function(res){ 
+        console.log("Сервер ответил:", res); 
+      },
+      error: function(err){ 
+        console.error("Ошибка:", err); 
+      }
+    });
+  }
+
+  // событие на сегменте «Публичная/Частная»
+  $("#privacyGroup .seg").on("click", function(){
+    $("#privacyInput").val($(this).data("value"));
+    sendState();
+  });
+
+  // событие на чекбоксе
+  $("#requireAuth").on("change", function(){
+    sendState();
+  });
+});
+</script>
+
+

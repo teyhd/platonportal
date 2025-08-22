@@ -46,17 +46,23 @@ var formattedTime = day + '.' + month + ' ' + hours + ':' + minutes + ':' + seco
 return formattedTime;
 }
 export function translit(str) {
+  let ans
   const map = {
     'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i',
     'й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t',
     'у':'u','ф':'f','х':'h','ц':'c','ч':'ch','ш':'sh','щ':'sch','ъ':'','ы':'y','ь':'',
     'э':'e','ю':'yu','я':'ya'
   };
-  return str.toLowerCase()
+  try {
+    ans = str.toLowerCase()
             .replace(/\s+/g, '')        // удаляем пробелы
             .split('')
             .map(ch => map[ch] ?? ch)   // транслитерация
             .join('');
+  } catch (error) {
+    ans=null
+  }
+  return ans
 }
 
 // Пример:

@@ -168,7 +168,8 @@ export function makeSsoRouter(config = {}) {
     if (req.query.err == undefined) err = 0
     res.render('accerr',{
       title: 'Ошибка',
-      err:err
+      err:err,
+      auth: req.session.rolen
     });
   })
   // --- Единый выход ---

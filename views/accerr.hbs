@@ -38,14 +38,25 @@
                     shadow transition-all duration-200 hover:-translate-y-0.5">
             Вернуться назад
         </button>
-        <a href="/sso/logout"
-            class="inline-flex justify-center items-center px-5 py-3 rounded-xl bg-red-600 hover:bg-red-500
-                    shadow transition-all duration-200 hover:-translate-y-0.5">
-            Выйти из аккаунта
-        </a>
+          {{#if auth}}
+        <!-- Если пользователь авторизован -->
+          <a href="/sso/logout"
+              class="inline-flex justify-center items-center px-5 py-3 rounded-xl bg-red-600 hover:bg-red-500
+                      shadow transition-all duration-200 hover:-translate-y-0.5">
+              Выйти из аккаунта
+          </a>
+          {{else}}
+            <!-- Если пользователь НЕ авторизован -->
+             <a href="/sso/login"
+              class="inline-flex justify-center items-center px-5 py-3 rounded-xl bg-red-600 hover:bg-red-500
+                      shadow transition-all duration-200 hover:-translate-y-0.5">
+              Войти в аккаунт
+          </a>
+          {{/if}}
+
 
         </div>
-
+  </div>
   </section>
 
   <!-- Подсказки/ССЫЛКИ (опционально) -->
@@ -70,3 +81,4 @@
 <footer class="mt-16 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
   © 2025 Гармония образования
 </footer>
+

@@ -355,17 +355,39 @@ app.get('/manual',(req,res)=>{
         files:files
     });
 })
+
+let ROOMS = { }
 app.get('/getvlinks',async (req,res)=>{
     let roomid = hlp.translit(req.session.name)
-    let ans = await vcall.openroom(roomid,req.session.name,`id0000${req.session.uid}`,true)
+    if (roomid==null) {
+        res.send({roomid:'Перезагрузите старницу'})
+        return 1
+    }
+    let pub = req.query?.pub || true
+    let need_auth = req.query?.need_auth || true
+    let acc={pub:pub,need_auth:need_auth}
+    ROOMS[roomid] = acc
+    let ans = await vcall.openroom(roomid,req.session.name,`id0000${req.session.uid}`,true, acc)
     console.log(ans);
+    //console.log(ROOMS[roomid]);
+    
     ans.roomid = `jointo?roomid=${roomid}`
+    ans.acc = acc
     res.send(ans)    
 })
 app.get('/jointo',async (req,res)=>{
     if (req.query.roomid==undefined){
         res.redirect('/')
     }    
+    let need_auth = ROOMS[req.query.roomid]?.need_auth || false
+    console.log(need_auth);
+    
+    if (need_auth){
+        if (req.session.name==undefined || req.session.name==null){
+          res.redirect('/sso/err')
+          return 1
+        } 
+    }
     let name = req.session.name ||= `user${Math.floor(Math.random()*100000)}`;
     let uid = req.session.uid  ||= `id0000${Math.floor(100000 + Math.random()*900000)}`;
 

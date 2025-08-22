@@ -8,12 +8,12 @@ const pnm = new PlugNmeet(
   process.env.MEETKEY,
   process.env.MEETSECR
 );
-export async function openroom(room_id,usr_name,usr_id,admin) {
+export async function openroom(room_id,usr_name,usr_id,admin,acc={pub:true,need_auth:false}) {
     let result = await pnm.isRoomActive({"room_id": room_id})
     console.log(result);
     
     if (result.is_active) {
-        return await get_link(room_id,usr_name,usr_id,admin)
+        return await get_link(room_id,usr_name,usr_id,admin,acc)
      //Получили активную комнату
     }
      else {//Создать
@@ -23,6 +23,7 @@ export async function openroom(room_id,usr_name,usr_id,admin) {
                         "metadata": {
                         "room_title": `${usr_name}`,
                         "welcome_message": "V.CALL - Онлайн уроки",
+                        "extra_data": JSON.stringify(acc),
                         "webhook_url": "https://platoniks.ru/vcalllog",
                         "logout_url": "https://platoniks.ru/",
                         "room_features": {
@@ -37,7 +38,7 @@ export async function openroom(room_id,usr_name,usr_id,admin) {
                         "enable_analytics": true,
                         "allow_virtual_bg": false,
                         "allow_raise_hand": true,
-                        "auto_gen_user_id": false,
+                        "auto_gen_user_id": true,
                         "room_duration": 0,
                         "recording_features": {
                             "is_allow": false,
@@ -97,14 +98,14 @@ export async function openroom(room_id,usr_name,usr_id,admin) {
 
         mlog(result);
         console.dir(result);
-        return await get_link(room_id,usr_name,usr_id,admin)
+        return await get_link(room_id,usr_name,usr_id,admin,acc)
         
     }
    
 }
 
 //openroom('VCALL')
-export async function get_link(room_id,usr_name,usr_id,admin){
+export async function get_link(room_id,usr_name,usr_id,admin,acc={pub:true,need_auth:false}){
     let res = await pnm.getJoinToken({
                 "room_id": room_id,
                 "user_info": {
@@ -114,6 +115,7 @@ export async function get_link(room_id,usr_name,usr_id,admin){
                     "is_hidden": false,
                     "user_metadata": {
                         "preferred_lang":"ru-RU",
+                         "extra_data": JSON.stringify(acc),
                     //"profile_pic": "https://profile.pic/im.jpg",
                         "lock_settings": {
                             "lock_microphone": false,
