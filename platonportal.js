@@ -520,7 +520,7 @@ app.get("/diary", (req, res) => {
   let creds = hlp.getLoginByService(req.session.logins, 4) 
   if (creds) {
     mlog('Логин:', creds.login, 'Пароль:', creds.pass);
-    const ACTION = "https://club8899.studyapps.ru/user/login?ReturnUrl=%2f"; // если есть HTTPS — лучше https://
+    const ACTION = "https://club8899.studyapps.ru/user/login"; // если есть HTTPS — лучше https://
 
     res.setHeader("Cache-Control", "no-store");
     res.type("html").send(`<!doctype html>
@@ -532,7 +532,7 @@ app.get("/diary", (req, res) => {
       <body>
         <form id="f" method="POST" action="${ACTION}">
           <input type="hidden" name="Login" value="${creds.login}">
-          <input type="hidden" name="Password" value="${creds.password}">
+          <input type="hidden" name="Password" value="${creds.pass}">
         </form>
         <script>document.getElementById('f').submit();</script>
         <noscript>
@@ -546,35 +546,95 @@ app.get("/diary", (req, res) => {
 
 });
 
+const ACTION = "https://api.platonics.ru/teacher/login";
+const TOPICS = "https://api.platonics.ru/teacher/topics/";
+
 app.get("/tplatform", (req, res) => {
-  let creds = hlp.getLoginByService(req.session.logins, 6) 
-  if (creds) {
-    mlog('Логин:', creds.login, 'Пароль:', creds.pass);
-    const ACTION = "https://api.platonics.ru/teacher/login"; // если есть HTTPS — лучше https://
+  const creds = hlp.getLoginByService(req.session.logins, 6);
+  if (!creds) return res.redirect(302, "https://api.platonics.ru/");
 
-    res.setHeader("Cache-Control", "no-store");
-    res.type("html").send(`<!doctype html>
-      <html lang="ru"><head>
-        <meta charset="utf-8">
-        <title>Вход в дневник…</title>
-        <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
-      </head>
-      <body>
-        <form id="f" method="POST" action="${ACTION}">
-          <input type="hidden" name="username" value="${creds.login}">
-          <input type="hidden" name="password" value="${creds.pass}">
-        </form>
-        <script>document.getElementById('f').submit();</script>
-        <noscript>
-          <p>Нажмите кнопку для входа:</p>
-          <button type="submit" form="f">Войти</button>
-        </noscript>
-      </body></html>`);
-} else {
-  return res.redirect(302, `https://api.platonics.ru/`);
-}
+  res.setHeader("Cache-Control", "no-store");
+  res.type("html").send(`<!doctype html>
+<html lang="ru"><head>
+  <meta charset="utf-8">
+  <title>Вход в дневник…</title>
+  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body{font:16px/1.5 system-ui,Segoe UI,Roboto,Arial;padding:24px;color:#222}
+    .muted{opacity:.7}
+    pre{white-space:pre-wrap;word-break:break-word;background:#f6f8fa;padding:12px;border-radius:8px}
+  </style>
+</head>
+<body>
+  <div id="s">Выполняется вход…</div>
+  <noscript>Нужен JavaScript для входа.</noscript>
 
+  <script>
+  (async () => {
+    const ACTION = ${JSON.stringify(ACTION)};
+    const TOPICS = ${JSON.stringify(TOPICS)};
+    const login = ${JSON.stringify(creds.login)};
+    const password = ${JSON.stringify(creds.pass)};
+
+    const setStatus = (html) => { const el = document.getElementById('s'); if (el) el.innerHTML = html; };
+    const esc = (s) => String(s)
+      .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+      .replaceAll('"','&quot;').replaceAll("'","&#39;");
+
+    try {
+      // 1) Логин: JSON → {access, refresh, is_staff}
+      const r = await fetch(ACTION, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ login, password })
+      });
+      if (!r.ok) throw new Error(await r.text().catch(()=>r.statusText));
+      const data = await r.json();
+      const access = data?.access;
+      const refresh = data?.refresh;
+      if (!access) throw new Error("Нет access-токена в ответе.");
+
+      // (опционально) сохраним токены в sessionStorage
+      try {
+        sessionStorage.setItem("tplat_access", access);
+        if (refresh) sessionStorage.setItem("tplat_refresh", refresh);
+      } catch(_) {}
+
+      // 2) Запросим /teacher/topics/ с Bearer
+      const t = await fetch(TOPICS, {
+        method: "GET",
+        headers: { "Authorization": "Bearer " + access }
+      });
+
+      if (!t.ok) throw new Error(await t.text().catch(()=>t.statusText));
+
+      const ct = t.headers.get("content-type") || "";
+      if (ct.includes("application/json")) {
+        const json = await t.json();
+        setStatus(
+          '<h2>Темы</h2><pre>'+esc(JSON.stringify(json, null, 2))+'</pre>' +
+          '<p class="muted">Получено с использованием Bearer-токена на клиенте.</p>'
+        );
+      } else {
+        // если отдают HTML — просто отображаем его
+        const html = await t.text();
+        document.open(); document.write(html); document.close();
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus(
+        '<p>Ошибка входа или запроса тем.</p>' +
+        '<pre>'+esc(err && (err.message || err))+'</pre>' +
+        '<p><a href="https://api.platonics.ru/">Перейти вручную</a></p>'
+      );
+    }
+  })();
+  </script>
+</body></html>`);
 });
+
+
 
 app.get('*',async function(req, res){
     res.render('404', { 
