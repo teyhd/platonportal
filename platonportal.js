@@ -520,7 +520,7 @@ app.get("/diary", (req, res) => {
   let creds = hlp.getLoginByService(req.session.logins, 4) 
   if (creds) {
     mlog('Логин:', creds.login, 'Пароль:', creds.pass);
-    const ACTION = "http://club8899.studyapps.ru/user/login?ReturnUrl=%2f"; // если есть HTTPS — лучше https://
+    const ACTION = "https://club8899.studyapps.ru/user/login?ReturnUrl=%2f"; // если есть HTTPS — лучше https://
 
     res.setHeader("Cache-Control", "no-store");
     res.type("html").send(`<!doctype html>
@@ -541,7 +541,7 @@ app.get("/diary", (req, res) => {
     </noscript>
   </body></html>`);
 } else {
-  return res.redirect(302, `http://club8899.studyapps.ru/user/login?ReturnUrl=%2f`);
+  return res.redirect(302, `https://club8899.studyapps.ru/user/login?ReturnUrl=%2f`);
 }
 
 });
