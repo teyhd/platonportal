@@ -1,3 +1,9 @@
+// routes/kodbox-sso.mjs
+import express from "express";
+
+import 'dotenv/config'
+const router = express.Router();
+
 // routes/kodbox-sso.mjs — фрагмент
 import crypto from "crypto";
 
@@ -30,3 +36,6 @@ router.get("/cloud", (req, res) => {
 
   return res.redirect(302, loginUrl);
 });
+
+
+export default router;
