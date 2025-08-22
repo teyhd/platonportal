@@ -551,7 +551,7 @@ const TOPICS = "https://api.platonics.ru/teacher/topics/";
 
 app.get("/tplatform", (req, res) => {
   const creds = hlp.getLoginByService(req.session.logins, 6);
-  if (!creds) return res.redirect(302, "https://api.platonics.ru/");
+  if (!creds) return res.redirect(302, "https://api.platonics.ru/fff");
 
   res.setHeader("Cache-Control", "no-store");
   res.type("html").send(`<!doctype html>
@@ -560,78 +560,55 @@ app.get("/tplatform", (req, res) => {
   <title>Вход в дневник…</title>
   <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body{font:16px/1.5 system-ui,Segoe UI,Roboto,Arial;padding:24px;color:#222}
-    .muted{opacity:.7}
-    pre{white-space:pre-wrap;word-break:break-word;background:#f6f8fa;padding:12px;border-radius:8px}
-  </style>
+  <style>body{font:16px/1.5 system-ui,Segoe UI,Roboto,Arial;padding:24px;color:#222}pre{white-space:pre-wrap;word-break:break-word;background:#f6f8fa;padding:12px;border-radius:8px}</style>
 </head>
 <body>
   <div id="s">Выполняется вход…</div>
   <noscript>Нужен JavaScript для входа.</noscript>
-
   <script>
   (async () => {
-    const ACTION = ${JSON.stringify(ACTION)};
-    const TOPICS = ${JSON.stringify(TOPICS)};
-    const login = ${JSON.stringify(creds.login)};
+    const ACTION = "https://api.platonics.ru/teacher/login";
+    const TOPICS = "https://api.platonics.ru/teacher/topics/";
+    const username = ${JSON.stringify(creds.login)};
     const password = ${JSON.stringify(creds.pass)};
-
-    const setStatus = (html) => { const el = document.getElementById('s'); if (el) el.innerHTML = html; };
-    const esc = (s) => String(s)
-      .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
-      .replaceAll('"','&quot;').replaceAll("'","&#39;");
+    const esc = (s)=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
 
     try {
-      // 1) Логин: JSON → {access, refresh, is_staff}
+      // 1) Логин: отправляем username/password (и дублируем login на всякий случай)
       const r = await fetch(ACTION, {
         method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ login, password })
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ username, password, login: username })
       });
       if (!r.ok) throw new Error(await r.text().catch(()=>r.statusText));
       const data = await r.json();
-      const access = data?.access;
-      const refresh = data?.refresh;
-      if (!access) throw new Error("Нет access-токена в ответе.");
+      const access = data && data.access;
+      if (!access) throw new Error("Нет access-токена в ответе API.");
 
-      // (опционально) сохраним токены в sessionStorage
-      try {
-        sessionStorage.setItem("tplat_access", access);
-        if (refresh) sessionStorage.setItem("tplat_refresh", refresh);
-      } catch(_) {}
-
-      // 2) Запросим /teacher/topics/ с Bearer
+      // 2) Запрос тем с Bearer
       const t = await fetch(TOPICS, {
         method: "GET",
-        headers: { "Authorization": "Bearer " + access }
+        headers: { "Authorization": "Bearer " + access, "Accept": "application/json" }
       });
-
       if (!t.ok) throw new Error(await t.text().catch(()=>t.statusText));
 
       const ct = t.headers.get("content-type") || "";
       if (ct.includes("application/json")) {
         const json = await t.json();
-        setStatus(
-          '<h2>Темы</h2><pre>'+esc(JSON.stringify(json, null, 2))+'</pre>' +
-          '<p class="muted">Получено с использованием Bearer-токена на клиенте.</p>'
-        );
+        document.getElementById('s').innerHTML = "<h2>Темы</h2><pre>"+esc(JSON.stringify(json,null,2))+"</pre>";
       } else {
-        // если отдают HTML — просто отображаем его
         const html = await t.text();
         document.open(); document.write(html); document.close();
       }
     } catch (err) {
       console.error(err);
-      setStatus(
-        '<p>Ошибка входа или запроса тем.</p>' +
-        '<pre>'+esc(err && (err.message || err))+'</pre>' +
-        '<p><a href="https://api.platonics.ru/">Перейти вручную</a></p>'
-      );
+      document.getElementById('s').innerHTML =
+        "<p>Ошибка входа или запроса тем.</p><pre>"+esc(err && (err.message || err))+"</pre>";
     }
   })();
   </script>
 </body></html>`);
+
 });
 
 
