@@ -19,7 +19,8 @@ function buildLoginToken(username) {
 
 router.get("/cloud", (req, res) => {
   // 1) Маппинг твоего пользователя на пользователя kodbox
-  const name = req.user?.kodUser || req.user?.email || req.user?.login; // подстрой под себя
+  let name = req.user?.kodUser || req.user?.email || req.user?.login; // подстрой под себя
+  name = process.env.DEV_KOD_USER
   if (!name || !API_LOGIN_TONKEN) return res.status(403).send("Нет связки с облаком или секрета.");
 
   // 2) Куда вести после логина (в пределах cloud-домена)
