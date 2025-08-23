@@ -41,6 +41,40 @@ export function makeSsoRouter(config = {}) {
           });
       }
   }) 
+
+  router.get('/bauth',async (req,res)=>{
+      console.log(req.query);
+      if (req.query.pin!=undefined){
+          let ans = await db.auth_user(req.query.pin);
+          if (ans!=undefined){
+              req.session.uid = ans.id
+              req.session.name = ans.name
+              req.session.right = await db.get_user_rights(ans.id)
+              req.session.logins = await db.get_user_logins(ans.id)
+              const back = req.session.return_to || "/"; req.session.return_to = null;
+              //res.redirect(back);
+              res.send(`
+              <html>
+                <head>
+                  <meta http-equiv="refresh" content="0.3; url=/" />
+                  <title>Авторизация</title>
+                </head>
+                <body>
+                  <p>Авторизация успешна. Перенаправление...</p>
+                </body>
+              </html>
+            `);
+          } else {
+              res.send('Ошибка, неверная ссылка!')
+          }
+          console.dir(ans);
+      } else{
+          res.render('auth',{
+              title: 'Авторизация'
+          });
+      }
+  }) 
+
   router.post('/auth',async (req,res)=>{
     console.log("dddd",req.body);
     if (req.body.pin!=undefined){
