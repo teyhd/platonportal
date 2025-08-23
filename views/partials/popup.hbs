@@ -107,16 +107,44 @@
 </div>
 
 <script>
+
+</script>
+
+<script>
+
+
   $(document).ready(function () {
+      const g=document.getElementById('privacyGroup');if(!g)return;
+const btns=[...g.querySelectorAll('.seg')],hint=document.getElementById('privacyHint'),inp=document.getElementById('privacyInput');
+const texts={public:'Все ученики видят вашу комнату.',private:'Доступ только по ссылке.'};
+function set(v){inp.value=v;btns.forEach(b=>{const on=b.dataset.value===v;b.setAttribute('aria-checked',on);
+b.classList.toggle('active',on);
+b.className='seg inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm transition '+
+(on?'bg-blue-600 text-white':'bg-gray-700 text-gray-200 hover:bg-gray-600');
+});hint.textContent=texts[v]||'';}
+btns.forEach(b=>b.addEventListener('click',()=>set(b.dataset.value)));
+g.addEventListener('keydown',e=>{const i=btns.findIndex(b=>b.getAttribute('aria-checked')==='true');
+if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();
+const n=e.key==='ArrowRight'?(i+1)%btns.length:(i-1+btns.length)%btns.length;set(btns[n].dataset.value);btns[n].focus();}});
+set('public');
+
   // ссылки для копирования и перехода задаются отдельно
   let copyUrl = '';
   let joinUrl = '';
 
-  function openModal2(copy, join,acc={pub:true,need_auth:false}) {
-    $("#requireAuth").val(acc.need_auth)
-    if (acc.pub){
-      $("#privacyInput").val("public");
-    } else $("#privacyInput").val("private");
+  function openModal2(copy, join,acc) {
+    $("#requireAuth").prop("checked", String(acc.need_auth).toLowerCase() == "true").trigger("change");
+   // $("#requireAuth").val() 
+    console.log(acc)
+    console.log(String(acc.pub).toLowerCase() ,acc.pub)
+    if (String(acc.pub).toLowerCase() == "true"){
+      s//etPrivacy("public");
+      set('public')
+    } else {
+      //setPrivacy("private");
+      set('private')
+    }
+
     copyUrl = copy || '';
     joinUrl = join || '';
     document.getElementById('copy-link').value = copyUrl;
@@ -166,6 +194,7 @@
       success: function (datas) {
         console.log(datas);
         datas.roomid = window.location.href.split('#')[0] + datas.roomid
+        console.log(datas.acc);
         openModal2(datas.roomid, datas.link, datas.acc);
       },
       error: function (jqXHR, textStatus, errorThrown) {
@@ -186,25 +215,6 @@
     $("#modal").addClass("hidden");
   });
 });
-</script>
-
-<script>
-(()=>{const g=document.getElementById('privacyGroup');if(!g)return;
-const btns=[...g.querySelectorAll('.seg')],hint=document.getElementById('privacyHint'),inp=document.getElementById('privacyInput');
-const texts={public:'Все ученики видят вашу комнату.',private:'Доступ только по ссылке.'};
-function set(v){inp.value=v;btns.forEach(b=>{const on=b.dataset.value===v;b.setAttribute('aria-checked',on);
-b.classList.toggle('active',on);
-b.className='seg inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm transition '+
-(on?'bg-blue-600 text-white':'bg-gray-700 text-gray-200 hover:bg-gray-600');
-});hint.textContent=texts[v]||'';}
-btns.forEach(b=>b.addEventListener('click',()=>set(b.dataset.value)));
-g.addEventListener('keydown',e=>{const i=btns.findIndex(b=>b.getAttribute('aria-checked')==='true');
-if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();
-const n=e.key==='ArrowRight'?(i+1)%btns.length:(i-1+btns.length)%btns.length;set(btns[n].dataset.value);btns[n].focus();}});
-set('public');
-})();
-
-
 </script>
 
 <script>
@@ -282,6 +292,43 @@ $(function(){
 
 <script>
 (() => {
+  $('a[href="#room"]').on("click", function (e) {
+    let rooms = []
+    e.preventDefault(); // отменяем переход по ссылке
+    $.ajax({
+      type: 'GET',
+      url: '/rooms',
+      contentType: 'application/json',
+      xhrFields: {
+        withCredentials: true
+      },
+      success: function (datas) {
+        console.log(datas);
+        try {
+          datas.rooms.forEach(element => {
+            let romid = element?.room_info?.room_id ?? false
+            const isPublic = (()=>{
+            const val = datas?.acc?.[element?.room_info?.room_id]?.pub;
+            return val === undefined ? true : String(val).toLowerCase() === "true";
+          })();
+            if (isPublic) rooms.push({roomid: element.room_info.room_id, title: element.room_info.room_title,peops:element.room_info.joined_participants});
+          });
+        } catch (error) {
+          console.error(error);
+        }
+        openRoomsModal(rooms) ;
+        //datas.roomid = window.location.href.split('#')[0] + datas.roomid
+        //openModal2(datas.roomid, datas.link, datas.acc);
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.error("Ошибка отправки:", textStatus, errorThrown);
+      }
+    });
+   // 
+
+    
+  });
+
   const modal   = document.getElementById('roomsModal');
   const list    = document.getElementById('roomsList');
   const emptyEl = document.getElementById('roomsEmpty');
@@ -302,7 +349,7 @@ $(function(){
       const rid   = String(r.roomid ?? '').trim();
       const title = (r.title ?? `Комната ${rid || 'без ID'}`).toString();
       const url   = `/jointo?roomid=${encodeURIComponent(rid)}`;
-
+      const peops = r.peops || 0;
       const a = document.createElement('a');
       a.href = url;
       a.className = [
@@ -321,7 +368,10 @@ $(function(){
           <div class="min-w-0">
             <div class="font-medium truncate">${escapeHtml(title)}</div>
             <div class="text-xs text-gray-400 mt-0.5">roomid: <span class="font-mono">${escapeHtml(rid)}</span></div>
-
+            <div class="mt-2 inline-flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-full text-xs bg-gray-700 text-gray-200">Участников: ${escapeHtml(peops)}</span>
+              <span class="px-2 py-0.5 rounded-full text-xs bg-blue-600/20 text-blue-300">активна</span>
+            </div>
           </div>
         </div>
       `;

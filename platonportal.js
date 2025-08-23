@@ -363,8 +363,8 @@ app.get('/getvlinks',async (req,res)=>{
         res.send({roomid:'Перезагрузите старницу'})
         return 1
     }
-    let pub = req.query?.pub || true
-    let need_auth = req.query?.need_auth || true
+    let pub = req.query?.pub || ROOMS[roomid]?.pub || true
+    let need_auth = req.query?.need_auth || ROOMS[roomid]?.need_auth || false
     let acc={pub:pub,need_auth:need_auth}
     ROOMS[roomid] = acc
     let ans = await vcall.openroom(roomid,req.session.name,`id0000${req.session.uid}`,true, acc)
@@ -410,6 +410,7 @@ app.get('/rooms',async (req,res)=>{
     mlog(req.session.rolen)
     if (req.session.rolen>=1){
         let ans = await vcall.rooms_info() 
+        ans.acc = ROOMS
         console.log(ans);
         res.send(ans)
     } else{
@@ -653,3 +654,4 @@ async function start(){
     }
 }
 start();
+
