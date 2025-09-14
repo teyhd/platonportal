@@ -380,7 +380,7 @@ app.get('/jointo',async (req,res)=>{
         res.redirect('/')
     }    
     let need_auth = ROOMS[req.query.roomid]?.need_auth || false
-    console.log(need_auth);
+    console.log(`NEED AUTH ${need_auth}`);
     
     if (need_auth){
         if (req.session.name==undefined || req.session.name==null){
