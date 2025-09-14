@@ -382,7 +382,7 @@ app.get('/jointo',async (req,res)=>{
     let need_auth = ROOMS[req.query.roomid]?.need_auth || false
     console.log(`NEED AUTH ${need_auth}`);
     
-    if (need_auth){
+    if (need_auth == true){
         if (req.session.name==undefined || req.session.name==null){
           res.redirect('/sso/err')
           return 1
