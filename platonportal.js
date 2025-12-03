@@ -137,6 +137,10 @@ app.use("/sso", makeSsoRouter({
   clients: {
     "bookpc": { client_secret: "pcbigsectet", redirect_uri: "https://pc.platoniks.ru/cb",
       post_logout_redirect_uris: ['https://pc.platoniks.ru'], srv_name: 'bookpc' },
+    "rasp": { client_secret: "Mydirtybigsectetb", redirect_uri: "https://rasp.platoniks.ru/cb",
+    post_logout_redirect_uris: ['https://rasp.platoniks.ru'], srv_name: 'rasp' },
+    "report": { client_secret: "pcbigsectet", redirect_uri: "https://rep.platoniks.ru/cb",
+      post_logout_redirect_uris: ['https://rep.platoniks.ru'], srv_name: 'report' },
   }
 }));
 app.use(platformsso)
