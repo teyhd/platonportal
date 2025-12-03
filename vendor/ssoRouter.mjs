@@ -144,18 +144,23 @@ export function makeSsoRouter(config = {}) {
 
   // --- /token ---
   router.post("/token", async (req, res) => {
+    console.log(req.body);
     const { grant_type, code, client_id, client_secret, redirect_uri } = req.body;
     const cl = CLIENTS[client_id];
-
+    console.log(cl,client_secret,redirect_uri);
     if (!cl || cl.client_secret !== client_secret || cl.redirect_uri !== redirect_uri) {
+      console.log("invalid_client")
       return res.status(400).json({ error: "invalid_client" });
     }
     if (grant_type !== "authorization_code") {
+      console.log("unsupported_grant_type")
       return res.status(400).json({ error: "unsupported_grant_type" });
     }
 
     const entry = CODES.get(code);
+    console.log(entry);
     if (!entry || entry.client_id !== client_id) {
+      console.log("invalid_code")
       return res.status(400).json({ error: "invalid_code" });
     }
     CODES.delete(code);
