@@ -409,6 +409,7 @@ $(function(){
 })();
 </script>
 
+
 {{!-- Модальное окно списка онлайн-уроков /rooms --}}
 <div
   id="roomsModal"
@@ -607,10 +608,10 @@ $(function(){
     // Привязка к ссылкам a[href="#lesson"]
     function bindLessonLinks() {
       if (window.jQuery) {
-        // В стиле твоего примера: $('a[href="#lesson"]').on("click", ...)
-        window.jQuery('a[href="#lesson"]').off('click.roomsModal').on('click.roomsModal', handleClick);
+        // В стиле твоего примера: $('a[href="#rooms"]').on("click", ...)
+        window.jQuery('a[href="#rooms"]').on('click.roomsModal', handleClick);
       } else {
-        var links = document.querySelectorAll('a[href="#lesson"]');
+        var links = document.querySelectorAll('a[href="#rooms"]');
         links.forEach(function (a) {
           a.addEventListener('click', handleClick);
         });
