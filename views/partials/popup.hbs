@@ -408,3 +408,216 @@ $(function(){
   window.closeRoomsModal = closeRoomsModal;
 })();
 </script>
+
+{{!-- Модальное окно списка онлайн-уроков /rooms --}}
+<div
+  id="roomsModal"
+  class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-black/40"
+>
+  <div
+    class="w-full sm:max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-lg flex flex-col max-h-[90vh]"
+  >
+    <div class="flex items-center justify-between px-4 py-3 border-b">
+      <h2 class="text-base font-semibold text-gray-900">
+        Онлайн-уроки
+      </h2>
+      <button
+        type="button"
+        class="rooms-modal-close p-2 -mr-2 text-gray-500 hover:text-gray-800 focus:outline-none"
+        aria-label="Закрыть"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div id="roomsModalBody" class="p-4 overflow-y-auto text-sm text-gray-800 space-y-3">
+      <div class="flex items-center gap-2 text-gray-500">
+        <span class="inline-block h-4 w-4 border-2 border-t-transparent border-gray-400 rounded-full animate-spin"></span>
+        <span>Загружаем список комнат…</span>
+      </div>
+    </div>
+
+    <div class="px-4 pb-4 pt-2 border-t text-[11px] text-gray-500">
+      Данные обновляются при каждом открытии окна.
+    </div>
+  </div>
+</div>
+
+<script>
+// Модалка /rooms: мобильный "нижний лист" + центрирование на больших экранах
+(function () {
+  function ready(fn) {
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      setTimeout(fn, 0);
+    } else {
+      document.addEventListener('DOMContentLoaded', fn);
+    }
+  }
+
+  ready(function () {
+    var modal = document.getElementById('roomsModal');
+    if (!modal) return;
+
+    var bodyEl = document.getElementById('roomsModalBody');
+    var closeButtons = modal.querySelectorAll('.rooms-modal-close');
+    var backdropClickClose = true;
+
+    function openModal() {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.classList.add('overflow-hidden');
+    }
+
+    function closeModal() {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    // Закрытие по кнопке
+    closeButtons.forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        closeModal();
+      });
+    });
+
+    // Закрытие по клику на фон
+    modal.addEventListener('click', function (e) {
+      if (!backdropClickClose) return;
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    // Закрытие по ESC
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    });
+
+    function setLoadingState() {
+      bodyEl.innerHTML =
+        '<div class="flex items-center gap-2 text-gray-500">' +
+        '  <span class="inline-block h-4 w-4 border-2 border-t-transparent border-gray-400 rounded-full animate-spin"></span>' +
+        '  <span>Загружаем список комнат…</span>' +
+        '</div>';
+    }
+
+    function renderRooms(data) {
+      if (!data) {
+        showError('Не удалось получить данные. Попробуйте ещё раз.');
+        return;
+      }
+
+      // Вариант, если сервер явно говорит, что нет прав
+      if (data.ok === false && data.message === 'forbidden') {
+        bodyEl.innerHTML =
+          '<p class="text-sm text-gray-700">Нет прав для просмотра комнат.</p>';
+        return;
+      }
+
+      // Пытаемся найти массив комнат в ответе
+      var rooms = data.rooms || data.room || data.data || [];
+      if (!Array.isArray(rooms)) rooms = [];
+
+      if (!rooms.length) {
+        bodyEl.innerHTML =
+          '<p class="text-sm text-gray-700">Сейчас нет активных комнат.</p>';
+        return;
+      }
+
+      var html = '<div class="space-y-3">';
+      rooms.forEach(function (item) {
+        var info = item.room_info || item;
+        if (!info) return;
+
+        var title = info.room_title || info.title || 'Без названия';
+        var roomId = info.room_id || info.id || '';
+        var participants = info.joined_participants || info.participants || '0';
+        var isRunning = Number(info.is_running || info.running || 0) === 1;
+
+        html +=
+          '<div class="border border-gray-200 rounded-xl px-3 py-2.5 flex items-center justify-between gap-3">' +
+          '  <div class="min-w-0">' +
+          '    <div class="text-sm font-medium text-gray-900 truncate">' + title + '</div>' +
+          '    <div class="mt-0.5 flex items-center gap-2 text-[11px] text-gray-500">' +
+          '      <span class="inline-flex items-center gap-1">' +
+          '        <span class="h-1.5 w-1.5 rounded-full ' + (isRunning ? 'bg-emerald-500' : 'bg-gray-300') + '"></span>' +
+          '        ' + (isRunning ? 'Идёт сейчас' : 'Завершена') +
+          '      </span>' +
+          '      <span>·</span>' +
+          '      <span>Участников: ' + participants + '</span>' +
+          '    </div>' +
+          '  </div>';
+
+        if (roomId && isRunning) {
+          var link = '/jointo?roomid=' + encodeURIComponent(roomId);
+          html +=
+            '  <a href="' + link + '" ' +
+            '     class="shrink-0 inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-medium ' +
+            '            bg-emerald-500 text-white hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1">' +
+            '    Перейти' +
+            '  </a>';
+        }
+
+        html += '</div>';
+      });
+      html += '</div>';
+
+      bodyEl.innerHTML = html;
+    }
+
+    function showError(message) {
+      bodyEl.innerHTML =
+        '<p class="text-sm text-red-600">' +
+        (message || 'Не удалось загрузить список комнат. Попробуйте позже.') +
+        '</p>';
+    }
+
+    function handleClick(e) {
+      e.preventDefault();
+      setLoadingState();
+      openModal();
+
+      fetch('/rooms', {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json' }
+      })
+        .then(function (res) {
+          if (!res.ok) {
+            if (res.status === 403) {
+              return { ok: false, message: 'forbidden' };
+            }
+            throw new Error('HTTP ' + res.status);
+          }
+          return res.json();
+        })
+        .then(function (data) {
+          renderRooms(data);
+        })
+        .catch(function (err) {
+          console.error(err);
+          showError();
+        });
+    }
+
+    // Привязка к ссылкам a[href="#lesson"]
+    function bindLessonLinks() {
+      if (window.jQuery) {
+        // В стиле твоего примера: $('a[href="#lesson"]').on("click", ...)
+        window.jQuery('a[href="#lesson"]').off('click.roomsModal').on('click.roomsModal', handleClick);
+      } else {
+        var links = document.querySelectorAll('a[href="#lesson"]');
+        links.forEach(function (a) {
+          a.addEventListener('click', handleClick);
+        });
+      }
+    }
+
+    bindLessonLinks();
+  });
+})();
+</script>
