@@ -56,12 +56,6 @@ export async function get_types() {
   const [rows] = await usr.query(sql);
   return rows;
 }
-export async function get_types() {
-  const sql = `
-    SELECT * FROM role_name`;
-  const [rows] = await usr.query(sql);
-  return rows;
-}
 export async function get_err_roles_users() {
   const sql = `
         SELECT
