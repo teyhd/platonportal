@@ -49,13 +49,7 @@ export async function getUserRolesForsrvnam(usrId, srvNmae) {
   return ids;
 }
 ///console.log(await getUserRolesForServiceById(147, 'portal'))
-// ==== USERS ====
-export async function get_types() {
-  const sql = `
-    SELECT * FROM role_name`;
-  const [rows] = await usr.query(sql);
-  return rows;
-}
+// ==== USERS ====zz
 export async function get_err_roles_users() {
   const sql = `
         SELECT
@@ -73,6 +67,23 @@ export async function get_err_roles_users() {
           AND r.id IS NULL
         GROUP BY u.id, u.name
         ORDER BY u.id;
+
+  `;
+  const [rows] = await usr.query(sql);
+  return rows;
+}
+export async function get_types() {
+  const sql = `
+    SELECT * FROM role_name`;
+  const [rows] = await usr.query(sql);
+  return rows;
+}
+
+export async function get_users() {
+  const sql = `
+    SELECT *
+    FROM users
+    ORDER BY id DESC
   `;
   const [rows] = await usr.query(sql);
   return rows;
