@@ -193,6 +193,7 @@ app.get('/users', async (req, res) => {
     const types    = await db.get_types();
     const services = await db.get_services_with_allowed_roles(); // для вкладок/панели
     const allRoles = await db.get_all_roles();
+    const errrules = await db.get_err_roles_users();
 
     res.render('users', {
       title: 'Пользователи',
@@ -200,6 +201,7 @@ app.get('/users', async (req, res) => {
       types,
       services,
       allRoles,
+      errrules,
       auth: req.session.rolen
     });
   } catch (e) {

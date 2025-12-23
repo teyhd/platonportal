@@ -56,11 +56,29 @@ export async function get_types() {
   const [rows] = await usr.query(sql);
   return rows;
 }
-export async function get_users() {
+export async function get_types() {
   const sql = `
-    SELECT *
-    FROM users
-    ORDER BY id DESC
+    SELECT * FROM role_name`;
+  const [rows] = await usr.query(sql);
+  return rows;
+}
+export async function get_err_roles_users() {
+  const sql = `
+        SELECT
+            u.id,
+            u.name,
+            GROUP_CONCAT(s.id ORDER BY s.id) AS missing_srv_ids,
+            GROUP_CONCAT(s.name ORDER BY s.name SEPARATOR ', ') AS missing_srv_names
+        FROM users u
+        CROSS JOIN srvs s
+        LEFT JOIN rights r
+            ON r.usr_id = u.id
+          AND r.srv_id = s.id
+        WHERE s.id < 10
+          AND s.types = 0
+          AND r.id IS NULL
+        GROUP BY u.id, u.name
+        ORDER BY u.id;
   `;
   const [rows] = await usr.query(sql);
   return rows;
