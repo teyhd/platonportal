@@ -143,6 +143,9 @@ app.use("/sso", makeSsoRouter({
     
     "report": { client_secret: "ReportDirtySecurFuckTheMind", redirect_uri: "https://rep.platoniks.ru/cb",
       post_logout_redirect_uris: ['https://rep.platoniks.ru'], srv_name: 'report' },
+
+      "diary": { client_secret: "DiaryClientSecret", redirect_uri: "https://diary.platoniks.ru/cb",
+      post_logout_redirect_uris: ['https://diary.platoniks.ru'], srv_name: 'diary' },
   }
 }));
 app.use(platformsso)
