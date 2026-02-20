@@ -307,10 +307,10 @@ $(function(){
         try {
           datas.rooms.forEach(element => {
             let romid = element?.room_info?.room_id ?? false
-            const isPublic = (()=>{
-            const val = datas?.acc?.[element?.room_info?.room_id]?.pub;
-            return val === undefined ? true : String(val).toLowerCase() === "true";
-          })();
+            const isPublic = (() => {
+              const val = datas?.acc?.[element?.room_info?.room_id]?.pub;
+              return String(val).toLowerCase() === "true"; // undefined -> "undefined" -> false
+            })();
             if (isPublic) rooms.push({roomid: element.room_info.room_id, title: element.room_info.room_title,peops:element.room_info.joined_participants});
           });
         } catch (error) {
