@@ -121,7 +121,7 @@ const publicPath = path.join(appDir, 'public');
 
 app.set('views', viewsPath);
 mlog(publicPath);
-app.use(express.static(publicPath));
+app.use(express.static(publicPath, { redirect: false }));
 
 app.use(cookieParser());
 app.set('trust proxy', 1);
@@ -150,7 +150,7 @@ app.use("/sso", makeSsoRouter({
 }));
 app.use(platformsso)
 
-app.use(express.json()); // для application/json
+app.use(express.json({ limit: "20mb" })); // для application/json
 app.use(async function (req, res, next) {
     let page = req._parsedOriginalUrl.pathname;
     //console.log('Cookie:', req.headers);
@@ -644,6 +644,78 @@ app.get("/tplatform", (req, res) => {
   </script>
 </body></html>`);
 
+});
+
+
+
+app.get('/conf', async (req, res) => {
+  const role = Number(req.session?.rolen ?? req.session?.right ?? 0);
+  const canUpload = role >= 5;
+  const confDir = path.join(publicPath, 'conf');
+
+  try {
+    await fs.ensureDir(confDir);
+    const names = await fs.readdir(confDir);
+    const files = [];
+
+    for (const name of names) {
+      const full = path.join(confDir, name);
+      const st = await fs.stat(full);
+      if (!st.isFile()) continue;
+      files.push({
+        name,
+        url: `/conf/${encodeURIComponent(name)}`,
+        mtimeTs: st.mtimeMs,
+        mtime: new Date(st.mtimeMs).toLocaleString('ru-RU')
+      });
+    }
+
+    files.sort((a, b) => b.mtimeTs - a.mtimeTs);
+
+    res.render('conf', {
+      title: 'Конфигурация',
+      canUpload,
+      files,
+      auth: req.session?.rolen
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).render('errors/500', { title: 'Ошибка сервера' });
+  }
+});
+
+app.post('/api/conf/upload', async (req, res) => {
+  const role = Number(req.session?.rolen ?? req.session?.right ?? 0);
+  if (role < 5) return res.status(403).json({ ok: false, message: 'forbidden' });
+
+  try {
+    const { filename, contentBase64 } = req.body || {};
+
+    if (!filename || !contentBase64) {
+      return res.status(400).json({ ok: false, message: 'filename/contentBase64 required' });
+    }
+
+    const safeName = path.basename(String(filename)).replace(/[^a-zA-Z0-9._\-а-яА-ЯёЁ ]/g, '_');
+    if (!safeName || safeName.length > 180) {
+      return res.status(400).json({ ok: false, message: 'invalid filename' });
+    }
+
+    const buf = Buffer.from(String(contentBase64), 'base64');
+    if (!buf.length || buf.length > 15 * 1024 * 1024) {
+      return res.status(400).json({ ok: false, message: 'invalid file size' });
+    }
+
+    const confDir = path.join(publicPath, 'conf');
+    await fs.ensureDir(confDir);
+
+    const filePath = path.join(confDir, safeName);
+    await fs.writeFile(filePath, buf);
+
+    return res.json({ ok: true, url: `/conf/${encodeURIComponent(safeName)}` });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ ok: false, message: 'upload failed' });
+  }
 });
 
 app.get('*',async function(req, res){
