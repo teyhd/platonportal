@@ -718,6 +718,48 @@ app.post('/api/conf/upload', async (req, res) => {
   }
 });
 
+
+app.get('/download/balalayka-android', async (req, res) => {
+  const baseDir = '/var/www/html/Messanger/Android';
+
+  try {
+    const walk = async (dir) => {
+      let out = [];
+      const entries = await fs.readdir(dir, { withFileTypes: true });
+      for (const e of entries) {
+        const full = path.join(dir, e.name);
+        if (e.isDirectory()) {
+          if (e.name === 'node_modules' || e.name === '.git' || e.name === 'build-cache') continue;
+          out = out.concat(await walk(full));
+          continue;
+        }
+        if (/\.apk$/i.test(e.name)) out.push(full);
+      }
+      return out;
+    };
+
+    const files = await walk(baseDir);
+    if (!files.length) {
+      return res.status(404).send('Установочный Android-файл Балалайка пока не найден.');
+    }
+
+    let latest = files[0];
+    let latestMtime = 0;
+    for (const f of files) {
+      const st = await fs.stat(f);
+      if (st.mtimeMs > latestMtime) {
+        latestMtime = st.mtimeMs;
+        latest = f;
+      }
+    }
+
+    return res.download(latest, 'Balalayka-Android.apk');
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send('Ошибка при подготовке файла.');
+  }
+});
+
 app.get('*',async function(req, res){
     res.render('404', { 
         url: req.url,
