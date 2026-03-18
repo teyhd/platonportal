@@ -719,6 +719,15 @@ app.post('/api/conf/upload', async (req, res) => {
 });
 
 
+app.get('/uagree', async (req, res) => {
+  return res.redirect('/conf/Balalayka%20Terms%20Of%20Service.pdf');
+});
+
+app.get('/privacy', async (req, res) => {
+  return res.redirect('/conf/Balalayka%20Privacy%20Policy%20(apple-ready).pdf');
+});
+
+
 app.get('/download/balalayka-android', async (req, res) => {
   const baseDir = '/var/www/html/Messanger/Android';
 
