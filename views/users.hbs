@@ -269,7 +269,7 @@
                   </div>
                 </div>
               </td>
-              <td class="px-4 py-3 text-sm text-gray-300">{{this.kaf}}</td>
+              <td class="px-4 py-3 text-sm text-gray-300 user-kaf-cell">{{#with (findById ../kafs this.kaf) as |k|}}{{#if k}}{{k.name}}{{else}}—{{/if}}{{/with}}</td>
               <td class="px-4 py-3 text-sm">
                 {{#with (findById ../types this.type) as |t|}}
                   <span class="inline-flex items-center rounded-md bg-gray-800 border border-gray-700 px-2 py-0.5 text-gray-200 text-xs">{{#if t}}{{t.name}}{{else}}—{{/if}}</span>
@@ -376,8 +376,16 @@
 
               <label class="flex flex-col gap-1">
                 <span class="text-sm text-gray-300">Подразделение</span>
-                <input name="kaf" id="f-kaf" type="number"
-                       class="rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
+                <select name="kaf" id="f-kaf"
+                        class="block w-full appearance-none pr-8
+                               rounded-lg bg-gray-800 text-gray-100
+                               border border-gray-700 px-3 py-1.5
+                               focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30">
+                  <option value="">— не выбрано —</option>
+                  {{#each kafs}}
+                    <option value="{{this.id}}">{{this.name}}</option>
+                  {{/each}}
+                </select>
               </label>
 
               <label class="flex flex-col gap-1">
@@ -581,6 +589,14 @@ const TYPE_LABELS = (() => {
   return map;
 })();
 
+const KAF_LABELS = (() => {
+  const map = {};
+  qsa('#f-kaf option').forEach(o => {
+    if (o.value !== '') map[o.value] = o.textContent.trim();
+  });
+  return map;
+})();
+
 /* ===== Drawer: user editor ===== */
 const userDrawer   = qs('#user-drawer');
 const userBackdrop = qs('[data-backdrop]', userDrawer);
@@ -663,6 +679,9 @@ const tbody = qs('#users-tbody');
 function typeNameById(id){
   return TYPE_LABELS[String(id)] || '—';
 }
+function kafNameById(id){
+  return KAF_LABELS[String(id)] || '—';
+}
 
 function renderStatusBadge(status){
   if (Number(status)) {
@@ -702,7 +721,7 @@ function rowHTML(u){
         </div>
       </div>
     </td>
-    <td class="px-4 py-3 text-sm text-gray-300">${u.kaf||''}</td>
+    <td class="px-4 py-3 text-sm text-gray-300 user-kaf-cell">${kafNameById(u.kaf)}</td>
     <td class="px-4 py-3 text-sm">
       <span class="inline-flex items-center rounded-md bg-gray-800 border border-gray-700 px-2 py-0.5 text-gray-200 text-xs">${typeNameById(u.type)}</span>
     </td>
@@ -756,8 +775,8 @@ function updateRowUI(u){
   if (idEl) idEl.textContent = `ID: ${u.id}`;
 
   // Подразделение
-  const kafTd = tr.children[1];
-  if (kafTd) kafTd.textContent = u.kaf || '';
+  const kafTd = qs('.user-kaf-cell', tr);
+  if (kafTd) kafTd.textContent = kafNameById(u.kaf);
 
   // Тип
   const typeTd = tr.children[2];

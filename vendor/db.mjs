@@ -81,6 +81,14 @@ export async function get_types() {
   return rows;
 }
 
+
+export async function get_kafs() {
+  const [rows] = await usr.query(
+    `SELECT id, type, name FROM kaf_name ORDER BY type, id`
+  );
+  return rows;
+}
+
 export async function get_users() {
   const sql = `
     SELECT u.*, oi.provider_email AS email
