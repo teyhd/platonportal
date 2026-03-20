@@ -262,10 +262,18 @@ app.post('/api/users', async (req, res) => {
   const body = req.body || {};
   const data = {
     name: String(body.name ?? '').trim(),
-    kaf:  String(body.kaf ?? '').trim(),
+    nickname: String(body.nickname ?? '').trim(),
+    msgnickname: String(body.msgnickname ?? '').trim(),
+    msgnickname_normalized: String(body.msgnickname_normalized ?? '').trim(),
+    email: String(body.email ?? '').trim(),
+    kaf: (body.kaf === '' || body.kaf == null || Number.isNaN(Number(body.kaf))) ? null : Number(body.kaf),
     type: Number(body.type ?? 0),
     status: Number(body.status ?? 0),
     pin:  String(body.pin ?? '').trim(),
+    tg_id: (body.tg_id === '' || body.tg_id == null || Number.isNaN(Number(body.tg_id))) ? null : Number(body.tg_id),
+    allow_discovery_outside_harmony: Number(body.allow_discovery_outside_harmony ?? 0),
+    avatar_url_custom: String(body.avatar_url_custom ?? '').trim(),
+    display_name_custom: String(body.display_name_custom ?? '').trim(),
   };
   if (!data.name) return res.status(400).json({ ok:false, message:'name required' });
   try {
@@ -284,10 +292,18 @@ app.put('/api/users/:id', async (req, res) => {
   const body = req.body || {};
   const data = {
     name: String(body.name ?? '').trim(),
-    kaf:  String(body.kaf ?? '').trim(),
+    nickname: String(body.nickname ?? '').trim(),
+    msgnickname: String(body.msgnickname ?? '').trim(),
+    msgnickname_normalized: String(body.msgnickname_normalized ?? '').trim(),
+    email: String(body.email ?? '').trim(),
+    kaf: (body.kaf === '' || body.kaf == null || Number.isNaN(Number(body.kaf))) ? null : Number(body.kaf),
     type: Number(body.type ?? 0),
     status: Number(body.status ?? 0),
     pin:  String(body.pin ?? '').trim(),
+    tg_id: (body.tg_id === '' || body.tg_id == null || Number.isNaN(Number(body.tg_id))) ? null : Number(body.tg_id),
+    allow_discovery_outside_harmony: Number(body.allow_discovery_outside_harmony ?? 0),
+    avatar_url_custom: String(body.avatar_url_custom ?? '').trim(),
+    display_name_custom: String(body.display_name_custom ?? '').trim(),
   };
   if (!id) return res.status(400).json({ ok:false, message:'bad id' });
   if (!data.name) return res.status(400).json({ ok:false, message:'name required' });

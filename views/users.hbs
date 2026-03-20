@@ -236,6 +236,8 @@
             <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Роль</th>
             <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Статус</th>
             <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">PIN</th>
+            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Nick</th>
+            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
             <th scope="col" class="px-4 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Действия</th>
           </tr>
           </thead>
@@ -247,7 +249,15 @@
                 data-user-kaf="{{this.kaf}}"
                 data-user-type="{{this.type}}"
                 data-user-status="{{this.status}}"
-                data-user-pin="{{this.pin}}">
+                data-user-pin="{{this.pin}}"
+                data-user-nickname="{{this.nickname}}"
+                data-user-msgnickname="{{this.msgnickname}}"
+                data-user-msgnickname-normalized="{{this.msgnickname_normalized}}"
+                data-user-email="{{this.email}}"
+                data-user-tg-id="{{this.tg_id}}"
+                data-user-avatar-url-custom="{{this.avatar_url_custom}}"
+                data-user-display-name-custom="{{this.display_name_custom}}"
+                data-user-allow-discovery-outside-harmony="{{this.allow_discovery_outside_harmony}}">
               <td class="px-4 py-3">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded-full bg-indigo-600/20 flex items-center justify-center text-indigo-300 text-sm font-semibold">
@@ -277,6 +287,8 @@
                 {{/if}}
               </td>
               <td class="px-4 py-3 font-mono text-sm text-gray-200">{{this.pin}}</td>
+              <td class="px-4 py-3 text-sm text-gray-300 user-nickname-cell">{{#if this.nickname}}{{this.nickname}}{{else}}{{this.msgnickname_normalized}}{{/if}}</td>
+              <td class="px-4 py-3 text-sm text-gray-300 user-email-cell">{{this.email}}</td>
               <td class="px-4 py-3">
                 <div class="flex items-center justify-end gap-2">
                   <button type="button" class="btn-row open-drawer"
@@ -364,7 +376,7 @@
 
               <label class="flex flex-col gap-1">
                 <span class="text-sm text-gray-300">Подразделение</span>
-                <input name="kaf" id="f-kaf" type="text"
+                <input name="kaf" id="f-kaf" type="number"
                        class="rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
               </label>
 
@@ -402,6 +414,48 @@
                        class="font-mono rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
                 <p id="pin-hint" class="text-xs text-gray-500">Уникальный код до 10 символов.</p>
               </label>
+
+              <label class="flex flex-col gap-1">
+                <span class="text-sm text-gray-300">Email (SSO)</span>
+                <input name="email" id="f-email" type="email"
+                       class="rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
+              </label>
+
+              <label class="flex flex-col gap-1">
+                <span class="text-sm text-gray-300">Nick</span>
+                <input name="nickname" id="f-nickname" type="text"
+                       class="rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
+              </label>
+
+              <label class="flex flex-col gap-1">
+                <span class="text-sm text-gray-300">msgnickname</span>
+                <input name="msgnickname" id="f-msgnickname" type="text"
+                       class="rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
+              </label>
+
+              <label class="flex flex-col gap-1">
+                <span class="text-sm text-gray-300">msgnickname_normalized</span>
+                <input name="msgnickname_normalized" id="f-msgnickname-normalized" type="text"
+                       class="rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
+              </label>
+
+              <label class="flex flex-col gap-1">
+                <span class="text-sm text-gray-300">Telegram ID</span>
+                <input name="tg_id" id="f-tg-id" type="number"
+                       class="rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
+              </label>
+
+              <div class="flex flex-col gap-1">
+                <span class="text-sm text-gray-300">Видимость вне Гармонии</span>
+                <label class="inline-flex items-center gap-3">
+                  <input type="checkbox" id="f-allow-discovery" name="allow_discovery_outside_harmony" class="peer sr-only">
+                  <span class="w-11 h-6 rounded-full bg-gray-700 relative transition
+                               after:content-[''] after:absolute after:w-5 after:h-5 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 after:transition
+                               peer-checked:bg-emerald-600 peer-checked:after:translate-x-5"></span>
+                  <span class="text-sm text-gray-300">Разрешено</span>
+                </label>
+              </div>
+
             </div>
           </form>
         </section>
@@ -567,6 +621,12 @@ function fillProfile(u){
   qs('#f-type').value = u.type ?? '';
   qs('#f-status').checked = !!u.status;
   qs('#f-pin').value  = u.pin ?? '';
+  qs('#f-email').value = u.email ?? '';
+  qs('#f-nickname').value = u.nickname ?? '';
+  qs('#f-msgnickname').value = u.msgnickname ?? '';
+  qs('#f-msgnickname-normalized').value = u.msgnickname_normalized ?? '';
+  qs('#f-tg-id').value = u.tg_id ?? '';
+  qs('#f-allow-discovery').checked = Number(u.allow_discovery_outside_harmony ?? 0) === 1;
   qs('#drawer-title').textContent = u.id ? 'Редактировать пользователя' : 'Новый пользователь';
   qs('#drawer-sub').textContent = 'ID: ' + (u.id ?? '—');
 }
@@ -626,7 +686,13 @@ function rowHTML(u){
       data-user-kaf="${u.kaf||''}"
       data-user-type="${u.type||0}"
       data-user-status="${u.status||0}"
-      data-user-pin="${u.pin||''}">
+      data-user-pin="${u.pin||''}"
+      data-user-nickname="${u.nickname||''}"
+      data-user-msgnickname="${u.msgnickname||''}"
+      data-user-msgnickname-normalized="${u.msgnickname_normalized||''}"
+      data-user-email="${u.email||''}"
+      data-user-tg-id="${u.tg_id||''}"
+      data-user-allow-discovery-outside-harmony="${u.allow_discovery_outside_harmony||0}">
     <td class="px-4 py-3">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 rounded-full bg-indigo-600/20 flex items-center justify-center text-indigo-300 text-sm font-semibold">${initial}</div>
@@ -642,6 +708,8 @@ function rowHTML(u){
     </td>
     <td class="px-4 py-3">${renderStatusBadge(u.status)}</td>
     <td class="px-4 py-3 font-mono text-sm text-gray-200">${u.pin||''}</td>
+    <td class="px-4 py-3 text-sm text-gray-300 user-nickname-cell">${u.nickname || u.msgnickname_normalized || ''}</td>
+    <td class="px-4 py-3 text-sm text-gray-300 user-email-cell">${u.email || ''}</td>
     <td class="px-4 py-3">
       <div class="flex items-center justify-end gap-2">
         <button type="button" class="btn-row open-drawer" data-open-tab="profile" aria-label="Редактировать профиль">
@@ -674,6 +742,12 @@ function updateRowUI(u){
   tr.dataset.userType   = String(u.type || 0);
   tr.dataset.userStatus = String(u.status || 0);
   tr.dataset.userPin    = u.pin || '';
+  tr.dataset.userNickname = u.nickname || '';
+  tr.dataset.userMsgnickname = u.msgnickname || '';
+  tr.dataset.userMsgnicknameNormalized = u.msgnickname_normalized || '';
+  tr.dataset.userEmail = u.email || '';
+  tr.dataset.userTgId = (u.tg_id ?? '').toString();
+  tr.dataset.userAllowDiscoveryOutsideHarmony = String(u.allow_discovery_outside_harmony || 0);
 
   // Имя + ID
   const nameEl = qs('.text-sm.font-medium', tr);
@@ -699,6 +773,12 @@ function updateRowUI(u){
   // PIN
   const pinTd = tr.children[4];
   if (pinTd) pinTd.textContent = u.pin || '';
+
+  const nickTd = qs('.user-nickname-cell', tr);
+  if (nickTd) nickTd.textContent = u.nickname || u.msgnickname_normalized || '';
+
+  const emailTd = qs('.user-email-cell', tr);
+  if (emailTd) emailTd.textContent = u.email || '';
 }
 
 /* ===== Open drawer (delegated) ===== */
@@ -724,7 +804,7 @@ tbody?.addEventListener('click', async (e) => {
 function openCreate(){
   setDrawerOpen(true);
   setTab('profile');
-  fillProfile({ id:null, name:'', kaf:'', type:'', status:1, pin:'' });
+  fillProfile({ id:null, name:'', kaf:'', type:'', status:1, pin:'', email:'', nickname:'', msgnickname:'', msgnickname_normalized:'', tg_id:'', allow_discovery_outside_harmony:0 });
   clearRoles(); clearLogins();
 }
 qs('#btn-create-user')?.addEventListener('click', openCreate);
@@ -770,7 +850,13 @@ qs('#btn-save-current')?.addEventListener('click', async ()=>{
         kaf:  qs('#f-kaf').value.trim(),
         type: Number(qs('#f-type').value || 0),
         status: qs('#f-status').checked ? 1 : 0,
-        pin:  qs('#f-pin').value.trim()
+        pin:  qs('#f-pin').value.trim(),
+        email: qs('#f-email').value.trim(),
+        nickname: qs('#f-nickname').value.trim(),
+        msgnickname: qs('#f-msgnickname').value.trim(),
+        msgnickname_normalized: qs('#f-msgnickname-normalized').value.trim(),
+        tg_id: qs('#f-tg-id').value.trim(),
+        allow_discovery_outside_harmony: qs('#f-allow-discovery').checked ? 1 : 0
       };
       const res = await api('/api/users' + (idVal ? `/${idVal}` : ''), {
         method: idVal ? 'PUT' : 'POST',
@@ -856,7 +942,9 @@ function applyFilters(){
   qsa('#users-tbody tr').forEach(tr => {
     const name = tr.dataset.userName?.toLowerCase() || '';
     const pin  = tr.dataset.userPin?.toLowerCase()  || '';
-    const passQ  = !q || name.includes(q) || pin.includes(q);
+    const nick = tr.dataset.userNickname?.toLowerCase() || tr.dataset.userMsgnicknameNormalized?.toLowerCase() || '';
+    const email = tr.dataset.userEmail?.toLowerCase() || '';
+    const passQ  = !q || name.includes(q) || pin.includes(q) || nick.includes(q) || email.includes(q);
     const passSt = !st || tr.dataset.userStatus === st;
     const passTp = !tp || tr.dataset.userType   === tp;
     tr.classList.toggle('hidden', !(passQ && passSt && passTp));

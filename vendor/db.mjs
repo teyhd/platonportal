@@ -31,8 +31,10 @@ const usr = mysql.createPool(sets).promise()
 const portal = mysql.createPool(setss).promise()
 
 export async function auth_user(pin){
-    const qer = `SELECT id,name,type as role FROM users WHERE pin = ${pin}`
-    const [rows, fields] = await usr.query(qer)
+    const [rows] = await usr.query(
+      `SELECT id,name,type as role FROM users WHERE pin = ? LIMIT 1`,
+      [pin]
+    );
     return rows[0];
 }
 
@@ -81,35 +83,171 @@ export async function get_types() {
 
 export async function get_users() {
   const sql = `
-    SELECT *
-    FROM users
-    ORDER BY id DESC
+    SELECT u.*, oi.provider_email AS email
+    FROM users u
+    LEFT JOIN (
+      SELECT user_id,
+             SUBSTRING_INDEX(
+               GROUP_CONCAT(provider_email ORDER BY updated_at DESC SEPARATOR '\n'),
+               '\n',
+               1
+             ) AS provider_email
+      FROM oauth_identities
+      GROUP BY user_id
+    ) oi ON oi.user_id = u.id
+    ORDER BY u.id DESC
   `;
   const [rows] = await usr.query(sql);
   return rows;
 }
 
+
+async function upsert_user_email(userId, email) {
+  const val = (email ?? '').toString().trim();
+  if (!val) return;
+
+  // Try update existing identities
+  const [upd] =  await upsert_user_email(id, email);
+
+  if (upd.affectedRows > 0) return;
+
+  // If no identity exists yet, create a minimal one
+  await usr.query(
+    `INSERT INTO oauth_identities (
+        user_id, provider, provider_uid,
+        provider_email, provider_email_verified,
+        raw_profile_json,
+        last_provider_sync_at, last_login_at,
+        created_at, updated_at
+     ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW(), NOW())`,
+    [
+      userId,
+      'manual',
+      'manual:' + String(userId),
+      val,
+      0,
+      '{}' 
+    ]
+  );
+}
+
 export async function get_user_by_id(id) {
   const [rows] = await usr.query(
-    `SELECT * FROM users WHERE id = ? LIMIT 1`,
+    `SELECT u.*, oi.provider_email AS email
+       FROM users u
+       LEFT JOIN (
+         SELECT user_id,
+                SUBSTRING_INDEX(
+                  GROUP_CONCAT(provider_email ORDER BY updated_at DESC SEPARATOR '\n'),
+                  '\n',
+                  1
+                ) AS provider_email
+         FROM oauth_identities
+         GROUP BY user_id
+       ) oi ON oi.user_id = u.id
+      WHERE u.id = ?
+      LIMIT 1`,
     [id]
   );
   return rows[0] ?? null;
 }
 
-export async function create_user({ name, kaf, type, status, pin }) {
+export async function create_user({
+  name,
+  nickname,
+  msgnickname,
+  msgnickname_normalized,
+  kaf,
+  type,
+  status,
+  pin,
+  tg_id,
+  allow_discovery_outside_harmony,
+  avatar_url_custom,
+  display_name_custom,
+  email
+}) {
   const [res] = await usr.query(
-    `INSERT INTO users (name, kaf, type, status, pin) VALUES (?, ?, ?, ?, ?)`,
-    [name, kaf, type, status, pin]
+    `INSERT INTO users (
+      name, nickname, msgnickname, msgnickname_normalized,
+      kaf, type, status, pin, tg_id,
+      allow_discovery_outside_harmony, avatar_url_custom, display_name_custom
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      name,
+      nickname || null,
+      msgnickname || null,
+      msgnickname_normalized || null,
+      kaf,
+      type,
+      status,
+      pin,
+      tg_id,
+      Number(allow_discovery_outside_harmony || 0),
+      avatar_url_custom || null,
+      display_name_custom || null,
+    ]
   );
+
+  await upsert_user_email(res.insertId, email);
+
   return res.insertId;
 }
 
-export async function update_user(id, { name, kaf, type, status, pin }) {
+export async function update_user(id, {
+  name,
+  nickname,
+  msgnickname,
+  msgnickname_normalized,
+  kaf,
+  type,
+  status,
+  pin,
+  tg_id,
+  allow_discovery_outside_harmony,
+  avatar_url_custom,
+  display_name_custom,
+  email
+}) {
   const [res] = await usr.query(
-    `UPDATE users SET name = ?, kaf = ?, type = ?, status = ?, pin = ? WHERE id = ?`,
-    [name, kaf, type, status, pin, id]
+    `UPDATE users
+        SET name = ?,
+            nickname = ?,
+            msgnickname = ?,
+            msgnickname_normalized = ?,
+            kaf = ?,
+            type = ?,
+            status = ?,
+            pin = ?,
+            tg_id = ?,
+            allow_discovery_outside_harmony = ?,
+            avatar_url_custom = ?,
+            display_name_custom = ?
+      WHERE id = ?`,
+    [
+      name,
+      nickname || null,
+      msgnickname || null,
+      msgnickname_normalized || null,
+      kaf,
+      type,
+      status,
+      pin,
+      tg_id,
+      Number(allow_discovery_outside_harmony || 0),
+      avatar_url_custom || null,
+      display_name_custom || null,
+      id
+    ]
   );
+
+  await usr.query(
+    `UPDATE oauth_identities
+        SET provider_email = ?, updated_at = NOW()
+      WHERE user_id = ?`,
+    [email ? String(email).trim() : null, id]
+  );
+
   return res.affectedRows > 0;
 }
 
