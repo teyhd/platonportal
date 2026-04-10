@@ -1,8 +1,10 @@
 <main class="max-w-6xl mx-auto px-4 pt-10 pb-6 text-white md:px-6 lg:px-8">
-  <section class="overflow-hidden rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,_rgba(19,28,69,0.96)_0%,_rgba(10,16,40,0.98)_100%)] shadow-[0_30px_80px_rgba(2,6,23,0.45)]">
-    <div class="px-6 py-10 md:px-10 md:py-14 lg:px-14 lg:py-16">
+  <section class="group relative overflow-hidden rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,_rgba(19,28,69,0.96)_0%,_rgba(10,16,40,0.98)_100%)] shadow-[0_30px_80px_rgba(2,6,23,0.45)] transition-all duration-500 hover:border-white/15 hover:shadow-[0_36px_100px_rgba(2,6,23,0.55)]">
+    <div class="pointer-events-none absolute inset-0 opacity-80 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_transparent_38%)] transition-opacity duration-500 group-hover:opacity-100"></div>
+    <div class="pointer-events-none absolute -top-24 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-cyan-400/10 blur-3xl transition-all duration-500 group-hover:bg-cyan-300/15"></div>
+    <div class="relative px-6 py-10 md:px-10 md:py-14 lg:px-14 lg:py-16">
       <div class="mx-auto max-w-3xl text-center">
-        <div class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">
+        <div class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300 transition-all duration-300 group-hover:border-white/20 group-hover:bg-white/10">
           Платоникс · Балалайка
         </div>
         <h1 class="mt-6 text-4xl font-semibold tracking-tight text-white md:text-5xl lg:text-6xl">
@@ -16,7 +18,8 @@
     </div>
   </section>
 
-  <section class="mt-6 overflow-hidden rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,_rgba(255,255,255,0.05)_0%,_rgba(255,255,255,0.02)_100%)] shadow-[0_24px_60px_rgba(2,6,23,0.28)]">
+  <section class="group relative mt-6 overflow-hidden rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,_rgba(255,255,255,0.05)_0%,_rgba(255,255,255,0.02)_100%)] shadow-[0_24px_60px_rgba(2,6,23,0.28)] transition-all duration-500 hover:border-white/15 hover:shadow-[0_28px_72px_rgba(2,6,23,0.36)]">
+    <div class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-70"></div>
     <div class="px-6 py-8 md:px-10 md:py-10">
       <div class="mx-auto max-w-4xl text-center">
         <div class="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">Установите Балалайку</div>
@@ -30,10 +33,11 @@
         <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row sm:flex-wrap">
           {{#each installButtons}}
             <a href="{{this.href}}" target="_blank" rel="noopener noreferrer"
-               class="group relative inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] p-2 transition-all duration-200 hover:border-white/20 hover:bg-white/[0.08] hover:-translate-y-0.5"
+               class="group/button relative inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] p-2 shadow-[0_10px_30px_rgba(15,23,42,0.14)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-white/20 hover:bg-white/[0.08] hover:shadow-[0_18px_40px_rgba(15,23,42,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60"
                aria-label="{{this.alt}}">
-              <img src="{{this.img}}" alt="{{this.alt}}" class="h-14 md:h-[58px] w-auto" />
-              <span class="absolute -right-2 -top-2 rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-900 shadow">{{this.note}}</span>
+              <div class="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/10 to-transparent opacity-0 transition-opacity duration-300 group-hover/button:opacity-100"></div>
+              <img src="{{this.img}}" alt="{{this.alt}}" class="relative h-14 md:h-[58px] w-auto transition-transform duration-300 group-hover/button:scale-[1.01]" />
+              <span class="absolute -right-2 -top-2 rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-900 shadow transition-transform duration-300 group-hover/button:-translate-y-0.5">{{this.note}}</span>
             </a>
           {{/each}}
         </div>
@@ -54,17 +58,20 @@
 
     <div class="mt-8 grid gap-5 lg:grid-cols-3">
       {{#each changelogGroups}}
-        <article class="rounded-[28px] border border-white/10 bg-gray-900/60 px-6 py-6 shadow-[0_20px_40px_rgba(2,6,23,0.22)] backdrop-blur-sm transition-all duration-200 hover:border-white/15 hover:bg-gray-900/72">
-          <h3 class="text-2xl font-semibold tracking-tight text-white">{{this.title}}</h3>
-          <p class="mt-3 text-sm leading-7 text-slate-400 md:text-[15px]">{{this.lead}}</p>
-          <ul class="mt-5 space-y-4 text-sm leading-7 text-slate-300 md:text-base">
-            {{#each this.items}}
-              <li class="flex gap-3">
-                <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-white/80"></span>
-                <span>{{this}}</span>
-              </li>
-            {{/each}}
-          </ul>
+        <article class="group/card relative overflow-hidden rounded-[28px] border border-white/10 bg-gray-900/60 px-6 py-6 shadow-[0_20px_40px_rgba(2,6,23,0.22)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-white/15 hover:bg-gray-900/72 hover:shadow-[0_24px_50px_rgba(2,6,23,0.3)]">
+          <div class="pointer-events-none absolute inset-0 opacity-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),transparent)] transition-opacity duration-300 group-hover/card:opacity-100"></div>
+          <div class="relative">
+            <h3 class="text-2xl font-semibold tracking-tight text-white">{{this.title}}</h3>
+            <p class="mt-3 text-sm leading-7 text-slate-400 transition-colors duration-300 group-hover/card:text-slate-300 md:text-[15px]">{{this.lead}}</p>
+            <ul class="mt-5 space-y-4 text-sm leading-7 text-slate-300 md:text-base">
+              {{#each this.items}}
+                <li class="flex gap-3 transition-transform duration-300 group-hover/card:translate-x-0.5">
+                  <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-white/80 shadow-[0_0_0_6px_rgba(255,255,255,0.03)] transition-all duration-300 group-hover/card:bg-cyan-200 group-hover/card:shadow-[0_0_0_8px_rgba(103,232,249,0.08)]"></span>
+                  <span>{{this}}</span>
+                </li>
+              {{/each}}
+            </ul>
+          </div>
         </article>
       {{/each}}
     </div>
