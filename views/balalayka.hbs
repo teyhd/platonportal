@@ -1,0 +1,113 @@
+<main class="pt-8 px-4 max-w-7xl mx-auto space-y-8 text-white">
+  <section class="relative overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(124,92,240,0.32),_transparent_32%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.16),_transparent_26%),linear-gradient(135deg,_#0f1535_0%,_#131c45_35%,_#0a1028_100%)] shadow-2xl">
+    <div class="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.04)_35%,transparent_70%)]"></div>
+    <div class="relative grid gap-10 px-6 py-10 md:px-10 md:py-14 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+      <div>
+        <div class="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">
+          Платоникс · Балалайка
+        </div>
+        <h1 class="mt-5 max-w-3xl text-4xl font-black leading-tight text-white md:text-5xl">
+          Балалайка, корпоративный мессенджер нового поколения
+        </h1>
+        <p class="mt-5 max-w-2xl text-base leading-8 text-slate-200 md:text-lg">
+          Быстрые сообщения, форумы, реакции, медиа и маршруты в одном аккуратном приложении.
+          Балалайка помогает командам общаться уверенно, без перегруза и без ощущения, что каждая функция живёт отдельно от остальных.
+        </p>
+
+        <div class="mt-8 grid gap-3 sm:grid-cols-3">
+          {{#each highlights}}
+            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm leading-6 text-slate-200 shadow-lg shadow-black/10 backdrop-blur-sm">
+              {{this}}
+            </div>
+          {{/each}}
+        </div>
+      </div>
+
+      <div class="relative">
+        <div class="rounded-[28px] border border-white/10 bg-slate-950/45 p-5 shadow-2xl backdrop-blur">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-sm font-medium text-slate-300">Новый релиз</div>
+              <div class="mt-1 text-2xl font-bold">Балалайка</div>
+            </div>
+            <div class="rounded-2xl bg-gradient-to-br from-fuchsia-500 to-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg">
+              ready
+            </div>
+          </div>
+
+          <div class="mt-6 space-y-4">
+            <div class="rounded-2xl bg-white/5 p-4">
+              <div class="text-sm text-slate-400">Форумы и темы</div>
+              <div class="mt-2 text-lg font-semibold">Новый экран выбора тем перед входом в чат</div>
+            </div>
+            <div class="rounded-2xl bg-white/5 p-4">
+              <div class="text-sm text-slate-400">Маршруты и вложения</div>
+              <div class="mt-2 text-lg font-semibold">Карточки Яндекса с интерактивным просмотром прямо в приложении</div>
+            </div>
+            <div class="rounded-2xl bg-white/5 p-4">
+              <div class="text-sm text-slate-400">Стабильность</div>
+              <div class="mt-2 text-lg font-semibold">Исправления iOS и более предсказуемые уведомления на всех платформах</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="rounded-2xl bg-gradient-to-r from-[#3e2f70] via-[#5b45a4] to-[#7c5cf0] p-[1px] shadow-2xl">
+    <div class="rounded-2xl bg-[#101735] px-5 py-6 md:px-8 md:py-8">
+      <div class="mx-auto max-w-4xl text-center">
+        <div class="inline-flex items-center rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-indigo-100/80">
+          Установите Балалайку
+        </div>
+        <h2 class="mt-4 text-2xl font-bold text-white md:text-3xl">Приложение уже готово к работе на основных платформах</h2>
+        <p class="mt-3 text-sm leading-7 text-indigo-100/85 md:text-base">
+          Используйте фирменные кнопки установки, как на главной странице, чтобы команда быстро попала в нужную версию приложения.
+        </p>
+
+        <div class="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4 sm:flex-wrap">
+          {{#each installButtons}}
+            <a href="{{this.href}}" target="_blank" rel="noopener noreferrer"
+               class="group relative inline-flex items-center justify-center rounded-xl p-1.5 bg-white/5 ring-1 ring-white/20 hover:ring-white/40 hover:bg-white/10 transition-all duration-200 hover:-translate-y-0.5"
+               aria-label="{{this.alt}}">
+              <img src="{{this.img}}" alt="{{this.alt}}" class="h-14 md:h-[58px] w-auto" />
+              <span class="absolute -right-2 -top-2 rounded-full bg-cyan-500 px-2 py-0.5 text-[11px] font-semibold text-white shadow">{{this.note}}</span>
+            </a>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <div class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">Что нового</div>
+        <h2 class="mt-2 text-3xl font-bold text-white">Обновления, которые заметны людям каждый день</h2>
+      </div>
+      <p class="max-w-2xl text-sm leading-7 text-slate-300 md:text-base">
+        Ниже собраны ключевые изменения релиза. Мы сохранили продуктовый тон, добавили структуру и сделали блок удобным для чтения на телефоне и на большом экране.
+      </p>
+    </div>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-3">
+      {{#each changelogGroups}}
+        <article class="rounded-2xl border border-white/10 bg-gray-800/85 p-6 shadow-xl shadow-black/10 backdrop-blur transition-all duration-200 hover:-translate-y-1 hover:bg-gray-700/90">
+          <h3 class="text-xl font-semibold text-white">{{this.title}}</h3>
+          <ul class="mt-5 space-y-3 text-sm leading-7 text-slate-300 md:text-base">
+            {{#each this.items}}
+              <li class="flex gap-3">
+                <span class="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-cyan-400 shadow-[0_0_0_4px_rgba(34,211,238,0.12)]"></span>
+                <span>{{this}}</span>
+              </li>
+            {{/each}}
+          </ul>
+        </article>
+      {{/each}}
+    </div>
+  </section>
+</main>
+
+<footer class="mt-16 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+  © 2026 Балалайка · Платоникс
+</footer>
