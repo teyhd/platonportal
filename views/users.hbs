@@ -1,8 +1,8 @@
 {{!-- users.hbs --}}
 <main class="pt-8 px-4 sm:px-6 lg:px-8 max-w-full w-full mx-auto">
-  <div class="grid grid-cols-1 sm:grid-cols-[280px,1fr] lg:grid-cols-[320px,1fr] gap-4 sm:gap-6">
+  <div class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-[minmax(0,280px)_minmax(0,1fr)] sm:gap-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
     {{!-- Left sidebar: errrules --}}
-    <aside class="lg:sticky lg:top-6 h-fit">
+    <aside class="min-w-0 lg:sticky lg:top-6 h-fit">
       <div class="rounded-2xl border border-gray-800 bg-gray-900/30 overflow-hidden">
         <div class="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
           <div>
@@ -54,7 +54,7 @@
         </div>
       </div>
     </aside>
-    <div class="space-y-6">
+    <div class="min-w-0 space-y-6">
 
 {{!-- Кнопка открытия панели связки "сервисы ↔ доступные роли" --}}
 <button type="button" id="btn-srvs-roles"
@@ -153,14 +153,14 @@
 </aside>
 
   {{!-- Page header --}}
-  <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <header class="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
       <h1 class="text-2xl font-semibold text-white">Пользователи</h1>
       <p class="text-sm text-gray-400">Управление пользователями</p>
     </div>
 
-    <div class="flex items-center gap-3 w-full sm:w-auto">
-      <label class="relative flex-1 sm:w-72">
+    <div class="flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+      <label class="relative w-full sm:w-72">
         <input id="user-search" type="search" placeholder="Поиск по имени или PIN"
                class="w-full rounded-xl bg-gray-800 text-gray-100 placeholder:text-gray-500 border border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 px-4 py-2.5 outline-none">
         <span class="pointer-events-none absolute right-3 top-2.5 text-gray-500">
@@ -169,7 +169,7 @@
       </label>
 
       <button type="button" id="btn-create-user"
-              class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 shadow focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-400">
+              class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 shadow focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-400 sm:w-auto">
         <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         Новый пользователь
       </button>

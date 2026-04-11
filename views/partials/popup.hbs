@@ -1,16 +1,16 @@
 <!-- Вход в систему-->
 <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
-  <div class="bg-gray-800 text-white p-6 rounded-2xl max-w-md w-full shadow-xl relative">
-    <button id="closeModal" class="absolute top-3 right-3 text-gray-400 hover:text-white text-xl">&times;</button>
+  <div class="relative w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 text-slate-950 shadow-2xl">
+    <button id="closeModal" class="absolute right-3 top-3 text-xl text-slate-400 transition hover:text-slate-700">&times;</button>
     <h3 class="text-xl font-semibold mb-4">Вход в систему</h3>
     <!-- Здесь форма авторизации -->
     <form>
-      <input id="pass" name="pin" type="password" placeholder="PIN" class="w-full mb-4 p-2 rounded bg-gray-700 border border-gray-600 focus:outline-none" />
-      <button id="btnlogin" class="mb-2 w-full py-2 bg-blue-600 hover:bg-blue-500 rounded font-medium">Войти</button>
+      <input id="pass" name="pin" type="password" placeholder="PIN" autocomplete="one-time-code" inputmode="numeric" class="mb-4 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-950 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <button id="btnlogin" class="mb-2 w-full rounded-lg bg-blue-600 py-2.5 font-medium text-white transition hover:bg-blue-700">Войти</button>
     </form>
     <div class="text-center mt-auto">
       <a href="https://t.me/Platonicsbot"
-         class="block w-full p-1 min-h-[10px] rounded bg-red-800 hover:bg-red-700 text-white shadow-lg transition-all duration-200 ease-in-out transform hover:shadow-l">
+         class="block min-h-[10px] w-full rounded-lg bg-slate-950 p-2 text-white shadow-sm transition hover:bg-slate-800">
          ЗАБЫЛ PIN / Восстановить PIN
       </a>
     </div>
@@ -24,22 +24,22 @@
 
   <!-- dialog -->
   <div class="relative mx-auto my-8 w-full max-w-xl">
-    <div class="bg-gray-800 text-white shadow-xl rounded-2xl p-6 relative">
+    <div class="relative rounded-lg border border-slate-200 bg-white p-6 text-slate-950 shadow-2xl">
       <button id="closeModal"
-              class="absolute top-3 right-3 h-9 w-9 flex items-center justify-center rounded-full text-gray-400 hover:text-white hover:bg-white/10">
+              class="absolute top-3 right-3 flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
         &times;
       </button>
 
       <h3 class="text-xl font-semibold mb-2">Ссылка на конференцию</h3>
-      <p class="text-sm text-gray-300 mb-4">Скопируйте ссылку-приглашение и нажмите войти</p>
+      <p class="mb-4 text-sm text-slate-500">Скопируйте ссылку-приглашение и нажмите войти</p>
 
       <!-- Поле для длинной ссылки -->
       <div class="flex gap-2">
         <textarea id="copy-link" readonly
-                  class="flex-1 h-28 resize-y rounded-xl bg-gray-900/70 border border-gray-700 p-3 text-sm leading-relaxed
+                  class="flex-1 h-28 resize-y rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm leading-relaxed text-slate-950
                          focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
         <button id="copyBtn"
-                class="shrink-0 h-28 w-28 rounded-xl bg-gray-700 hover:bg-gray-600 text-sm font-medium">
+                class="h-28 w-28 shrink-0 rounded-lg bg-slate-100 text-sm font-medium text-slate-900 transition hover:bg-slate-200">
           Скопировать
         </button>
       </div>
@@ -48,7 +48,7 @@
       <div class="mt-4 grid gap-3 sm:grid-cols-2">
         <!-- Сегменты: Публичная / Частная -->
         <fieldset id="privacyGroup" role="radiogroup" aria-label="Тип комнаты"
-          class="rounded-xl bg-gray-800 border border-gray-700 p-2">
+          class="rounded-lg border border-slate-200 bg-slate-50 p-2">
           <input type="hidden" id="privacyInput" name="privacy" value="public">
           <div class="grid grid-cols-2 gap-2">
             <button type="button" role="radio" aria-checked="true" data-value="public"
@@ -59,24 +59,24 @@
             </button>
             <button type="button" role="radio" aria-checked="false" data-value="private"
               class="seg inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm transition
-                    bg-gray-700 text-gray-200 hover:bg-gray-600">
+                    bg-white text-slate-700 hover:bg-slate-100">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"><path d="M17 11V8a5 5 0 10-10 0v3M6 11h12v8H6v-8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
               Частная
             </button>
           </div>
-          <p id="privacyHint" class="mt-2 text-xs text-gray-400">Ссылку видят все с доступом к странице.</p>
+          <p id="privacyHint" class="mt-2 text-xs text-slate-500">Ссылку видят все с доступом к странице.</p>
         </fieldset>
 
         <!-- Тумблер: Требовать авторизацию -->
-        <label class="group flex items-center justify-between gap-3 rounded-xl bg-gray-800 border border-gray-700 p-3">
+        <label class="group flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
           <div>
-            <div class="text-sm text-gray-200">Требовать авторизацию</div>
-            <div class="text-xs text-gray-400">Гости войдут только под аккаунтом.</div>
+            <div class="text-sm text-slate-900">Требовать авторизацию</div>
+            <div class="text-xs text-slate-500">Гости войдут только под аккаунтом.</div>
           </div>
           <span class="relative inline-flex h-7 w-12 items-center">
             <input id="requireAuth" name="require_auth" type="checkbox" class="peer sr-only">
             <span aria-hidden="true"
-              class="absolute inset-0 rounded-full bg-gray-600 peer-checked:bg-blue-600 transition-colors"></span>
+              class="absolute inset-0 rounded-full bg-slate-300 peer-checked:bg-blue-600 transition-colors"></span>
             <span aria-hidden="true"
               class="absolute left-1 h-5 w-5 rounded-full bg-white shadow transition-transform
                     peer-checked:translate-x-5"></span>
@@ -87,11 +87,11 @@
       <!-- Кнопка для входа -->
       <div class="mt-4 flex flex-col sm:flex-row gap-2">
         <button id="joinBtn"
-                class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 font-medium">
+                class="w-full rounded-lg bg-blue-600 py-2.5 font-medium text-white transition hover:bg-blue-700">
           Зайти в конференцию
         </button>
         <button id="closeBtn"
-                class="w-full py-2.5 rounded-xl bg-gray-700 hover:bg-gray-600 font-medium">
+                class="w-full rounded-lg bg-slate-100 py-2.5 font-medium text-slate-900 transition hover:bg-slate-200">
           Закрыть
         </button>
       </div>
@@ -99,7 +99,7 @@
       <!-- toast -->
       <div id="toast" class="pointer-events-none invisible opacity-0 transition
                              fixed left-1/2 -translate-x-1/2 bottom-6
-                             bg-gray-900 text-white text-sm px-3 py-2 rounded-lg">
+                             rounded-lg bg-slate-950 px-3 py-2 text-sm text-white">
         Ссылка скопирована
       </div>
     </div>
@@ -120,7 +120,7 @@ const texts={public:'Все ученики видят вашу комнату.',
 function set(v){inp.value=v;btns.forEach(b=>{const on=b.dataset.value===v;b.setAttribute('aria-checked',on);
 b.classList.toggle('active',on);
 b.className='seg inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm transition '+
-(on?'bg-blue-600 text-white':'bg-gray-700 text-gray-200 hover:bg-gray-600');
+(on?'bg-blue-600 text-white':'bg-white text-slate-700 hover:bg-slate-100');
 });hint.textContent=texts[v]||'';}
 btns.forEach(b=>b.addEventListener('click',()=>set(b.dataset.value)));
 g.addEventListener('keydown',e=>{const i=btns.findIndex(b=>b.getAttribute('aria-checked')==='true');
@@ -135,8 +135,6 @@ set('public');
   function openModal2(copy, join,acc) {
     $("#requireAuth").prop("checked", String(acc.need_auth).toLowerCase() == "true").trigger("change");
    // $("#requireAuth").val() 
-    console.log(acc)
-    console.log(String(acc.pub).toLowerCase() ,acc.pub)
     if (String(acc.pub).toLowerCase() == "true"){
       //etPrivacy("public");
       set('public')
@@ -158,7 +156,7 @@ set('public');
   const copyBtn  = document.getElementById('copyBtn');
   const joinBtn  = document.getElementById('joinBtn');
   const closeBtn = document.getElementById('closeBtn');
-  const closeX   = document.getElementById('closeModal');
+  const closeX   = document.querySelector('#modal2 #closeModal');
   const overlay  = document.getElementById('modal2-overlay');
   const toast    = document.getElementById('toast');
 
@@ -192,9 +190,7 @@ set('public');
         withCredentials: true
       },
       success: function (datas) {
-        console.log(datas);
-        datas.roomid = window.location.href.split('#')[0] + datas.roomid
-        console.log(datas.acc);
+        datas.roomid = new URL(datas.roomid, window.location.origin + '/').href
         openModal2(datas.roomid, datas.link, datas.acc);
       },
       error: function (jqXHR, textStatus, errorThrown) {
@@ -232,9 +228,7 @@ $(function(){
       },
       contentType: 'application/json',
       xhrFields: { withCredentials: true },
-      success: function(res){ 
-        console.log("Сервер ответил:", res); 
-      },
+      success: function(){},
       error: function(err){ 
         console.error("Ошибка:", err); 
       }
@@ -260,9 +254,9 @@ $(function(){
 
   <div role="dialog" aria-modal="true" aria-labelledby="roomsTitle"
        class="relative mx-auto my-10 w-full max-w-2xl">
-    <div class="bg-gray-800 text-white rounded-2xl shadow-xl p-5 md:p-6 relative">
+    <div class="relative rounded-lg border border-slate-200 bg-white p-5 text-slate-950 shadow-2xl md:p-6">
       <button id="roomsClose"
-              class="absolute top-3 right-3 h-9 w-9 flex items-center justify-center rounded-full text-gray-400 hover:text-white hover:bg-white/10"
+              class="absolute top-3 right-3 flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
               aria-label="Закрыть">
         &times;
       </button>
@@ -275,14 +269,14 @@ $(function(){
       </div>
 
       <!-- Пустой список -->
-      <div id="roomsEmpty" class="hidden text-sm text-gray-400 text-center py-6">
+      <div id="roomsEmpty" class="hidden py-6 text-center text-sm text-slate-500">
         Сейчас нет активных комнат.
       </div>
 
       <!-- Нижние кнопки -->
       <div class="mt-4 flex justify-end">
         <button id="roomsClose2"
-                class="px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 font-medium">
+                class="rounded-lg bg-slate-100 px-4 py-2 font-medium text-slate-900 transition hover:bg-slate-200">
           Закрыть
         </button>
       </div>
@@ -303,7 +297,6 @@ $(function(){
         withCredentials: true
       },
       success: function (datas) {
-        console.log(datas);
         try {
           datas.rooms.forEach(element => {
             let romid = element?.room_info?.room_id ?? false
@@ -353,13 +346,13 @@ $(function(){
       const a = document.createElement('a');
       a.href = url;
       a.className = [
-        "block rounded-xl border border-gray-700 bg-gray-900/60 hover:bg-gray-900",
-        "transition shadow-sm hover:shadow-md p-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        "block rounded-lg border border-slate-200 bg-slate-50 hover:bg-white",
+        "transition p-4 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       ].join(' ');
 
       a.innerHTML = `
         <div class="flex items-start gap-3">
-          <div class="mt-0.5 h-8 w-8 rounded-lg bg-blue-600/20 flex items-center justify-center">
+          <div class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
             <svg class="w-5 h-5 text-blue-400" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M12 6a6 6 0 00-6 6v5h12v-5a6 6 0 00-6-6Z" stroke="currentColor" stroke-width="1.5"/>
               <circle cx="12" cy="10" r="2" stroke="currentColor" stroke-width="1.5"/>
@@ -367,10 +360,10 @@ $(function(){
           </div>
           <div class="min-w-0">
             <div class="font-medium truncate">${escapeHtml(title)}</div>
-            <div class="text-xs text-gray-400 mt-0.5">roomid: <span class="font-mono">${escapeHtml(rid)}</span></div>
+            <div class="mt-0.5 text-xs text-slate-500">roomid: <span class="font-mono">${escapeHtml(rid)}</span></div>
             <div class="mt-2 inline-flex items-center gap-2">
-              <span class="px-2 py-0.5 rounded-full text-xs bg-gray-700 text-gray-200">Участников: ${escapeHtml(peops)}</span>
-              <span class="px-2 py-0.5 rounded-full text-xs bg-blue-600/20 text-blue-300">активна</span>
+              <span class="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-700">Участников: ${escapeHtml(peops)}</span>
+              <span class="rounded-md bg-blue-50 px-2 py-0.5 text-xs text-blue-700">активна</span>
             </div>
           </div>
         </div>

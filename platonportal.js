@@ -165,6 +165,146 @@ app.get('/e',(req,res)=>{
     res.sendStatus(200)
 })
 
+const SERVICE_META = [
+  { match: /электронный журнал|дневник/i, tag: 'Учебный процесс', summary: 'Оценки, занятия и ежедневная работа.' },
+  { match: /расписание/i, tag: 'Календарь', summary: 'Уроки, звонки и быстрый переход к расписанию.' },
+  { match: /инструкции/i, tag: 'Навигация', summary: 'Регламенты, инструкции и ответы по рабочим задачам.' },
+  { match: /бот платоникс|балалайка/i, tag: 'Коммуникация', summary: 'Сообщения, уведомления и быстрый контакт.' },
+  { match: /голосован/i, tag: 'Обратная связь', summary: 'Опросы и сбор мнений без лишних шагов.' },
+  { match: /облако/i, tag: 'Файлы', summary: 'Документы, материалы и совместная работа в облаке.' },
+  { match: /прогресс/i, tag: 'Аналитика', summary: 'Отчеты, динамика и рабочие показатели под рукой.' },
+  { match: /аренда пк|управление пк/i, tag: 'Инфраструктура', summary: 'Рабочие устройства, ресурсы и технические заявки.' },
+  { match: /v\.call/i, tag: 'Онлайн-уроки', summary: 'Быстрый вход в активную комнату или запуск нового урока.' },
+  { match: /управление пользователями/i, tag: 'Администрирование', summary: 'Роли, права доступа и учетные записи сотрудников.' },
+  { match: /лента событий/i, tag: 'Медиа', summary: 'Фотографии, события и материалы школьной жизни.' },
+];
+
+const INFO_META = [
+  { match: /администрац|руководител/i, tag: 'Команда' },
+  { match: /wifi|парол/i, tag: 'Инфраструктура' },
+  { match: /график|звонки|распределение/i, tag: 'Регламент' },
+  { match: /социальн/i, tag: 'Коммуникация' },
+  { match: /контрол/i, tag: 'Контроль' },
+];
+
+function pickMeta(title, collection, fallback) {
+  const normalized = (title ?? '').toString();
+  return collection.find(item => item.match.test(normalized)) ?? fallback;
+}
+
+function stripHtml(value = '') {
+  return value
+    .toString()
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getExcerpt(value = '', limit = 140) {
+  const plain = stripHtml(value);
+  if (plain.length <= limit) return plain;
+  return `${plain.slice(0, limit).trimEnd()}…`;
+}
+
+function getLinkMeta(href = '') {
+  const value = (href ?? '').toString().trim();
+
+  if (!value) {
+    return { kindLabel: 'Раздел', destinationLabel: 'внутри портала' };
+  }
+
+  if (value.startsWith('#')) {
+    return { kindLabel: 'Быстрое действие', destinationLabel: 'внутри портала' };
+  }
+
+  if (value.startsWith('/')) {
+    return { kindLabel: 'Внутренний сервис', destinationLabel: 'внутри портала' };
+  }
+
+  try {
+    const target = new URL(value);
+    const host = target.hostname.replace(/^www\./, '');
+
+    if (host === 't.me' || host.endsWith('.t.me')) {
+      return { kindLabel: 'Telegram', destinationLabel: host };
+    }
+
+    if (host === 'platoniks.ru' || host.endsWith('.platoniks.ru') || host.endsWith('.teyhd.ru')) {
+      return { kindLabel: 'Сервис Platoniks', destinationLabel: host };
+    }
+
+    return { kindLabel: 'Внешний сервис', destinationLabel: host };
+  } catch (_error) {
+    return { kindLabel: 'Раздел', destinationLabel: 'внутри портала' };
+  }
+}
+
+function getAccessMeta(role = 0) {
+  if (!role) {
+    return {
+      accessLabel: 'Гостевой доступ',
+      accessNote: 'Войдите по PIN, чтобы открыть персональные сервисы и рабочие сценарии.',
+    };
+  }
+
+  if (role >= 5) {
+    return {
+      accessLabel: 'Расширенный доступ',
+      accessNote: 'Доступ собран под административные и рабочие задачи вашей роли.',
+    };
+  }
+
+  return {
+    accessLabel: 'Персональный доступ',
+    accessNote: 'Доступ собран под вашу роль и повседневные рабочие задачи.',
+  };
+}
+
+function getServicePriority(title = '', href = '') {
+  const value = `${title ?? ''} ${href ?? ''}`.toLowerCase();
+
+  if (value.includes('#lesson')) return 10;
+  if (value.includes('#room')) return 11;
+  if (/электронный журнал|дневник|diary/.test(value)) return 20;
+  if (/расписание|rasp/.test(value)) return 30;
+  if (/облако|cloud/.test(value)) return 40;
+  if (/балалайка|msg\.platoniks/.test(value)) return 50;
+  if (/инструкц|manual/.test(value)) return 60;
+  if (/управление пользователями|\/users/.test(value)) return 70;
+
+  return 100;
+}
+
+function normalizeMenuCard(card, index = 0) {
+  const meta = pickMeta(card.title, SERVICE_META, {
+    tag: 'Сервис',
+    summary: 'Быстрый переход к рабочему разделу без лишних шагов.',
+  });
+  const linkMeta = getLinkMeta(card.cont);
+
+  return {
+    ...card,
+    ...meta,
+    ...linkMeta,
+    _menuIndex: index,
+    _priority: getServicePriority(card.title, card.cont),
+    excerpt: getExcerpt(meta.summary, 90),
+    imageSrc: card.pic ? `/img/${card.pic}` : '/img/platon.png',
+  };
+}
+
+function normalizeInfoCard(card) {
+  const meta = pickMeta(card.title, INFO_META, { tag: 'Информация' });
+
+  return {
+    ...card,
+    ...meta,
+    excerpt: getExcerpt(card.cont),
+  };
+}
+
 app.get('/',async (req,res)=>{
    
     let rolen = 0
@@ -178,11 +318,32 @@ app.get('/',async (req,res)=>{
     console.log(rolen);
     console.log(req.session.logins)
     let cards = await db.get_cards(rolen)
+    const menuCards = cards.filter(c => c.type === 0).map((card, index) => normalizeMenuCard(card, index))
+    const infoCards = cards.filter(c => c.type === 1).map(normalizeInfoCard)
+    const prioritizedMenu = [...menuCards].sort((a, b) => a._priority - b._priority || a._menuIndex - b._menuIndex)
+    const featuredMenu = prioritizedMenu.slice(0, 3)
+    const featuredIndexes = new Set(featuredMenu.map(card => card._menuIndex))
+    const secondaryMenu = menuCards.filter(card => !featuredIndexes.has(card._menuIndex))
+    const featuredInfo = infoCards[0] ?? null
+    const secondaryInfo = infoCards.slice(1)
+    const accessMeta = getAccessMeta(rolen)
+    const quickMenu = prioritizedMenu.filter(card => !featuredIndexes.has(card._menuIndex)).slice(0, 6)
+
     res.render('new',{
       title: 'Гармония Образования',
-      menu:cards.filter(c => c.type === 0),
-      info:cards.filter(c => c.type === 1),
-      auth: rolen
+      menu: menuCards,
+      info: infoCards,
+      featuredMenu,
+      secondaryMenu,
+      featuredInfo,
+      secondaryInfo,
+      quickMenu,
+      menuCount: menuCards.length,
+      infoCount: infoCards.length,
+      menuOverflowCount: secondaryMenu.length,
+      infoOverflowCount: secondaryInfo.length,
+      auth: rolen,
+      ...accessMeta
     });
   })
 

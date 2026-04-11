@@ -1,28 +1,27 @@
-<header class="relative fixed top-0 inset-x-0 z-10 bg-white/70 dark:bg-gray-800/70 backdrop-blur px-4 h-14 flex items-center justify-between">
-  <!-- Центрированный заголовок -->
-<h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100
-           sm:absolute sm:left-1/2 sm:transform sm:-translate-x-1/2
-           text-left sm:text-center whitespace-nowrap overflow-hidden text-ellipsis">
-  {{title}}
-</h1>
+<header class="fixed inset-x-0 top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur-md">
+  <div class="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 md:px-6">
+    <a href="/" class="group flex min-h-[44px] min-w-0 items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2" aria-label="На главную">
+      <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-sm font-semibold text-white shadow-sm shadow-slate-950/20">
+        Г
+      </span>
+      <span class="min-w-0">
+        <span class="block truncate text-sm font-semibold leading-tight text-slate-950 md:text-base">{{title}}</span>
+        <span class="hidden text-xs font-medium text-slate-500 sm:block">единый центр сервисов</span>
+      </span>
+    </a>
 
-  <!-- Левая часть (пусто или можно логотип) -->
-  <div class="flex items-center space-x-4"></div>
-
-  <!-- Правая часть -->
-  <div class="flex items-center space-x-3">
-    <button id="theme" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700" title="Сменить тему" hidden>🌞</button>
-    {{#if auth}}
-          <!-- Если пользователь авторизован -->
-      <button id="logoutBtn" class="px-4 py-1.5 text-sm font-medium rounded-md bg-red-600 text-white hover:bg-red-700 transition">
-        Выйти
-      </button>
-    {{else}}
-      <!-- Если пользователь НЕ авторизован -->
-      <button id="openModal" class="px-4 py-1.5 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition">
-        Войти
-      </button>
-    {{/if}}
+    <div class="flex shrink-0 items-center gap-2">
+      <button id="theme" class="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500" title="Сменить тему" hidden>🌞</button>
+      {{#if auth}}
+        <button id="logoutBtn" class="min-h-[44px] rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition duration-150 hover:bg-red-100 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2">
+          Выйти
+        </button>
+      {{else}}
+        <button id="openModal" class="min-h-[44px] rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-900/10 transition duration-150 hover:bg-blue-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+          Войти
+        </button>
+      {{/if}}
+    </div>
   </div>
 </header>
 <script>
@@ -63,7 +62,7 @@ $(function () {
      role="region" aria-label="Ограничения встроенного браузера">
   <div class="w-full pointer-events-auto" style="padding-top: env(safe-area-inset-top);">
     <div class="mx-auto max-w-6xl">
-      <div class="m-2 rounded-xl bg-gray-900 text-white shadow-lg ring-1 ring-white/10">
+      <div class="m-2 rounded-lg bg-gray-900 text-white shadow-lg ring-1 ring-white/10">
         <div class="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <p class="text-sm leading-5">
             <strong class="font-semibold">Вы открыли сайт внутри Telegram!</strong><br>

@@ -1,114 +1,296 @@
-  <main class="pt-8 px-4 max-w-7xl mx-auto space-y-8">
+<main class="bg-white pb-16 text-slate-950">
+  <section class="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white">
+    <div class="mx-auto max-w-7xl px-[16px] pb-8 pt-[72px] sm:pb-10 sm:pt-[80px] md:px-6 md:pb-12 md:pt-24">
+      <div class="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.38fr)] lg:items-start lg:gap-8">
+        <div class="min-w-0 lg:pt-3">
+          <p class="inline-flex items-center gap-2 rounded-md border border-blue-100 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700">
+            <span class="h-2 w-2 rounded-full bg-blue-600"></span>
+            {{accessLabel}}
+          </p>
 
-    <!-- Services -->
-    <section>
-      <h2 class="mb-6 text-2xl font-semibold text-white" hidden>Сервисы</h2>
-      <div class="grid gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        {{#each menu}}
-          <a href="{{this.cont}}" class="flex flex-col items-center justify-center p-6 min-h-[160px] rounded-2xl bg-gray-800 hover:bg-gray-700 text-white shadow-lg transition-all duration-200 ease-in-out transform hover:-translate-y-1 hover:shadow-xl group text-center">
-            <img src="/img/{{this.pic}}" alt="{{this.title}}" class="w-25 h-25 mb-4 transition-transform duration-200 group-hover:scale-110" />
-            <span class="text-base font-medium group-hover:underline">{{this.title}}</span>
-          </a>
-        {{/each}}
-      </div>
-    </section>
+          <h1 class="mt-4 break-words text-3xl font-semibold leading-tight tracking-tight text-slate-950 md:text-4xl">
+            Рабочий центр Гармонии: основные сервисы сразу под рукой
+          </h1>
 
-    <!-- Balalayka App CTA -->
-    <section class="rounded-2xl bg-gradient-to-r from-[#3e2f70] via-[#5b45a4] to-[#7c5cf0] p-[1px] shadow-2xl">
-      <div class="rounded-2xl bg-[#101735] px-5 py-6 md:px-8 md:py-7">
-        <div class="mx-auto max-w-3xl text-center">
-          <h2 class="text-white text-2xl md:text-3xl font-bold leading-tight">Мессенджер Балалайка</h2>
-          <p class="mt-2 text-indigo-100/90 text-sm md:text-base">Установите приложение из RuStore или iOS-версию через TestFlight.</p>
+          <p class="mt-3 max-w-2xl text-base leading-7 text-slate-600">
+            {{accessNote}}
+          </p>
 
-          <div class="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4 sm:flex-wrap">
+          <div class="mt-5 flex flex-wrap gap-2">
+            {{#if (gt menuOverflowCount 0)}}
+              <a href="#services" class="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm shadow-slate-950/5 transition duration-150 hover:border-blue-200 hover:text-blue-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+                Все сервисы
+                <span class="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{{menuCount}}</span>
+              </a>
+            {{/if}}
 
-            <a href="https://www.rustore.ru/catalog/app/ru.platoniks.balalaika" target="_blank" rel="noopener noreferrer"
-               class="inline-flex items-center justify-center rounded-xl p-1.5 bg-white/5 ring-1 ring-white/20 hover:ring-white/40 hover:bg-white/10 transition-all duration-200 hover:-translate-y-0.5"
-               aria-label="Скачать с RuStore">
-              <img src="/img/store-badges/rustore-badge.svg" alt="Скачать с RuStore" class="h-14 md:h-[58px] w-auto" />
+            <a href="#info" class="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm shadow-slate-950/5 transition duration-150 hover:border-blue-200 hover:text-blue-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+              Информация
+              <span class="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{{infoCount}}</span>
             </a>
-
-            <a href="https://testflight.apple.com/join/REkhmRaq" target="_blank" rel="noopener noreferrer"
-               class="relative inline-flex items-center justify-center rounded-xl p-1.5 bg-white/5 ring-1 ring-white/20 hover:ring-white/40 hover:bg-white/10 transition-all duration-200 hover:-translate-y-0.5"
-               aria-label="Скачать iOS через TestFlight">
-              <img src="/img/store-badges/appstore-badge.svg" alt="Скачать iOS через TestFlight" class="h-14 md:h-[58px] w-auto" />
-              <span class="absolute -right-2 -top-2 rounded-full bg-cyan-500 px-2 py-0.5 text-[11px] font-semibold text-white shadow">iOS · TestFlight</span>
-            </a>
-
-            <div class="relative inline-flex">
-              <button type="button" disabled aria-label="Скачать в App Store (скоро)"
-                 class="inline-flex items-center justify-center rounded-xl p-1.5 bg-gray-700/40 ring-1 ring-white/15 cursor-not-allowed opacity-80">
-                <img src="/img/store-badges/appstore-badge.svg" alt="Скачать в App Store (скоро)" class="h-14 md:h-[58px] w-auto grayscale" />
-              </button>
-              <span class="absolute -right-2 -top-2 rounded-full bg-indigo-500 px-2 py-0.5 text-[11px] font-semibold text-white shadow">скоро</span>
-            </div>
           </div>
+
+          <dl class="mt-5 hidden grid-cols-3 gap-2 rounded-lg border border-slate-200 bg-white p-2 shadow-sm shadow-slate-950/5 sm:grid">
+            <div class="rounded-md bg-slate-50 px-3 py-3">
+              <dt class="text-xs font-medium text-slate-500">Сервисы</dt>
+              <dd class="mt-1 text-2xl font-semibold text-slate-950">{{menuCount}}</dd>
+            </div>
+            <div class="rounded-md bg-slate-50 px-3 py-3">
+              <dt class="text-xs font-medium text-slate-500">Блоки</dt>
+              <dd class="mt-1 text-2xl font-semibold text-slate-950">{{infoCount}}</dd>
+            </div>
+            <div class="rounded-md bg-slate-50 px-3 py-3">
+              <dt class="text-xs font-medium text-slate-500">Вход</dt>
+              <dd class="mt-1 truncate text-sm font-semibold leading-8 text-slate-950">
+                {{#if auth}}Активен{{else}}PIN{{/if}}
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="min-w-0">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p class="text-sm font-semibold text-blue-700">Главные действия</p>
+              <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Откройте нужный сервис</h2>
+            </div>
+            {{#if (gt menuOverflowCount 0)}}
+              <a href="#services" class="hidden min-h-[44px] items-center rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition duration-150 hover:bg-slate-100 hover:text-blue-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:inline-flex">
+                Перейти к каталогу
+              </a>
+            {{/if}}
+          </div>
+
+          <div class="mt-4 grid gap-3 md:grid-cols-2">
+            {{#each featuredMenu}}
+              <a
+                href="{{this.cont}}"
+                class="group relative flex min-h-[156px] min-w-0 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5 transition duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-xl hover:shadow-slate-950/10 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:min-h-[184px] sm:p-5 {{#if @first}}md:col-span-2 md:min-h-[220px] md:p-6{{/if}}"
+              >
+                <div class="flex items-start justify-between gap-4">
+                  <div class="min-w-0">
+                    <span class="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">
+                      {{this.tag}}
+                    </span>
+                    <h3 class="mt-4 break-words text-xl font-semibold leading-tight text-slate-950 {{#if @first}}md:text-3xl{{/if}}">
+                      {{this.title}}
+                    </h3>
+                    <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                      {{this.summary}}
+                    </p>
+                  </div>
+
+                  <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-slate-950 shadow-sm shadow-slate-950/20 ring-1 ring-slate-900/5 {{#if @first}}sm:h-20 sm:w-20 md:h-24 md:w-24{{else}}sm:h-16 sm:w-16{{/if}}">
+                    <img src="{{this.imageSrc}}" alt="{{this.title}}" class="max-h-12 w-auto transition duration-150 group-hover:scale-105 {{#if @first}}md:max-h-16{{/if}}" />
+                  </div>
+                </div>
+
+                <div class="mt-auto flex items-end justify-between gap-4 pt-4 sm:pt-6">
+                  <div class="min-w-0 text-sm">
+                    <p class="font-medium text-slate-900">{{this.kindLabel}}</p>
+                    <p class="truncate text-slate-500">{{this.destinationLabel}}</p>
+                  </div>
+
+                  <span class="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg bg-slate-950 px-3 py-2 text-sm font-semibold text-white transition duration-150 group-hover:bg-blue-700">
+                    Открыть
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+                      <path fill-rule="evenodd" d="M4.25 10A.75.75 0 0 1 5 9.25h8.19L10.22 6.28a.75.75 0 1 1 1.06-1.06l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 1 1-1.06-1.06l2.97-2.97H5A.75.75 0 0 1 4.25 10Z" clip-rule="evenodd" />
+                    </svg>
+                  </span>
+                </div>
+              </a>
+            {{/each}}
+          </div>
+
+          {{#if (gt menuOverflowCount 0)}}
+            <div class="mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-sm font-semibold text-slate-900">Частые переходы</p>
+                <p class="text-sm text-slate-500">Ближайшие разделы из базы</p>
+              </div>
+
+              <div class="mt-3 flex flex-wrap gap-2">
+                {{#each quickMenu}}
+                  <a href="{{this.cont}}" class="inline-flex min-h-[44px] items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition duration-150 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+                    {{this.title}}
+                  </a>
+                {{/each}}
+              </div>
+            </div>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {{#if (gt menuOverflowCount 0)}}
+    <section id="services" class="scroll-mt-24 border-b border-slate-200 bg-white">
+      <div class="mx-auto max-w-7xl px-[16px] py-10 md:px-6 md:py-12">
+        <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p class="text-sm font-semibold text-blue-700">Каталог сервисов</p>
+            <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Все остальные рабочие разделы</h2>
+          </div>
+          <p class="max-w-2xl text-sm leading-6 text-slate-500">
+            Доступы и ссылки сохраняются из базы данных.
+          </p>
+        </div>
+
+        <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {{#each secondaryMenu}}
+            <a
+              href="{{this.cont}}"
+              class="group flex min-h-[150px] min-w-0 flex-col rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5 transition duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg hover:shadow-slate-950/10 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:min-h-[170px]"
+            >
+              <div class="flex items-start gap-4">
+                <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
+                  <img src="{{this.imageSrc}}" alt="{{this.title}}" class="max-h-10 w-auto transition duration-150 group-hover:scale-105" />
+                </div>
+
+                <div class="min-w-0 flex-1">
+                  <p class="text-xs font-semibold text-blue-700">{{this.tag}}</p>
+                  <h3 class="mt-2 break-words text-lg font-semibold leading-tight text-slate-950">{{this.title}}</h3>
+                  <p class="mt-2 text-sm leading-6 text-slate-600 line-clamp-2">{{this.summary}}</p>
+                </div>
+              </div>
+
+              <div class="mt-auto flex items-center justify-between gap-3 pt-5 text-sm text-slate-500">
+                <span class="truncate">{{this.kindLabel}} · {{this.destinationLabel}}</span>
+                <span class="rounded-md bg-slate-100 p-1.5 text-slate-400 transition duration-150 group-hover:bg-blue-50 group-hover:text-blue-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+                    <path fill-rule="evenodd" d="M4.25 10A.75.75 0 0 1 5 9.25h8.19L10.22 6.28a.75.75 0 1 1 1.06-1.06l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 1 1-1.06-1.06l2.97-2.97H5A.75.75 0 0 1 4.25 10Z" clip-rule="evenodd" />
+                  </svg>
+                </span>
+              </div>
+            </a>
+          {{/each}}
         </div>
       </div>
     </section>
+  {{/if}}
 
-    <section class="max-w-7xl mx-auto px-4">
-      <h2 class="mb-6 text-2xl font-semibold text-white text-center">Информация</h2>
-
-      <!-- 📱 Аккордеон (≤ lg) -->
-      <div class="space-y-4 lg:hidden">
-        {{#each info}}
-          <details class="group bg-gray-800 hover:bg-gray-700 rounded-xl p-4 text-white">
-            <summary class="flex items-center gap-3 cursor-pointer list-none select-none">
-              <!-- иконка -->
-              {{#if this.icon}}
-                <img src="/icons/{{this.icon}}" alt="icon" class="w-6 h-6 shrink-0">
-              {{else}}
-                <span class="w-6 h-6 flex items-center justify-center shrink-0">🛈</span>
-              {{/if}}
-
-              <h3 class="text-lg font-semibold">{{this.title}}</h3>
-
-              <!-- стрелка -->
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                  class="ml-auto w-4 h-4 transition-transform duration-300 group-open:rotate-180">
-                <path fill-rule="evenodd"
-                      d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.112l3.71-3.88a.75.75 0 1 1 1.08 1.04l-4.24 4.42a.75.75 0 0 1-1.08 0L5.25 8.27a.75.75 0 0 1-.02-1.06z"
-                      clip-rule="evenodd"/>
-              </svg>
-            </summary>
-
-            <div class="mt-2 text-sm text-gray-300 whitespace-pre-line">{{{this.cont}}}</div>
-          </details>
-        {{/each}}
+  <section id="balalayka" class="scroll-mt-24 border-b border-slate-200 bg-slate-950 text-white">
+    <div class="mx-auto grid max-w-7xl gap-6 px-[16px] py-8 md:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+      <div class="max-w-2xl">
+        <p class="text-sm font-semibold text-blue-200">Балалайка</p>
+        <h2 class="mt-2 text-2xl font-semibold leading-tight tracking-tight">
+          Сообщения и быстрый контакт в рабочем ритме
+        </h2>
+        <p class="mt-3 text-sm leading-6 text-slate-300">
+          Установите приложение из RuStore или откройте iOS-версию через TestFlight.
+        </p>
       </div>
 
-      <!-- 💻 Masonry-разметка (≥ lg) -->
-      <div class="hidden lg:block columns-1 md:columns-2 xl:columns-3 gap-x-6 space-y-6">
-        {{#each info}}
-          <article class="break-inside-avoid bg-gray-800 hover:bg-gray-700 transition-colors
-                          rounded-xl shadow-lg text-white p-6 flex flex-col gap-2 relative group">
-            <header class="flex items-center gap-3 mb-2">
-              {{#if this.icon}}
-                <img src="/icons/{{this.icon}}" alt="icon" class="w-6 h-6 shrink-0">
-              {{else}}
-                <span class="w-6 h-6 flex items-center justify-center shrink-0">🛈</span>
-              {{/if}}
-              <h3 class="text-lg font-semibold leading-tight">{{this.title}}</h3>
-            </header>
+      <div class="flex flex-wrap gap-3 lg:justify-end">
+        <a
+          href="https://www.rustore.ru/catalog/app/ru.platoniks.balalaika"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white p-1.5 transition duration-150 hover:border-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+          aria-label="Скачать с RuStore"
+        >
+          <img src="/img/store-badges/rustore-badge.svg" alt="Скачать с RuStore" class="h-14 w-auto" />
+        </a>
 
-            <div class="text-sm text-gray-300 whitespace-pre-line leading-relaxed
-                        max-h-52 overflow-hidden lg:max-h-none lg:line-clamp-8 lg:group-hover:line-clamp-none">
-              {{{this.cont}}}
+        <a
+          href="https://testflight.apple.com/join/REkhmRaq"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="relative inline-flex items-center justify-center rounded-lg border border-white/10 bg-white p-1.5 transition duration-150 hover:border-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+          aria-label="Скачать iOS через TestFlight"
+        >
+          <img src="/img/store-badges/appstore-badge.svg" alt="Скачать iOS через TestFlight" class="h-14 w-auto" />
+          <span class="absolute -right-2 -top-2 rounded-md bg-cyan-500 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">
+            iOS · TestFlight
+          </span>
+        </a>
+
+        <div class="relative inline-flex">
+          <button
+            type="button"
+            disabled
+            aria-label="Скачать в App Store (скоро)"
+            class="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/90 p-1.5 opacity-80"
+          >
+            <img src="/img/store-badges/appstore-badge.svg" alt="Скачать в App Store (скоро)" class="h-14 w-auto grayscale" />
+          </button>
+          <span class="absolute -right-2 -top-2 rounded-md bg-blue-600 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">
+            скоро
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="info" class="scroll-mt-24 bg-white">
+    <div class="mx-auto max-w-7xl px-[16px] py-10 md:px-6 md:py-12">
+      <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p class="text-sm font-semibold text-blue-700">Информация</p>
+          <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Оперативные ориентиры и рабочие контакты</h2>
+        </div>
+        <p class="max-w-2xl text-sm leading-6 text-slate-500">
+          Блоки ниже приходят из базы данных и сохраняют исходный порядок публикации.
+        </p>
+      </div>
+
+      {{#if featuredInfo}}
+        <article class="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-5 shadow-sm shadow-slate-950/5 md:p-6">
+          <div class="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+            <div>
+              <span class="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">
+                {{featuredInfo.tag}}
+              </span>
+              <h3 class="mt-4 text-2xl font-semibold leading-tight text-slate-950">{{featuredInfo.title}}</h3>
+              <p class="mt-3 text-sm leading-6 text-slate-500">{{featuredInfo.excerpt}}</p>
             </div>
 
-            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-10
-                        bg-gradient-to-t from-gray-800 to-transparent
-                        opacity-0 lg:opacity-100 group-hover:opacity-0 transition"></div>
-          </article>
-        {{/each}}
-      </div>
-    </section>
+            <div class="border-t border-slate-200 pt-4 text-sm leading-7 text-slate-600 whitespace-pre-line lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+              {{{featuredInfo.cont}}}
+            </div>
+          </div>
+        </article>
+      {{/if}}
 
-  </main>
+      {{#if (gt infoOverflowCount 0)}}
+        <div class="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {{#each secondaryInfo}}
+            <details class="group rounded-lg border border-slate-200 bg-white p-5 shadow-sm shadow-slate-950/5 transition duration-150 hover:border-slate-300 hover:shadow-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2">
+              <summary class="flex cursor-pointer list-none items-start gap-3 focus-visible:outline-none">
+                <div class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+                    <path fill-rule="evenodd" d="M18 10A8 8 0 1 1 2 10a8 8 0 0 1 16 0Zm-7.25-2.75a.75.75 0 0 0-1.5 0v.5a.75.75 0 0 0 1.5 0v-.5ZM10 9a.75.75 0 0 1 .75.75v3.25a.75.75 0 0 1-1.5 0V9.75A.75.75 0 0 1 10 9Z" clip-rule="evenodd" />
+                  </svg>
+                </div>
 
-  <footer class="mt-16 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-    © 2025 Гармония образования
-  </footer>
+                <div class="min-w-0 flex-1">
+                  <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
+                    {{this.tag}}
+                  </span>
+                  <h3 class="mt-2 text-lg font-semibold leading-tight text-slate-950">{{this.title}}</h3>
+                  <p class="mt-2 text-sm leading-6 text-slate-500">{{this.excerpt}}</p>
+                </div>
 
+                <span class="mt-1 shrink-0 text-slate-400 transition duration-150 group-open:rotate-180 group-open:text-blue-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5">
+                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.112l3.71-3.88a.75.75 0 1 1 1.08 1.04l-4.24 4.42a.75.75 0 0 1-1.08 0L5.25 8.27a.75.75 0 0 1-.02-1.06Z" clip-rule="evenodd" />
+                  </svg>
+                </span>
+              </summary>
 
+              <div class="max-h-0 overflow-hidden transition-all duration-200 group-open:mt-4 group-open:max-h-[120rem]">
+                <div class="border-t border-slate-200 pt-4 text-sm leading-7 text-slate-600 whitespace-pre-line">
+                  {{{this.cont}}}
+                </div>
+              </div>
+            </details>
+          {{/each}}
+        </div>
+      {{/if}}
+    </div>
+  </section>
+</main>
+
+<footer class="border-t border-slate-200 bg-white py-6 text-center text-sm text-slate-500">
+  © 2025 Гармония образования
+</footer>
