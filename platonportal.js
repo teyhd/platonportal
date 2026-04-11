@@ -622,7 +622,6 @@ app.get('/getvlinks',async (req,res)=>{
     let acc={pub:pub,need_auth:need_auth}
     ROOMS[roomid] = acc
     let ans = await vcall.openroom(roomid,req.session.name,`id0000${req.session.uid}`,true, acc)
-    console.log(ans);
     //console.log(ROOMS[roomid]);
     
     ans.roomid = `jointo?roomid=${roomid}`
@@ -649,7 +648,6 @@ app.get('/jointo',async (req,res)=>{
     let admin = roomid == req.query.roomid
     
     let ans = await vcall.openroom(req.query.roomid,name,`id0000${uid}`,admin)
-    console.log(ans);
     res.redirect(ans.link)
     
 })
@@ -665,7 +663,6 @@ app.get('/rooms',async (req,res)=>{
     if (req.session.rolen>=1){
         let ans = await vcall.rooms_info() 
         ans.acc = ROOMS
-        console.log(ans);
         res.send(ans)
     } else{
         res.sendStatus(403)
@@ -677,7 +674,6 @@ app.get('/getanalyt',async (req,res)=>{
     if (req.session.rolen==5){
         const query = req.query.roomid || {};
         let ans = await vcall.get_analytic(query)
-        console.log(ans);
         res.send(ans)
     } else{
         res.sendStatus(403)
@@ -693,7 +689,6 @@ app.get('/closeroom',async (req,res)=>{
     if (req.session.rolen==5){
         const query = req.query.roomid || {};
         let ans = await vcall.close_room(query)
-        console.log(ans);
         res.send(ans)
     } else{
         res.sendStatus(403)
@@ -701,7 +696,6 @@ app.get('/closeroom',async (req,res)=>{
 })
 
 app.get('/auth',async (req,res)=>{
-    console.log(req.query);
     if (req.query.pins!=undefined){
         let ans = await db.auth_user(req.query.pin);
         if (ans!=undefined){
@@ -715,7 +709,6 @@ app.get('/auth',async (req,res)=>{
         } else {
             res.send('nok')
         }
-        mlog(ans);
     } else{
         res.render('auth',{
             title: 'Авторизация'
@@ -730,7 +723,6 @@ app.get('/logout', function(req, res) {
     req.session.uid = null
     req.session.roles = null
     //res.send('ok');
-    console.dir(req.session)
     req.session.save(function (err) {
       if (err) next(err)
       req.session.regenerate(function (err) {
@@ -790,14 +782,12 @@ app.get("/cloud", (req, res) => {
   }
 
   let cloud_url = `${process.env.KODBOX_URL}?user/loginSubmit&name=${login}&password=${pass}&auto=1`
-  mlog(cloud_url)
   return res.redirect(302, cloud_url);
 });
 
 app.get("/diary", (req, res) => {
   let creds = hlp.getLoginByService(req.session.logins, 4) 
   if (creds) {
-    mlog('Логин:', creds.login, 'Пароль:', creds.pass);
     const ACTION = "https://club8899.studyapps.ru/user/login"; // если есть HTTPS — лучше https://
 
     res.setHeader("Cache-Control", "no-store");
