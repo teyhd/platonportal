@@ -1,98 +1,161 @@
-<main class="bg-white pb-16 text-slate-950">
-  <section class="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white">
-    <div class="mx-auto max-w-7xl px-[16px] pb-8 pt-[72px] sm:pb-10 sm:pt-[80px] md:px-6 md:pb-12 md:pt-24">
-      <div class="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.38fr)] lg:items-start lg:gap-8">
-        <div class="min-w-0 lg:pt-3">
-          <p class="inline-flex items-center gap-2 rounded-md border border-blue-100 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700">
+<main class="bg-[#f6f8fb] text-slate-950">
+  <section class="border-b border-slate-200 bg-[#f6f8fb]">
+    <div class="mx-auto max-w-7xl px-[16px] pb-10 pt-[76px] sm:pt-[84px] md:px-6 md:pb-14 md:pt-24">
+      <div class="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,0.96fr)_minmax(360px,0.74fr)] lg:items-stretch">
+        <div class="min-w-0">
+          <div class="inline-flex items-center gap-2 rounded-lg border border-blue-100 bg-white px-3 py-1.5 text-sm font-semibold text-blue-700 shadow-sm shadow-slate-950/5">
             <span class="h-2 w-2 rounded-full bg-blue-600"></span>
             {{accessLabel}}
-          </p>
+          </div>
 
-          <h1 class="mt-4 break-words text-3xl font-semibold leading-tight tracking-tight text-slate-950 md:text-4xl">
-            Рабочий центр Гармонии: основные сервисы сразу под рукой
+          <h1 class="mt-5 max-w-3xl break-words text-4xl font-semibold leading-[1.08] text-slate-950 md:text-5xl">
+            Центр сервисов Гармонии
           </h1>
 
-          <p class="mt-3 max-w-2xl text-base leading-7 text-slate-600">
-            {{accessNote}}
+          <p class="mt-4 max-w-2xl text-base leading-7 text-slate-600 md:text-lg md:leading-8">
+            Запускайте уроки, комнаты, журнал и рабочие разделы без поиска по порталам.
           </p>
 
-          <div class="mt-5 flex flex-wrap gap-2">
-            {{#if (gt menuOverflowCount 0)}}
-              <a href="#services" class="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm shadow-slate-950/5 transition duration-150 hover:border-blue-200 hover:text-blue-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
-                Все сервисы
-                <span class="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{{menuCount}}</span>
+          <div class="mt-7 grid gap-2 sm:grid-cols-2">
+            {{#each quickMenu}}
+              <a href="{{this.cont}}" class="group flex min-h-[64px] min-w-0 items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm shadow-slate-950/5 transition duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg hover:shadow-slate-950/10 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+                <span class="min-w-0">
+                  <span class="block truncate text-xs font-semibold text-blue-700">{{this.tag}}</span>
+                  <span class="mt-1 block truncate text-base font-semibold text-slate-950">{{this.title}}</span>
+                </span>
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-white transition duration-150 group-hover:bg-blue-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+                    <path fill-rule="evenodd" d="M4.25 10A.75.75 0 0 1 5 9.25h8.19L10.22 6.28a.75.75 0 1 1 1.06-1.06l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 1 1-1.06-1.06l2.97-2.97H5A.75.75 0 0 1 4.25 10Z" clip-rule="evenodd" />
+                  </svg>
+                </span>
               </a>
-            {{/if}}
+            {{/each}}
 
-            <a href="#info" class="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm shadow-slate-950/5 transition duration-150 hover:border-blue-200 hover:text-blue-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
-              Информация
-              <span class="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{{infoCount}}</span>
+            <a href="#services" class="group flex min-h-[64px] min-w-0 items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm shadow-slate-950/5 transition duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg hover:shadow-slate-950/10 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+              <span class="min-w-0">
+                <span class="block truncate text-xs font-semibold text-blue-700">Каталог</span>
+                <span class="mt-1 block truncate text-base font-semibold text-slate-950">Все сервисы</span>
+              </span>
+              <span class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700">{{menuCount}}</span>
             </a>
           </div>
-
-          <dl class="mt-5 hidden grid-cols-3 gap-2 rounded-lg border border-slate-200 bg-white p-2 shadow-sm shadow-slate-950/5 sm:grid">
-            <div class="rounded-md bg-slate-50 px-3 py-3">
-              <dt class="text-xs font-medium text-slate-500">Сервисы</dt>
-              <dd class="mt-1 text-2xl font-semibold text-slate-950">{{menuCount}}</dd>
-            </div>
-            <div class="rounded-md bg-slate-50 px-3 py-3">
-              <dt class="text-xs font-medium text-slate-500">Блоки</dt>
-              <dd class="mt-1 text-2xl font-semibold text-slate-950">{{infoCount}}</dd>
-            </div>
-            <div class="rounded-md bg-slate-50 px-3 py-3">
-              <dt class="text-xs font-medium text-slate-500">Вход</dt>
-              <dd class="mt-1 truncate text-sm font-semibold leading-8 text-slate-950">
-                {{#if auth}}Активен{{else}}PIN{{/if}}
-              </dd>
-            </div>
-          </dl>
         </div>
 
-        <div class="min-w-0">
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <aside id="live-ops" data-auth="{{auth}}" class="min-w-0 rounded-lg border border-slate-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.10)] md:p-5">
+          <div class="flex items-start justify-between gap-4">
             <div>
-              <p class="text-sm font-semibold text-blue-700">Главные действия</p>
-              <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Откройте нужный сервис</h2>
+              <p class="text-sm font-semibold text-blue-700">Операции сейчас</p>
+              <h2 class="mt-2 text-2xl font-semibold leading-tight text-slate-950">Быстрый старт рабочего сценария</h2>
             </div>
-            {{#if (gt menuOverflowCount 0)}}
-              <a href="#services" class="hidden min-h-[44px] items-center rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition duration-150 hover:bg-slate-100 hover:text-blue-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:inline-flex">
-                Перейти к каталогу
-              </a>
+            <div class="shrink-0 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-right">
+              <div class="text-xs font-semibold text-emerald-700">сейчас</div>
+              <div id="opsTime" class="mt-1 text-sm font-semibold text-emerald-950">--:--</div>
+            </div>
+          </div>
+
+          <div class="mt-5 grid gap-3">
+            {{#if operationMenu.length}}
+              {{#each operationMenu}}
+                <a href="{{this.cont}}" class="group flex min-h-[92px] min-w-0 items-center gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 transition duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:bg-white hover:shadow-lg hover:shadow-slate-950/10 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+                  <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-slate-950 shadow-sm shadow-slate-950/20">
+                    <img src="{{this.imageSrc}}" alt="{{this.title}}" class="max-h-9 w-auto transition duration-150 group-hover:scale-105" />
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block text-xs font-semibold text-blue-700">{{this.kindLabel}}</span>
+                    <span class="mt-1 block break-words text-lg font-semibold leading-tight text-slate-950">{{this.title}}</span>
+                    <span class="mt-1 block text-sm leading-6 text-slate-600">{{this.summary}}</span>
+                  </span>
+                </a>
+              {{/each}}
+            {{else}}
+              <button type="button" id="openModalHero" class="group flex min-h-[92px] min-w-0 items-center gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 text-left transition duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:bg-white hover:shadow-lg hover:shadow-slate-950/10 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-white">PIN</span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-xs font-semibold text-blue-700">Доступ</span>
+                  <span class="mt-1 block text-lg font-semibold leading-tight text-slate-950">Войти в рабочий режим</span>
+                  <span class="mt-1 block text-sm leading-6 text-slate-600">После входа появятся уроки, комнаты и персональные сервисы.</span>
+                </span>
+              </button>
             {{/if}}
           </div>
 
-          <div class="mt-4 grid gap-3 md:grid-cols-2">
-            {{#each featuredMenu}}
-              <a
-                href="{{this.cont}}"
-                class="group relative flex min-h-[156px] min-w-0 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5 transition duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-xl hover:shadow-slate-950/10 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:min-h-[184px] sm:p-5 {{#if @first}}md:col-span-2 md:min-h-[220px] md:p-6{{/if}}"
-              >
-                <div class="flex items-start justify-between gap-4">
-                  <div class="min-w-0">
-                    <span class="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">
-                      {{this.tag}}
-                    </span>
-                    <h3 class="mt-4 break-words text-xl font-semibold leading-tight text-slate-950 {{#if @first}}md:text-3xl{{/if}}">
-                      {{this.title}}
-                    </h3>
-                    <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                      {{this.summary}}
-                    </p>
-                  </div>
+          <div class="mt-5 grid grid-cols-3 gap-2">
+            <div class="rounded-lg border border-slate-200 bg-white p-3">
+              <div class="text-xs font-medium text-slate-500">Сервисы</div>
+              <div class="mt-1 text-2xl font-semibold text-slate-950">{{menuCount}}</div>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-3">
+              <div class="text-xs font-medium text-slate-500">Комнаты</div>
+              <div id="liveRoomsCount" class="mt-1 text-2xl font-semibold text-slate-950">--</div>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-3">
+              <div class="text-xs font-medium text-slate-500">Статус</div>
+              <div id="liveRoomsStatus" class="mt-2 truncate text-sm font-semibold text-slate-950">{{#if auth}}активен{{else}}PIN{{/if}}</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
 
-                  <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-slate-950 shadow-sm shadow-slate-950/20 ring-1 ring-slate-900/5 {{#if @first}}sm:h-20 sm:w-20 md:h-24 md:w-24{{else}}sm:h-16 sm:w-16{{/if}}">
-                    <img src="{{this.imageSrc}}" alt="{{this.title}}" class="max-h-12 w-auto transition duration-150 group-hover:scale-105 {{#if @first}}md:max-h-16{{/if}}" />
-                  </div>
+  <section id="services" class="scroll-mt-24 border-b border-slate-200 bg-white">
+    <div class="mx-auto max-w-7xl px-[16px] py-10 md:px-6 md:py-14">
+      <div class="grid gap-5 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] lg:items-end">
+        <div>
+          <p class="text-sm font-semibold text-blue-700">Сервисы по задачам</p>
+          <h2 class="mt-2 text-3xl font-semibold leading-tight text-slate-950">Сначала важное, затем рабочие разделы</h2>
+        </div>
+        <p class="max-w-3xl text-sm leading-6 text-slate-600 lg:justify-self-end">
+          Ссылки и доступы приходят из базы данных. Порядок усилен по частым сценариям, сами переходы сохранены.
+        </p>
+      </div>
+
+      {{#if primaryMenu.length}}
+        <div class="mt-7 grid gap-3 lg:grid-cols-2">
+          {{#each primaryMenu}}
+            <a href="{{this.cont}}" class="group flex min-h-[184px] min-w-0 flex-col justify-between rounded-lg border border-slate-200 bg-[#fbfcfe] p-5 shadow-sm shadow-slate-950/5 transition duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:bg-white hover:shadow-xl hover:shadow-slate-950/10 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+              <div class="flex items-start justify-between gap-4">
+                <div class="min-w-0">
+                  <span class="inline-flex items-center rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">{{this.tag}}</span>
+                  <h3 class="mt-4 break-words text-2xl font-semibold leading-tight text-slate-950">{{this.title}}</h3>
+                  <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{{this.summary}}</p>
                 </div>
+                <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white">
+                  <img src="{{this.imageSrc}}" alt="{{this.title}}" class="max-h-10 w-auto transition duration-150 group-hover:scale-105" />
+                </span>
+              </div>
 
-                <div class="mt-auto flex items-end justify-between gap-4 pt-4 sm:pt-6">
-                  <div class="min-w-0 text-sm">
-                    <p class="font-medium text-slate-900">{{this.kindLabel}}</p>
-                    <p class="truncate text-slate-500">{{this.destinationLabel}}</p>
-                  </div>
+              <div class="mt-6 flex items-center justify-between gap-3">
+                <span class="min-w-0 truncate text-sm text-slate-500">{{this.kindLabel}} · {{this.destinationLabel}}</span>
+                <span class="inline-flex min-h-[44px] shrink-0 items-center rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition duration-150 group-hover:bg-blue-700">Открыть</span>
+              </div>
+            </a>
+          {{/each}}
+        </div>
+      {{/if}}
 
-                  <span class="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg bg-slate-950 px-3 py-2 text-sm font-semibold text-white transition duration-150 group-hover:bg-blue-700">
-                    Открыть
+      {{#if secondaryMenu.length}}
+        <div class="mt-8">
+          <div class="flex items-end justify-between gap-4">
+            <h3 class="text-xl font-semibold text-slate-950">Рабочие разделы</h3>
+            <span class="text-sm font-medium text-slate-500">{{menuOverflowCount}}</span>
+          </div>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {{#each secondaryMenu}}
+              <a href="{{this.cont}}" class="group flex min-h-[150px] min-w-0 flex-col rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5 transition duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg hover:shadow-slate-950/10 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+                <div class="flex items-start gap-3">
+                  <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
+                    <img src="{{this.imageSrc}}" alt="{{this.title}}" class="max-h-8 w-auto transition duration-150 group-hover:scale-105" />
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-xs font-semibold text-blue-700">{{this.tag}}</span>
+                    <span class="mt-1 block break-words text-lg font-semibold leading-tight text-slate-950">{{this.title}}</span>
+                  </span>
+                </div>
+                <p class="mt-3 text-sm leading-6 text-slate-600 line-clamp-2">{{this.summary}}</p>
+                <div class="mt-auto flex items-center justify-between gap-3 pt-4">
+                  <span class="min-w-0 truncate text-sm text-slate-500">{{this.kindLabel}}</span>
+                  <span class="rounded-lg bg-slate-100 p-2 text-slate-500 transition duration-150 group-hover:bg-blue-50 group-hover:text-blue-700">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
                       <path fill-rule="evenodd" d="M4.25 10A.75.75 0 0 1 5 9.25h8.19L10.22 6.28a.75.75 0 1 1 1.06-1.06l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 1 1-1.06-1.06l2.97-2.97H5A.75.75 0 0 1 4.25 10Z" clip-rule="evenodd" />
                     </svg>
@@ -101,146 +164,63 @@
               </a>
             {{/each}}
           </div>
-
-          {{#if (gt menuOverflowCount 0)}}
-            <div class="mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5">
-              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p class="text-sm font-semibold text-slate-900">Частые переходы</p>
-                <p class="text-sm text-slate-500">Ближайшие разделы из базы</p>
-              </div>
-
-              <div class="mt-3 flex flex-wrap gap-2">
-                {{#each quickMenu}}
-                  <a href="{{this.cont}}" class="inline-flex min-h-[44px] items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition duration-150 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
-                    {{this.title}}
-                  </a>
-                {{/each}}
-              </div>
-            </div>
-          {{/if}}
         </div>
-      </div>
+      {{/if}}
+
+      {{#if utilityMenu.length}}
+        <div class="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h3 class="text-lg font-semibold text-slate-950">Дополнительно</h3>
+            <span class="text-sm text-slate-500">{{utilityCount}}</span>
+          </div>
+          <div class="mt-4 flex flex-wrap gap-2">
+            {{#each utilityMenu}}
+              <a href="{{this.cont}}" class="inline-flex min-h-[44px] items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition duration-150 hover:border-blue-300 hover:text-blue-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">{{this.title}}</a>
+            {{/each}}
+          </div>
+        </div>
+      {{/if}}
     </div>
   </section>
 
-  {{#if (gt menuOverflowCount 0)}}
-    <section id="services" class="scroll-mt-24 border-b border-slate-200 bg-white">
-      <div class="mx-auto max-w-7xl px-[16px] py-10 md:px-6 md:py-12">
-        <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p class="text-sm font-semibold text-blue-700">Каталог сервисов</p>
-            <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Все остальные рабочие разделы</h2>
-          </div>
-          <p class="max-w-2xl text-sm leading-6 text-slate-500">
-            Доступы и ссылки сохраняются из базы данных.
-          </p>
-        </div>
-
-        <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {{#each secondaryMenu}}
-            <a
-              href="{{this.cont}}"
-              class="group flex min-h-[150px] min-w-0 flex-col rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5 transition duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg hover:shadow-slate-950/10 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:min-h-[170px]"
-            >
-              <div class="flex items-start gap-4">
-                <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
-                  <img src="{{this.imageSrc}}" alt="{{this.title}}" class="max-h-10 w-auto transition duration-150 group-hover:scale-105" />
-                </div>
-
-                <div class="min-w-0 flex-1">
-                  <p class="text-xs font-semibold text-blue-700">{{this.tag}}</p>
-                  <h3 class="mt-2 break-words text-lg font-semibold leading-tight text-slate-950">{{this.title}}</h3>
-                  <p class="mt-2 text-sm leading-6 text-slate-600 line-clamp-2">{{this.summary}}</p>
-                </div>
-              </div>
-
-              <div class="mt-auto flex items-center justify-between gap-3 pt-5 text-sm text-slate-500">
-                <span class="truncate">{{this.kindLabel}} · {{this.destinationLabel}}</span>
-                <span class="rounded-md bg-slate-100 p-1.5 text-slate-400 transition duration-150 group-hover:bg-blue-50 group-hover:text-blue-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
-                    <path fill-rule="evenodd" d="M4.25 10A.75.75 0 0 1 5 9.25h8.19L10.22 6.28a.75.75 0 1 1 1.06-1.06l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 1 1-1.06-1.06l2.97-2.97H5A.75.75 0 0 1 4.25 10Z" clip-rule="evenodd" />
-                  </svg>
-                </span>
-              </div>
-            </a>
-          {{/each}}
-        </div>
-      </div>
-    </section>
-  {{/if}}
-
-  <section id="balalayka" class="scroll-mt-24 border-b border-slate-200 bg-slate-950 text-white">
-    <div class="mx-auto grid max-w-7xl gap-6 px-[16px] py-8 md:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+  <section id="balalayka" class="scroll-mt-24 border-b border-slate-200 bg-[#07111f] text-white">
+    <div class="mx-auto grid max-w-7xl gap-6 px-[16px] py-9 md:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
       <div class="max-w-2xl">
         <p class="text-sm font-semibold text-blue-200">Балалайка</p>
-        <h2 class="mt-2 text-2xl font-semibold leading-tight tracking-tight">
-          Сообщения и быстрый контакт в рабочем ритме
-        </h2>
-        <p class="mt-3 text-sm leading-6 text-slate-300">
-          Установите приложение из RuStore или откройте iOS-версию через TestFlight.
-        </p>
+        <h2 class="mt-2 text-2xl font-semibold leading-tight">Сообщения и быстрый контакт в рабочем ритме</h2>
+        <p class="mt-3 text-sm leading-6 text-slate-300">Установите приложение из RuStore или откройте iOS-версию через TestFlight.</p>
       </div>
 
       <div class="flex flex-wrap gap-3 lg:justify-end">
-        <a
-          href="https://www.rustore.ru/catalog/app/ru.platoniks.balalaika"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white p-1.5 transition duration-150 hover:border-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-          aria-label="Скачать с RuStore"
-        >
+        <a href="https://www.rustore.ru/catalog/app/ru.platoniks.balalaika" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-white/10 bg-white p-1.5 transition duration-150 hover:border-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111f]" aria-label="Скачать с RuStore">
           <img src="/img/store-badges/rustore-badge.svg" alt="Скачать с RuStore" class="h-14 w-auto" />
         </a>
 
-        <a
-          href="https://testflight.apple.com/join/REkhmRaq"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="relative inline-flex items-center justify-center rounded-lg border border-white/10 bg-white p-1.5 transition duration-150 hover:border-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-          aria-label="Скачать iOS через TestFlight"
-        >
+        <a href="https://testflight.apple.com/join/REkhmRaq" target="_blank" rel="noopener noreferrer" class="relative inline-flex min-h-[44px] items-center justify-center rounded-lg border border-white/10 bg-white p-1.5 transition duration-150 hover:border-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111f]" aria-label="Скачать iOS через TestFlight">
           <img src="/img/store-badges/appstore-badge.svg" alt="Скачать iOS через TestFlight" class="h-14 w-auto" />
-          <span class="absolute -right-2 -top-2 rounded-md bg-cyan-500 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">
-            iOS · TestFlight
-          </span>
+          <span class="absolute -right-2 -top-2 rounded-lg bg-cyan-500 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">iOS · TestFlight</span>
         </a>
-
-        <div class="relative inline-flex">
-          <button
-            type="button"
-            disabled
-            aria-label="Скачать в App Store (скоро)"
-            class="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/90 p-1.5 opacity-80"
-          >
-            <img src="/img/store-badges/appstore-badge.svg" alt="Скачать в App Store (скоро)" class="h-14 w-auto grayscale" />
-          </button>
-          <span class="absolute -right-2 -top-2 rounded-md bg-blue-600 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">
-            скоро
-          </span>
-        </div>
       </div>
     </div>
   </section>
 
-  <section id="info" class="scroll-mt-24 bg-white">
-    <div class="mx-auto max-w-7xl px-[16px] py-10 md:px-6 md:py-12">
-      <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+  <section id="info" class="scroll-mt-24 bg-[#f6f8fb]">
+    <div class="mx-auto max-w-7xl px-[16px] py-10 md:px-6 md:py-14">
+      <div class="grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-end">
         <div>
-          <p class="text-sm font-semibold text-blue-700">Информация</p>
-          <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Оперативные ориентиры и рабочие контакты</h2>
+          <p class="text-sm font-semibold text-blue-700">Ориентиры</p>
+          <h2 class="mt-2 text-3xl font-semibold leading-tight text-slate-950">Информация без шума</h2>
         </div>
-        <p class="max-w-2xl text-sm leading-6 text-slate-500">
+        <p class="max-w-3xl text-sm leading-6 text-slate-600 lg:justify-self-end">
           Блоки ниже приходят из базы данных и сохраняют исходный порядок публикации.
         </p>
       </div>
 
       {{#if featuredInfo}}
-        <article class="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-5 shadow-sm shadow-slate-950/5 md:p-6">
+        <article class="mt-7 rounded-lg border border-slate-200 bg-white p-5 shadow-sm shadow-slate-950/5 md:p-6">
           <div class="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
             <div>
-              <span class="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">
-                {{featuredInfo.tag}}
-              </span>
+              <span class="inline-flex items-center rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">{{featuredInfo.tag}}</span>
               <h3 class="mt-4 text-2xl font-semibold leading-tight text-slate-950">{{featuredInfo.title}}</h3>
               <p class="mt-3 text-sm leading-6 text-slate-500">{{featuredInfo.excerpt}}</p>
             </div>
@@ -252,24 +232,22 @@
         </article>
       {{/if}}
 
-      {{#if (gt infoOverflowCount 0)}}
+      {{#if secondaryInfo.length}}
         <div class="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {{#each secondaryInfo}}
-            <details class="group rounded-lg border border-slate-200 bg-white p-5 shadow-sm shadow-slate-950/5 transition duration-150 hover:border-slate-300 hover:shadow-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2">
+            <details class="group rounded-lg border border-slate-200 bg-white p-5 shadow-sm shadow-slate-950/5 transition duration-150 hover:border-blue-200 hover:shadow-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2">
               <summary class="flex cursor-pointer list-none items-start gap-3 focus-visible:outline-none">
-                <div class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500">
+                <span class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
                     <path fill-rule="evenodd" d="M18 10A8 8 0 1 1 2 10a8 8 0 0 1 16 0Zm-7.25-2.75a.75.75 0 0 0-1.5 0v.5a.75.75 0 0 0 1.5 0v-.5ZM10 9a.75.75 0 0 1 .75.75v3.25a.75.75 0 0 1-1.5 0V9.75A.75.75 0 0 1 10 9Z" clip-rule="evenodd" />
                   </svg>
-                </div>
+                </span>
 
-                <div class="min-w-0 flex-1">
-                  <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
-                    {{this.tag}}
-                  </span>
-                  <h3 class="mt-2 text-lg font-semibold leading-tight text-slate-950">{{this.title}}</h3>
-                  <p class="mt-2 text-sm leading-6 text-slate-500">{{this.excerpt}}</p>
-                </div>
+                <span class="min-w-0 flex-1">
+                  <span class="inline-flex items-center rounded-lg bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">{{this.tag}}</span>
+                  <span class="mt-2 block text-lg font-semibold leading-tight text-slate-950">{{this.title}}</span>
+                  <span class="mt-2 block text-sm leading-6 text-slate-500">{{this.excerpt}}</span>
+                </span>
 
                 <span class="mt-1 shrink-0 text-slate-400 transition duration-150 group-open:rotate-180 group-open:text-blue-600">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5">
@@ -294,3 +272,43 @@
 <footer class="border-t border-slate-200 bg-white py-6 text-center text-sm text-slate-500">
   © 2025 Гармония образования
 </footer>
+
+<script>
+(() => {
+  const root = document.getElementById('live-ops');
+  if (!root) return;
+
+  const timeEl = document.getElementById('opsTime');
+  const roomsCountEl = document.getElementById('liveRoomsCount');
+  const roomsStatusEl = document.getElementById('liveRoomsStatus');
+  const openModalHero = document.getElementById('openModalHero');
+
+  const updateTime = () => {
+    if (!timeEl) return;
+    timeEl.textContent = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' }).format(new Date());
+  };
+
+  updateTime();
+  setInterval(updateTime, 30000);
+
+  openModalHero?.addEventListener('click', () => document.getElementById('openModal')?.click());
+
+  if (Number(root.dataset.auth || 0) < 1) return;
+
+  fetch('/rooms', { credentials: 'same-origin', cache: 'no-store' })
+    .then(response => response.ok ? response.json() : null)
+    .then(data => {
+      if (!data || !Array.isArray(data.rooms)) return;
+      const activeRooms = data.rooms.filter(room => {
+        const id = room?.room_info?.room_id;
+        const isPublic = String(data?.acc?.[id]?.pub).toLowerCase() === 'true';
+        return id && isPublic;
+      });
+      if (roomsCountEl) roomsCountEl.textContent = String(activeRooms.length);
+      if (roomsStatusEl) roomsStatusEl.textContent = activeRooms.length ? 'идут' : 'свободно';
+    })
+    .catch(() => {
+      if (roomsStatusEl) roomsStatusEl.textContent = 'доступен';
+    });
+})();
+</script>

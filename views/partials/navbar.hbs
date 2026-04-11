@@ -58,30 +58,29 @@ $(function () {
 
 
 <div id="tg-inapp-banner"
-     class="sticky top-0 z-[1000] hidden"
+     class="fixed inset-x-0 top-16 z-30 hidden px-[16px]"
      role="region" aria-label="Ограничения встроенного браузера">
-  <div class="w-full pointer-events-auto" style="padding-top: env(safe-area-inset-top);">
-    <div class="mx-auto max-w-6xl">
-      <div class="m-2 rounded-lg bg-gray-900 text-white shadow-lg ring-1 ring-white/10">
-        <div class="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <p class="text-sm leading-5">
-            <strong class="font-semibold">Вы открыли сайт внутри Telegram!</strong><br>
-            Часть функций (единый вход, V.CALL) может не работать корректно.
-            Откройте сайт в обычном браузере. 
-            <br>Как открыть (кнопка в правом верхнем углу):<br>iPhone: нажмите ••• → «Открыть в браузере» (Safari).<br>Android: меню ⋮ → «Открыть в Chrome».
+  <div class="pointer-events-none w-full" style="padding-top: env(safe-area-inset-top);">
+    <div class="mx-auto max-w-7xl">
+      <div class="pointer-events-auto rounded-lg border border-blue-100 bg-white/95 text-slate-900 shadow-lg shadow-slate-950/10 backdrop-blur-md">
+        <div class="flex items-center justify-between gap-2 px-3 py-2 sm:gap-3 sm:px-4 sm:py-3">
+          <p class="min-w-0 text-xs leading-4 text-slate-600 sm:text-sm sm:leading-5">
+            <strong class="font-semibold text-slate-950">Откройте в браузере.</strong>
+            <span class="hidden sm:inline"> В Telegram могут нестабильно работать вход и V.CALL.</span>
+            <span class="hidden md:inline"> iPhone: ••• -> «Открыть в браузере», Android: ⋮ -> «Открыть в Chrome».</span>
           </p>
-          <div class="flex flex-wrap gap-2">
+          <div class="flex shrink-0 gap-2">
             <button type="button" id="tg-open-external"
-              class="inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm
-                     bg-white text-gray-900 hover:bg-gray-100 focus-visible:outline-none
+              class="inline-flex min-h-[40px] items-center justify-center rounded-lg bg-slate-950 px-3 py-2 text-sm font-semibold
+                     text-white transition duration-150 hover:bg-blue-700 active:translate-y-px focus-visible:outline-none
                      focus-visible:ring-2 focus-visible:ring-blue-500">
-              Открыть в браузере
+              Открыть
             </button>
             <button type="button" id="tg-copy-link"
-              class="inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm
-                     bg-transparent text-white ring-1 ring-inset ring-white/30 hover:bg-white/10
+              class="inline-flex min-h-[40px] items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold
+                     text-slate-700 transition duration-150 hover:border-blue-300 hover:text-blue-700 active:translate-y-px
                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
-              Скопировать ссылку
+              Ссылка
             </button>
           </div>
         </div>
@@ -165,7 +164,7 @@ $(function () {
     try {
       await navigator.clipboard.writeText(location.href);
       copyBtn.textContent = "Ссылка скопирована";
-      setTimeout(() => (copyBtn.textContent = "Скопировать ссылку"), 2000);
+      setTimeout(() => (copyBtn.textContent = "Ссылка"), 2000);
     } catch {
       prompt("Скопируйте ссылку:", location.href);
     }

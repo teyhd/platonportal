@@ -277,6 +277,11 @@ function getServicePriority(title = '', href = '') {
   return 100;
 }
 
+function isOperationService(card) {
+  const href = (card?.cont ?? '').toString().trim();
+  return href === '#lesson' || href === '#room';
+}
+
 function normalizeMenuCard(card, index = 0) {
   const meta = pickMeta(card.title, SERVICE_META, {
     tag: 'Сервис',
@@ -319,26 +324,35 @@ app.get('/',async (req,res)=>{
     const menuCards = cards.filter(c => c.type === 0).map((card, index) => normalizeMenuCard(card, index))
     const infoCards = cards.filter(c => c.type === 1).map(normalizeInfoCard)
     const prioritizedMenu = [...menuCards].sort((a, b) => a._priority - b._priority || a._menuIndex - b._menuIndex)
-    const featuredMenu = prioritizedMenu.slice(0, 3)
-    const featuredIndexes = new Set(featuredMenu.map(card => card._menuIndex))
-    const secondaryMenu = menuCards.filter(card => !featuredIndexes.has(card._menuIndex))
+    const operationMenu = prioritizedMenu.filter(isOperationService)
+    const serviceMenu = prioritizedMenu.filter(card => !isOperationService(card))
+    const primaryMenu = serviceMenu.slice(0, 4)
+    const primaryIndexes = new Set(primaryMenu.map(card => card._menuIndex))
+    const secondaryMenu = serviceMenu.filter(card => !primaryIndexes.has(card._menuIndex)).slice(0, 8)
+    const secondaryIndexes = new Set(secondaryMenu.map(card => card._menuIndex))
+    const utilityMenu = serviceMenu.filter(card => !primaryIndexes.has(card._menuIndex) && !secondaryIndexes.has(card._menuIndex))
+    const featuredMenu = [...operationMenu, ...primaryMenu].slice(0, 4)
     const featuredInfo = infoCards[0] ?? null
     const secondaryInfo = infoCards.slice(1)
     const accessMeta = getAccessMeta(rolen)
-    const quickMenu = prioritizedMenu.filter(card => !featuredIndexes.has(card._menuIndex)).slice(0, 6)
+    const quickMenu = primaryMenu.slice(0, 3)
 
     res.render('new',{
       title: 'Гармония Образования',
       menu: menuCards,
       info: infoCards,
       featuredMenu,
+      operationMenu,
+      primaryMenu,
       secondaryMenu,
+      utilityMenu,
       featuredInfo,
       secondaryInfo,
       quickMenu,
       menuCount: menuCards.length,
       infoCount: infoCards.length,
       menuOverflowCount: secondaryMenu.length,
+      utilityCount: utilityMenu.length,
       infoOverflowCount: secondaryInfo.length,
       auth: rolen,
       ...accessMeta
