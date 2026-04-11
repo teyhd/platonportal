@@ -315,8 +315,6 @@ app.get('/',async (req,res)=>{
     } catch (error) {
         mlog(error);
     }
-    console.log(rolen);
-    console.log(req.session.logins)
     let cards = await db.get_cards(rolen)
     const menuCards = cards.filter(c => c.type === 0).map((card, index) => normalizeMenuCard(card, index))
     const infoCards = cards.filter(c => c.type === 1).map(normalizeInfoCard)
