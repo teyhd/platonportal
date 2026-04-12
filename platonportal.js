@@ -170,9 +170,9 @@ const SERVICE_META = [
   { match: /расписание/i, tag: 'Календарь', summary: 'Уроки, звонки и быстрый переход к расписанию.' },
   { match: /инструкции/i, tag: 'Навигация', summary: 'Инструкции и ответы по частым вопросам.' },
   { match: /бот платоникс|балалайка/i, tag: 'Коммуникация', summary: 'Сообщения, уведомления и быстрый контакт.' },
-  { match: /голосован/i, tag: 'Обратная связь', summary: 'Опросы и сбор мнений без лишних шагов.' },
+  { match: /голосован/i, tag: 'Обратная связь', summary: 'Опросы и сбор мнений.' },
   { match: /облако/i, tag: 'Файлы', summary: 'Документы, материалы и совместная работа в облаке.' },
-  { match: /прогресс/i, tag: 'Аналитика', summary: 'Отчеты и динамика обучения под рукой.' },
+  { match: /прогресс/i, tag: 'Аналитика', summary: 'Отчеты и динамика обучения.' },
   { match: /аренда пк|управление пк/i, tag: 'Техника', summary: 'Компьютеры, устройства и заявки по технике.' },
   { match: /v\.call/i, tag: 'Онлайн-уроки', summary: 'Быстрый вход в активную комнату или запуск нового урока.' },
   { match: /управление пользователями/i, tag: 'Администрирование', summary: 'Роли, права доступа и учетные записи сотрудников.' },
@@ -234,15 +234,15 @@ function getLinkMeta(href = '') {
   const value = (href ?? '').toString().trim();
 
   if (!value) {
-    return { kindLabel: 'Раздел', destinationLabel: 'на этой странице', detailLabel: 'Откроется на этой странице' };
+    return { kindLabel: 'Раздел', destinationLabel: 'на этой странице', detailLabel: 'На этой странице' };
   }
 
   if (value.startsWith('#')) {
-    return { kindLabel: 'Быстрый вход', destinationLabel: 'откроется здесь', detailLabel: 'Откроется здесь' };
+    return { kindLabel: 'Быстрый вход', destinationLabel: 'откроется здесь', detailLabel: 'На этой странице' };
   }
 
   if (value.startsWith('/')) {
-    return { kindLabel: 'Раздел', destinationLabel: 'на этом сайте', detailLabel: 'Откроется на этом сайте' };
+    return { kindLabel: 'Раздел', destinationLabel: 'на этом сайте', detailLabel: 'Сайт Гармонии' };
   }
 
   try {
@@ -250,16 +250,16 @@ function getLinkMeta(href = '') {
     const host = target.hostname.replace(/^www\./, '');
 
     if (host === 't.me' || host.endsWith('.t.me')) {
-      return { kindLabel: 'Telegram', destinationLabel: 'откроется отдельно', detailLabel: 'Откроется в Telegram' };
+      return { kindLabel: 'Telegram', destinationLabel: 'откроется отдельно', detailLabel: 'Telegram' };
     }
 
     if (host === 'platoniks.ru' || host.endsWith('.platoniks.ru') || host.endsWith('.teyhd.ru')) {
-      return { kindLabel: 'Сервис', destinationLabel: 'откроется отдельно', detailLabel: 'Откроется отдельно' };
+      return { kindLabel: 'Сервис', destinationLabel: 'откроется отдельно', detailLabel: 'Сервис Гармонии' };
     }
 
-    return { kindLabel: 'Сервис', destinationLabel: 'откроется отдельно', detailLabel: 'Откроется отдельно' };
+    return { kindLabel: 'Сервис', destinationLabel: 'откроется отдельно', detailLabel: 'Внешний сервис' };
   } catch (_error) {
-    return { kindLabel: 'Раздел', destinationLabel: 'на этой странице', detailLabel: 'Откроется на этой странице' };
+    return { kindLabel: 'Раздел', destinationLabel: 'на этой странице', detailLabel: 'На этой странице' };
   }
 }
 
@@ -274,13 +274,13 @@ function getAccessMeta(role = 0) {
   if (role >= 5) {
     return {
       accessLabel: 'Расширенный доступ',
-      accessNote: 'Здесь собраны сервисы, которые нужны вам чаще всего.',
+      accessNote: 'Быстрый доступ к урокам, комнатам и сервисам.',
     };
   }
 
   return {
     accessLabel: 'Персональный доступ',
-    accessNote: 'Здесь собраны сервисы, которые нужны вам чаще всего.',
+    accessNote: 'Быстрый доступ к урокам, комнатам и сервисам.',
   };
 }
 
@@ -307,7 +307,7 @@ function isOperationService(card) {
 function normalizeMenuCard(card, index = 0) {
   const meta = pickMeta(card.title, SERVICE_META, {
     tag: 'Сервис',
-    summary: 'Быстрый переход без лишних шагов.',
+    summary: 'Быстрый переход к нужному разделу.',
   });
   const linkMeta = getLinkMeta(card.cont);
 
@@ -405,7 +405,7 @@ app.get('/balalayka', (req, res) => {
     { title: 'Быстрый вход', text: 'Откройте Балалайку в браузере или установите приложение на телефон.' },
     { title: 'Для ежедневной работы', text: 'Подходит для коротких сообщений, обсуждений, файлов и встреч.' },
     { title: 'На разных устройствах', text: 'Открывается в браузере, на Android и на iPhone через TestFlight.' },
-    { title: 'Привычные действия', text: 'Реакции, файлы, статусы сообщений и комнаты собраны в одном месте.' }
+    { title: 'Привычные действия', text: 'Реакции, файлы, статусы сообщений и комнаты работают рядом с перепиской.' }
   ];
 
   const showcaseItems = [
