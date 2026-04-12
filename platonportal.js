@@ -208,6 +208,28 @@ function getExcerpt(value = '', limit = 140) {
   return `${plain.slice(0, limit).trimEnd()}…`;
 }
 
+const FALLBACK_CARD_ICON = '/img/platon.png';
+
+function getCardImageSrc(pic = '') {
+  const value = (pic ?? '').toString().trim();
+  if (!value) return FALLBACK_CARD_ICON;
+
+  if (/^(https?:)?\/\//i.test(value) || /^data:image\//i.test(value)) {
+    return value;
+  }
+
+  if (value.startsWith('/')) {
+    return value;
+  }
+
+  const clean = value
+    .replace(/\\/g, '/')
+    .replace(/^\.?\//, '')
+    .replace(/^public\//, '');
+
+  return clean.startsWith('img/') ? `/${clean}` : `/img/${clean}`;
+}
+
 function getLinkMeta(href = '') {
   const value = (href ?? '').toString().trim();
 
@@ -296,7 +318,7 @@ function normalizeMenuCard(card, index = 0) {
     _menuIndex: index,
     _priority: getServicePriority(card.title, card.cont),
     excerpt: getExcerpt(meta.summary, 90),
-    imageSrc: card.pic ? `/img/${card.pic}` : '/img/platon.png',
+    imageSrc: getCardImageSrc(card.pic),
   };
 }
 

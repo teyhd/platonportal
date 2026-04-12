@@ -1,6 +1,6 @@
 <main class="bg-[#f6f8fb] text-slate-950">
-  <section class="border-b border-slate-200 bg-[#f6f8fb]">
-    <div class="mx-auto max-w-7xl px-[16px] pb-10 pt-[76px] sm:pt-[84px] md:px-6 md:pb-14 md:pt-24">
+  <section class="relative overflow-hidden border-b border-slate-200 bg-[linear-gradient(180deg,#f8fafc_0%,#eef3f8_100%)]">
+    <div class="relative z-10 mx-auto max-w-7xl px-[16px] pb-12 pt-[76px] sm:pt-[84px] md:px-6 md:pb-16 md:pt-24">
       <div class="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,0.96fr)_minmax(360px,0.74fr)] lg:items-stretch">
         <div class="min-w-0">
           <div class="inline-flex items-center gap-2 rounded-lg border border-blue-100 bg-white px-3 py-1.5 text-sm font-semibold text-blue-700 shadow-sm shadow-slate-950/5">
@@ -19,9 +19,12 @@
           <div class="mt-7 grid gap-2 sm:grid-cols-2">
             {{#each quickMenu}}
               <a href="{{this.cont}}" class="group flex min-h-[64px] min-w-0 items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm shadow-slate-950/5 transition duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg hover:shadow-slate-950/10 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
-                <span class="min-w-0">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-slate-950 shadow-sm shadow-slate-950/20">
+                  <img src="{{this.imageSrc}}" alt="" class="max-h-8 max-w-8 object-contain transition duration-150 group-hover:scale-105" />
+                </span>
+                <span class="min-w-0 flex-1">
                   <span class="block truncate text-xs font-semibold text-blue-700">{{this.tag}}</span>
-                  <span class="mt-1 block truncate text-base font-semibold text-slate-950">{{this.title}}</span>
+                  <span class="mt-1 block break-words text-base font-semibold leading-tight text-slate-950">{{this.title}}</span>
                 </span>
                 <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-white transition duration-150 group-hover:bg-blue-700">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
@@ -58,7 +61,7 @@
               {{#each operationMenu}}
                 <a href="{{this.cont}}" class="group flex min-h-[92px] min-w-0 items-center gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 transition duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:bg-white hover:shadow-lg hover:shadow-slate-950/10 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
                   <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-slate-950 shadow-sm shadow-slate-950/20">
-                    <img src="{{this.imageSrc}}" alt="{{this.title}}" class="max-h-9 w-auto transition duration-150 group-hover:scale-105" />
+                    <img src="{{this.imageSrc}}" alt="" class="max-h-9 max-w-9 object-contain transition duration-150 group-hover:scale-105" />
                   </span>
                   <span class="min-w-0 flex-1">
                     <span class="block text-xs font-semibold text-blue-700">{{this.kindLabel}}</span>
@@ -96,10 +99,12 @@
         </aside>
       </div>
     </div>
+    <div class="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-b from-transparent to-white/80"></div>
   </section>
 
-  <section id="services" class="scroll-mt-24 border-b border-slate-200 bg-white">
-    <div class="mx-auto max-w-7xl px-[16px] py-10 md:px-6 md:py-14">
+  <section id="services" class="scroll-mt-24 border-y border-slate-200 bg-white shadow-[0_-1px_0_rgba(255,255,255,0.96)]">
+    <div class="mx-auto max-w-7xl px-[16px] py-12 md:px-6 md:py-16">
+      <div class="mb-7 h-px w-full bg-gradient-to-r from-blue-500/35 via-slate-200 to-transparent"></div>
       <div class="grid gap-5 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] lg:items-end">
         <div>
           <p class="text-sm font-semibold text-blue-700">Сервисы по задачам</p>
@@ -111,7 +116,7 @@
       </div>
 
       {{#if primaryMenu.length}}
-        <div class="mt-7 grid gap-3 lg:grid-cols-2">
+        <div class="mt-8 grid gap-3 lg:grid-cols-2">
           {{#each primaryMenu}}
             <a href="{{this.cont}}" class="group flex min-h-[184px] min-w-0 flex-col justify-between rounded-lg border border-slate-200 bg-[#fbfcfe] p-5 shadow-sm shadow-slate-950/5 transition duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:bg-white hover:shadow-xl hover:shadow-slate-950/10 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
               <div class="flex items-start justify-between gap-4">
@@ -121,7 +126,7 @@
                   <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{{this.summary}}</p>
                 </div>
                 <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white">
-                  <img src="{{this.imageSrc}}" alt="{{this.title}}" class="max-h-10 w-auto transition duration-150 group-hover:scale-105" />
+                  <img src="{{this.imageSrc}}" alt="" class="max-h-10 max-w-10 object-contain transition duration-150 group-hover:scale-105" />
                 </span>
               </div>
 
@@ -135,25 +140,25 @@
       {{/if}}
 
       {{#if secondaryMenu.length}}
-        <div class="mt-8">
+        <div class="mt-8 border-t border-slate-200/80 pt-5 md:mt-12 md:pt-8">
           <div class="flex items-end justify-between gap-4">
             <h3 class="text-xl font-semibold text-slate-950">Рабочие разделы</h3>
             <span class="text-sm font-medium text-slate-500">{{menuOverflowCount}}</span>
           </div>
-          <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div class="mt-4 grid gap-2 sm:gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {{#each secondaryMenu}}
-              <a href="{{this.cont}}" class="group flex min-h-[150px] min-w-0 flex-col rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5 transition duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg hover:shadow-slate-950/10 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+              <a href="{{this.cont}}" class="group flex min-h-[124px] min-w-0 flex-col rounded-lg border border-slate-200 bg-white p-3 shadow-sm shadow-slate-950/5 transition duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg hover:shadow-slate-950/10 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:min-h-[150px] sm:p-4">
                 <div class="flex items-start gap-3">
-                  <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
-                    <img src="{{this.imageSrc}}" alt="{{this.title}}" class="max-h-8 w-auto transition duration-150 group-hover:scale-105" />
+                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 sm:h-11 sm:w-11">
+                    <img src="{{this.imageSrc}}" alt="" class="max-h-7 max-w-7 object-contain transition duration-150 group-hover:scale-105 sm:max-h-8 sm:max-w-8" />
                   </span>
                   <span class="min-w-0">
                     <span class="block text-xs font-semibold text-blue-700">{{this.tag}}</span>
-                    <span class="mt-1 block break-words text-lg font-semibold leading-tight text-slate-950">{{this.title}}</span>
+                    <span class="mt-1 block break-words text-base font-semibold leading-tight text-slate-950 sm:text-lg">{{this.title}}</span>
                   </span>
                 </div>
-                <p class="mt-3 text-sm leading-6 text-slate-600 line-clamp-2">{{this.summary}}</p>
-                <div class="mt-auto flex items-center justify-between gap-3 pt-4">
+                <p class="mt-2 text-sm leading-5 text-slate-600 line-clamp-1 sm:mt-3 sm:leading-6 sm:line-clamp-2">{{this.summary}}</p>
+                <div class="mt-auto flex items-center justify-between gap-3 pt-3 sm:pt-4">
                   <span class="min-w-0 truncate text-sm text-slate-500">{{this.detailLabel}}</span>
                   <span class="rounded-lg bg-slate-100 p-2 text-slate-500 transition duration-150 group-hover:bg-blue-50 group-hover:text-blue-700">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
@@ -168,23 +173,29 @@
       {{/if}}
 
       {{#if utilityMenu.length}}
-        <div class="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-4">
-          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h3 class="text-lg font-semibold text-slate-950">Дополнительно</h3>
-            <span class="text-sm text-slate-500">{{utilityCount}}</span>
-          </div>
-          <div class="mt-4 flex flex-wrap gap-2">
-            {{#each utilityMenu}}
-              <a href="{{this.cont}}" class="inline-flex min-h-[44px] items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition duration-150 hover:border-blue-300 hover:text-blue-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">{{this.title}}</a>
-            {{/each}}
+        <div class="mt-8 border-t border-slate-200/80 pt-5 md:mt-12 md:pt-8">
+          <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <h3 class="text-lg font-semibold text-slate-950">Дополнительно</h3>
+              <span class="text-sm text-slate-500">{{utilityCount}}</span>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2">
+              {{#each utilityMenu}}
+                <a href="{{this.cont}}" class="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition duration-150 hover:border-blue-300 hover:text-blue-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+                  <img src="{{this.imageSrc}}" alt="" class="h-5 w-5 shrink-0 object-contain" />
+                  <span>{{this.title}}</span>
+                </a>
+              {{/each}}
+            </div>
           </div>
         </div>
       {{/if}}
     </div>
   </section>
 
-  <section id="balalayka" class="scroll-mt-24 border-b border-slate-200 bg-[#07111f] text-white">
-    <div class="mx-auto grid max-w-7xl gap-6 px-[16px] py-9 md:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+  <section id="balalayka" class="relative isolate scroll-mt-24 border-y border-slate-900 bg-[#07111f] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+    <div class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/40 to-transparent"></div>
+    <div class="mx-auto grid max-w-7xl gap-6 px-[16px] py-10 md:px-6 md:py-12 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
       <div class="max-w-2xl">
         <p class="text-sm font-semibold text-blue-200">Балалайка</p>
         <h2 class="mt-2 text-2xl font-semibold leading-tight">Сообщения и быстрый контакт в рабочем ритме</h2>
@@ -198,14 +209,15 @@
 
         <a href="https://testflight.apple.com/join/REkhmRaq" target="_blank" rel="noopener noreferrer" class="relative inline-flex min-h-[44px] items-center justify-center rounded-lg border border-white/10 bg-white p-1.5 transition duration-150 hover:border-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111f]" aria-label="Скачать iOS через TestFlight">
           <img src="/img/store-badges/appstore-badge.svg" alt="Скачать iOS через TestFlight" class="h-14 w-auto" />
-          <span class="absolute -right-2 -top-2 rounded-lg bg-cyan-500 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">iOS · TestFlight</span>
+          <span class="absolute right-1 top-1 rounded-lg bg-cyan-500 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">iOS · TestFlight</span>
         </a>
       </div>
     </div>
   </section>
 
-  <section id="info" class="scroll-mt-24 bg-[#f6f8fb]">
-    <div class="mx-auto max-w-7xl px-[16px] py-10 md:px-6 md:py-14">
+  <section id="info" class="relative scroll-mt-24 border-t border-slate-200 bg-[#f6f8fb]">
+    <div class="mx-auto max-w-7xl px-[16px] py-12 md:px-6 md:py-16">
+      <div class="mb-7 h-px w-full bg-gradient-to-r from-blue-500/25 via-slate-300/80 to-transparent"></div>
       <div class="grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-end">
         <div>
           <p class="text-sm font-semibold text-blue-700">Полезная информация</p>
