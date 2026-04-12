@@ -168,12 +168,12 @@ app.get('/e',(req,res)=>{
 const SERVICE_META = [
   { match: /электронный журнал|дневник/i, tag: 'Учебный процесс', summary: 'Оценки, занятия и ежедневная работа.' },
   { match: /расписание/i, tag: 'Календарь', summary: 'Уроки, звонки и быстрый переход к расписанию.' },
-  { match: /инструкции/i, tag: 'Навигация', summary: 'Регламенты, инструкции и ответы по рабочим задачам.' },
+  { match: /инструкции/i, tag: 'Навигация', summary: 'Инструкции и ответы по частым вопросам.' },
   { match: /бот платоникс|балалайка/i, tag: 'Коммуникация', summary: 'Сообщения, уведомления и быстрый контакт.' },
   { match: /голосован/i, tag: 'Обратная связь', summary: 'Опросы и сбор мнений без лишних шагов.' },
   { match: /облако/i, tag: 'Файлы', summary: 'Документы, материалы и совместная работа в облаке.' },
-  { match: /прогресс/i, tag: 'Аналитика', summary: 'Отчеты, динамика и рабочие показатели под рукой.' },
-  { match: /аренда пк|управление пк/i, tag: 'Инфраструктура', summary: 'Рабочие устройства, ресурсы и технические заявки.' },
+  { match: /прогресс/i, tag: 'Аналитика', summary: 'Отчеты и динамика обучения под рукой.' },
+  { match: /аренда пк|управление пк/i, tag: 'Техника', summary: 'Компьютеры, устройства и заявки по технике.' },
   { match: /v\.call/i, tag: 'Онлайн-уроки', summary: 'Быстрый вход в активную комнату или запуск нового урока.' },
   { match: /управление пользователями/i, tag: 'Администрирование', summary: 'Роли, права доступа и учетные записи сотрудников.' },
   { match: /лента событий/i, tag: 'Медиа', summary: 'Фотографии, события и материалы школьной жизни.' },
@@ -212,15 +212,15 @@ function getLinkMeta(href = '') {
   const value = (href ?? '').toString().trim();
 
   if (!value) {
-    return { kindLabel: 'Раздел', destinationLabel: 'внутри портала' };
+    return { kindLabel: 'Раздел', destinationLabel: 'на этой странице', detailLabel: 'Откроется на этой странице' };
   }
 
   if (value.startsWith('#')) {
-    return { kindLabel: 'Быстрое действие', destinationLabel: 'внутри портала' };
+    return { kindLabel: 'Быстрый вход', destinationLabel: 'откроется здесь', detailLabel: 'Откроется здесь' };
   }
 
   if (value.startsWith('/')) {
-    return { kindLabel: 'Внутренний сервис', destinationLabel: 'внутри портала' };
+    return { kindLabel: 'Раздел', destinationLabel: 'на этом сайте', detailLabel: 'Откроется на этом сайте' };
   }
 
   try {
@@ -228,16 +228,16 @@ function getLinkMeta(href = '') {
     const host = target.hostname.replace(/^www\./, '');
 
     if (host === 't.me' || host.endsWith('.t.me')) {
-      return { kindLabel: 'Telegram', destinationLabel: host };
+      return { kindLabel: 'Telegram', destinationLabel: 'откроется отдельно', detailLabel: 'Откроется в Telegram' };
     }
 
     if (host === 'platoniks.ru' || host.endsWith('.platoniks.ru') || host.endsWith('.teyhd.ru')) {
-      return { kindLabel: 'Сервис Platoniks', destinationLabel: host };
+      return { kindLabel: 'Сервис', destinationLabel: 'откроется отдельно', detailLabel: 'Откроется отдельно' };
     }
 
-    return { kindLabel: 'Внешний сервис', destinationLabel: host };
+    return { kindLabel: 'Сервис', destinationLabel: 'откроется отдельно', detailLabel: 'Откроется отдельно' };
   } catch (_error) {
-    return { kindLabel: 'Раздел', destinationLabel: 'внутри портала' };
+    return { kindLabel: 'Раздел', destinationLabel: 'на этой странице', detailLabel: 'Откроется на этой странице' };
   }
 }
 
@@ -245,20 +245,20 @@ function getAccessMeta(role = 0) {
   if (!role) {
     return {
       accessLabel: 'Гостевой доступ',
-      accessNote: 'Войдите по PIN, чтобы открыть персональные сервисы и рабочие сценарии.',
+      accessNote: 'Войдите по PIN, чтобы увидеть свои уроки, комнаты и сервисы.',
     };
   }
 
   if (role >= 5) {
     return {
       accessLabel: 'Расширенный доступ',
-      accessNote: 'Доступ собран под административные и рабочие задачи вашей роли.',
+      accessNote: 'Здесь собраны сервисы, которые нужны вам чаще всего.',
     };
   }
 
   return {
     accessLabel: 'Персональный доступ',
-    accessNote: 'Доступ собран под вашу роль и повседневные рабочие задачи.',
+    accessNote: 'Здесь собраны сервисы, которые нужны вам чаще всего.',
   };
 }
 
@@ -285,7 +285,7 @@ function isOperationService(card) {
 function normalizeMenuCard(card, index = 0) {
   const meta = pickMeta(card.title, SERVICE_META, {
     tag: 'Сервис',
-    summary: 'Быстрый переход к рабочему разделу без лишних шагов.',
+    summary: 'Быстрый переход без лишних шагов.',
   });
   const linkMeta = getLinkMeta(card.cont);
 
@@ -310,6 +310,12 @@ function normalizeInfoCard(card) {
   };
 }
 
+function isNoisyIntroInfo(card) {
+  const title = (card?.title ?? '').toString();
+  const text = stripHtml(card?.cont ?? '');
+  return /сервисы платоникса/i.test(title) && /добро пожаловать|коллекция ссылок|ключевые ресурсы/i.test(text);
+}
+
 app.get('/',async (req,res)=>{
    
     let rolen = 0
@@ -332,8 +338,9 @@ app.get('/',async (req,res)=>{
     const secondaryIndexes = new Set(secondaryMenu.map(card => card._menuIndex))
     const utilityMenu = serviceMenu.filter(card => !primaryIndexes.has(card._menuIndex) && !secondaryIndexes.has(card._menuIndex))
     const featuredMenu = [...operationMenu, ...primaryMenu].slice(0, 4)
-    const featuredInfo = infoCards[0] ?? null
-    const secondaryInfo = infoCards.slice(1)
+    const helpfulInfo = infoCards.filter(card => !isNoisyIntroInfo(card))
+    const featuredInfo = null
+    const secondaryInfo = helpfulInfo
     const accessMeta = getAccessMeta(rolen)
     const quickMenu = primaryMenu.slice(0, 3)
 
@@ -361,67 +368,151 @@ app.get('/',async (req,res)=>{
 
 // === Страница users.hbs (добавляем allRoles, services для панели) ===
 app.get('/balalayka', (req, res) => {
-  const installButtons = [
+  const openHref = 'https://msg.platoniks.ru/';
+  const androidHref = 'https://www.rustore.ru/catalog/app/ru.platoniks.balalaika';
+  const iosHref = 'https://testflight.apple.com/join/REkhmRaq';
+
+  const heroHighlights = [
+    { value: 'Темы', label: 'Обсуждения легко разложить по вопросам.' },
+    { value: 'Файлы', label: 'Фото, видео и документы остаются рядом с перепиской.' },
+    { value: 'Live', label: 'Комнаты доступны там же, где идет обсуждение.' }
+  ];
+
+  const proofPoints = [
+    { title: 'Меньше шума', text: 'Чаты, темы и уведомления помогают не терять важное в потоке сообщений.' },
+    { title: 'Быстрый вход', text: 'Откройте веб-версию или установите приложение на телефон.' },
+    { title: 'Для всей команды', text: 'Подходит для коротких сообщений, обсуждений, файлов и встреч.' },
+    { title: 'На разных устройствах', text: 'Работает в браузере, на Android и на iPhone через TestFlight.' },
+    { title: 'Привычные действия', text: 'Реакции, медиа, статусы сообщений и комнаты собраны в одном месте.' }
+  ];
+
+  const showcaseItems = [
     {
-      href: 'https://www.rustore.ru/catalog/app/ru.platoniks.balalaika',
-      img: '/img/store-badges/rustore-badge.svg',
-      alt: 'Скачать Балалайку в RuStore',
-      note: 'Android'
+      id: 'forums',
+      label: 'Темы',
+      eyebrow: 'Обсуждения',
+      title: 'Разделяйте большие чаты на понятные темы.',
+      description: 'Вопросы, решения и материалы легче найти, когда они не смешиваются в одну длинную ленту.',
+      points: [
+        'видно, где появилась новая активность',
+        'важные обсуждения не теряются среди коротких сообщений',
+        'комната может быть привязана к нужной теме'
+      ]
     },
     {
-      href: 'https://testflight.apple.com/join/REkhmRaq',
-      img: '/img/store-badges/appstore-badge.svg',
-      alt: 'Установить Балалайку через TestFlight',
-      note: 'iPhone · TestFlight'
+      id: 'reactions',
+      label: 'Реакции',
+      eyebrow: 'Быстрый ответ',
+      title: 'Отвечайте коротко, когда сообщение не требует переписки.',
+      description: 'Реакции помогают подтвердить, согласовать или отметить идею без лишних сообщений.',
+      points: [
+        'быстрая обратная связь в один жест',
+        'одинаковое поведение на телефоне и в браузере',
+        'меньше лишних “ок” и “принято” в чатах'
+      ]
+    },
+    {
+      id: 'media',
+      label: 'Медиа',
+      eyebrow: 'Файлы и материалы',
+      title: 'Отправляйте фото, видео, документы и маршруты.',
+      description: 'Материалы остаются в контексте переписки, поэтому к ним проще вернуться позже.',
+      points: [
+        'прогресс загрузки виден сразу',
+        'фото и видео удобно смотреть в сообщениях',
+        'маршруты можно открыть прямо из карточки'
+      ]
+    },
+    {
+      id: 'notifications',
+      label: 'Уведомления',
+      eyebrow: 'Спокойный ритм',
+      title: 'Получайте уведомления без лишнего шума.',
+      description: 'Балалайка помогает заметить важное и не отвлекает повторно, когда вы уже в чате.',
+      points: [
+        'понятный текст уведомлений',
+        'тихое поведение для служебных событий',
+        'одинаковые сообщения на разных устройствах'
+      ]
+    },
+    {
+      id: 'live',
+      label: 'Live',
+      eyebrow: 'Комнаты',
+      title: 'Подключайтесь к комнате из командного обсуждения.',
+      description: 'Когда переписки недостаточно, можно быстро перейти к разговору голосом или видео.',
+      points: [
+        'комната остается рядом с темой',
+        'участникам понятно, куда подключаться',
+        'меньше отдельных ссылок и пересылок'
+      ]
     }
   ];
 
-  const highlights = [
-    'Корпоративный мессенджер нового поколения для команд, которым важны скорость, порядок и спокойная коммуникация.',
-    'Единый опыт на iPhone, Android и в веб-версии: интерфейс, уведомления и сообщения ощущаются одинаково собранно.',
-    'Форумы, реакции, вложения, маршруты и статусы сообщений работают как часть одной экосистемы, а не как набор разрозненных функций.'
+  const platformCards = [
+    {
+      id: 'web',
+      name: 'Web',
+      status: 'готово',
+      description: 'Откройте Балалайку в браузере и продолжайте общение без установки приложения.',
+      note: 'Подходит для компьютера и быстрого доступа',
+      href: openHref,
+      cta: 'Открыть в браузере'
+    },
+    {
+      id: 'android',
+      name: 'Android',
+      status: 'RuStore',
+      description: 'Установите Android-версию из RuStore и получайте сообщения на телефоне.',
+      note: 'Официальная страница приложения',
+      href: androidHref,
+      cta: 'Скачать в RuStore'
+    },
+    {
+      id: 'ios',
+      name: 'iPhone',
+      status: 'TestFlight',
+      description: 'Подключитесь к iOS-версии через TestFlight, если пользуетесь iPhone.',
+      note: 'Тестовая установка Apple',
+      href: iosHref,
+      cta: 'Открыть TestFlight'
+    }
   ];
 
-  const changelogGroups = [
+  const updateCards = [
     {
-      title: 'Что нового в обсуждениях и уведомлениях',
-      items: [
-        'В группах с форумами появился отдельный экран выбора тем перед входом в переписку.',
-        'В списке тем теперь видны иконка темы, название, превью последнего сообщения и время активности.',
-        'Текст push-уведомлений по сообщениям выровнен между iPhone, Android и веб-версией.',
-        'Тихие служебные push-события больше не шумят лишний раз, когда чат уже открыт.',
-        'Унифицированы жесты в чате: долгий тап и двойной тап работают одинаково на платформах.',
-        'Улучшен блок реакций: расширенный выбор реакций и более стабильная работа реакций после перезагрузки.',
-        'Доработаны статусы сообщений: корректная цепочка delivered/read, обновление receipt и исправление иконок статусов.',
-        'Выравнены кросс-платформенные аватары чатов и логика антифлуд-группировок и дедупликации в сообщениях и уведомлениях.'
-      ]
+      eyebrow: 'Темы',
+      title: 'Обсуждения стало проще разделять.',
+      text: 'Перед входом в большой чат легче понять, какие темы активны и где есть новые сообщения.'
     },
     {
-      title: 'Что нового во вложениях и медиа',
-      items: [
-        'Добавлены карточки маршрутов Яндекса в сообщениях с вложениями.',
-        'В карточках маршрута появился интерактивный WebView с просмотром маршрута прямо в приложении.',
-        'Карточки маршрутов Яндекса в сообщениях открываются и показывают превью стабильнее.',
-        'Добавлен процент загрузки медиа (фото и видео) с сохранением прогресса между экранами и сессиями.',
-        'Превью фото и видео в альбомах стало меньше обрезаться.'
-      ]
+      eyebrow: 'Медиа',
+      title: 'Файлы и видео стали спокойнее в работе.',
+      text: 'Загрузка показывает прогресс, а фото и видео меньше выбиваются из переписки.'
     },
     {
-      title: 'Стабильность и качество',
-      items: [
-        'Исправлен крэш открытия чата на iOS.',
-        'Исправлен крэш запуска composer на iOS.',
-        'Обновления заметно снижают визуальный шум и делают повседневную работу с сообщениями спокойнее и предсказуемее.'
-      ]
+      eyebrow: 'Стабильность',
+      title: 'Меньше сбоев и лишних уведомлений.',
+      text: 'Улучшены реакции, статусы сообщений, уведомления и запуск чатов на iPhone.'
     }
+  ];
+
+  const footerLinks = [
+    { href: openHref, label: 'Открыть web' },
+    { href: androidHref, label: 'Android' },
+    { href: iosHref, label: 'iPhone' }
   ];
 
   res.render('balalayka', {
     title: 'Балалайка',
-    pageTitle: 'Балалайка, корпоративный мессенджер нового поколения',
-    installButtons,
-    highlights,
-    changelogGroups,
+    pageTitle: 'Балалайка, мессенджер для команды',
+    openHref,
+    heroHighlights,
+    proofPoints,
+    showcaseItems,
+    platformCards,
+    updateCards,
+    footerLinks,
     auth: req.session?.rolen || 0
   });
 });
