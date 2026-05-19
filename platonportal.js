@@ -430,7 +430,7 @@ function buildHomeCatalog(menuCards = [], role = 0) {
 
   return {
     ...roleMeta,
-    catalogServices: rankedCards,
+    catalogServices: rankedCards.filter(card => !isOperationService(card)),
   };
 }
 

@@ -22,6 +22,47 @@
       </p>
     </header>
 
+    {{#if operationMenu.length}}
+      <section id="lesson-room-panel" data-lesson-room-panel data-auth="{{auth}}"
+               class="mt-7 max-w-4xl rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5 sm:mt-8 md:p-7">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <p class="text-base font-semibold text-blue-700 md:text-lg">Уроки и комнаты</p>
+            <h2 class="mt-2 text-2xl font-semibold leading-tight tracking-tight text-slate-950 md:mt-3 md:text-4xl">
+              Быстро подключиться к уроку
+            </h2>
+          </div>
+          <div class="shrink-0 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-center text-emerald-950 md:px-4 md:py-3">
+            <div class="text-xs font-semibold text-emerald-700 md:text-sm">сейчас</div>
+            <div data-lesson-time class="mt-1 text-base font-semibold md:text-lg">--:--</div>
+          </div>
+        </div>
+
+        <div class="mt-4 grid gap-3 md:mt-5">
+          {{#each operationMenu}}
+            <a href="{{this.cont}}"
+               class="group flex min-h-[112px] items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-white hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 md:min-h-[132px] md:gap-5 md:p-5">
+              <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-slate-950 p-2 shadow-sm shadow-slate-950/20 md:h-16 md:w-16">
+                <img src="{{this.imageSrc}}" alt="" class="h-full w-full object-contain" loading="lazy" />
+              </span>
+              <span class="min-w-0">
+                <span class="block text-sm font-semibold text-blue-700">{{this.kindLabel}}</span>
+                <span class="mt-1 block text-lg font-semibold leading-6 text-slate-950 line-clamp-2 md:text-2xl md:leading-8">{{this.title}}</span>
+                <span class="mt-2 block text-sm leading-6 text-slate-600 line-clamp-2 md:text-base md:leading-7">{{this.summary}}</span>
+              </span>
+            </a>
+          {{/each}}
+        </div>
+
+        <div class="mt-4 grid max-w-xs gap-3 md:mt-5">
+          <div class="rounded-lg border border-slate-200 bg-white p-3 md:p-4">
+            <div class="text-sm font-semibold text-slate-500">Открытые комнаты</div>
+            <div data-open-rooms-count class="mt-3 text-3xl font-semibold leading-none text-slate-950">0</div>
+          </div>
+        </div>
+      </section>
+    {{/if}}
+
     <section class="mt-7 sm:mt-8" aria-label="Каталог сервисов">
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {{#if isGuestHome}}
@@ -89,3 +130,48 @@
     </section>
   </div>
 </main>
+
+<script>
+(() => {
+  const panel = document.querySelector('[data-lesson-room-panel]');
+  if (!panel) return;
+
+  const timeEl = panel.querySelector('[data-lesson-time]');
+  const roomsCountEl = panel.querySelector('[data-open-rooms-count]');
+
+  function updateTime() {
+    if (!timeEl) return;
+    timeEl.textContent = new Intl.DateTimeFormat('ru-RU', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date());
+  }
+
+  async function updateRoomsCount() {
+    if (!roomsCountEl || Number(panel.dataset.auth || 0) < 1) return;
+
+    try {
+      const response = await fetch('/rooms', {
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+      });
+      if (!response.ok) return;
+
+      const data = await response.json();
+      const rooms = Array.isArray(data.rooms) ? data.rooms : [];
+      const openRooms = rooms.filter((room) => {
+        const id = room?.room_info?.room_id;
+        return Boolean(id) && String(data?.acc?.[id]?.pub).toLowerCase() === 'true';
+      });
+      roomsCountEl.textContent = String(openRooms.length);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  updateTime();
+  updateRoomsCount();
+  window.setInterval(updateTime, 30000);
+})();
+</script>
