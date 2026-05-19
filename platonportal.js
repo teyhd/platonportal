@@ -149,6 +149,9 @@ app.use("/sso", makeSsoRouter({
 
       "diary": { client_secret: process.env.DIARY_SSO_CLIENT_SECRET, redirect_uri: "https://diary.platoniks.ru/api/cb",
       post_logout_redirect_uris: ['https://diary.platoniks.ru'], srv_name: 'diary' },
+    "atten": { client_secret: process.env.ATTEN_SSO_CLIENT_SECRET, redirect_uri: "https://stud.platoniks.ru/api/cb",
+      post_logout_redirect_uris: ['https://stud.platoniks.ru'], srv_name: 'atten' },
+
   }
 }));
 app.use(platformsso)
