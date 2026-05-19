@@ -190,6 +190,8 @@ const INFO_META = [
   { match: /контрол/i, tag: 'Контроль' },
 ];
 
+const CATALOG_GROUP_ORDER = new Map(['learning', 'communications', 'materials', 'feedback', 'admin'].map((key, index) => [key, index]));
+
 function pickMeta(title, collection, fallback) {
   const normalized = (title ?? '').toString();
   return collection.find(item => item.match.test(normalized)) ?? fallback;
@@ -297,6 +299,59 @@ function getAccessMeta(role = 0) {
   };
 }
 
+function normalizeRoleValue(role = 0) {
+  if (Array.isArray(role)) {
+    const roles = role
+      .map(value => Number(value))
+      .filter(value => Number.isFinite(value) && value > 0);
+
+    return roles.length ? Math.max(...roles) : 0;
+  }
+
+  const numericRole = Number(role);
+  return Number.isFinite(numericRole) && numericRole > 0 ? numericRole : 0;
+}
+
+function getSessionPortalRole(sessionRight = 0) {
+  if (Array.isArray(sessionRight)) {
+    return normalizeRoleValue(hlp.getRolesBySrvId(sessionRight, 1));
+  }
+
+  return normalizeRoleValue(sessionRight);
+}
+
+function getHomeRoleMeta(role = 0) {
+  const normalizedRole = normalizeRoleValue(role);
+
+  if (!normalizedRole) {
+    return {
+      homeRoleMode: 'guest',
+      roleLabel: 'Гостевой доступ',
+      homeTitle: 'Сервисы Гармонии',
+      homeSubtitle: 'Найдите расписание, журнал, инструкции и публичные сервисы без лишних переходов.',
+      homeHint: 'Войдите по PIN, чтобы увидеть персональные уроки, комнаты и закрытые сервисы.',
+    };
+  }
+
+  if (normalizedRole >= 5) {
+    return {
+      homeRoleMode: 'admin',
+      roleLabel: 'Расширенный доступ',
+      homeTitle: 'Рабочий каталог Гармонии',
+      homeSubtitle: 'Учебные, коммуникационные и административные сервисы собраны в одном аккуратном каталоге.',
+      homeHint: 'Каталог уже адаптирован под вашу роль и показывает доступные рабочие инструменты.',
+    };
+  }
+
+  return {
+    homeRoleMode: 'member',
+    roleLabel: 'Персональный доступ',
+    homeTitle: 'Ваши сервисы Гармонии',
+    homeSubtitle: 'Быстрый доступ к ежедневным учебным действиям, расписанию, материалам и связи.',
+    homeHint: 'Каталог уже адаптирован под вашу роль.',
+  };
+}
+
 function getServicePriority(title = '', href = '') {
   const value = `${title ?? ''} ${href ?? ''}`.toLowerCase();
 
@@ -317,12 +372,75 @@ function isOperationService(card) {
   return href === '#lesson' || href === '#room';
 }
 
+function getCatalogGroup(card = {}) {
+  const value = `${card.title ?? ''} ${card.cont ?? ''} ${card.tag ?? ''} ${card.summary ?? ''}`.toLowerCase();
+
+  if (/\/users|управление пользователями|администр|роль|права/.test(value)) return 'admin';
+  if (/#lesson|#room|v\.call|электронный журнал|дневник|распис|урок|diary|rasp|club8899/.test(value)) return 'learning';
+  if (/балалайка|бот|telegram|t\.me|msg\.platoniks|сообщен|уведомлен|коммуникац|звон/.test(value)) return 'communications';
+  if (/инструкц|manual|облако|cloud|файл|материал|регламент|справк|лента событий|медиа/.test(value)) return 'materials';
+  if (/голосован|опрос|обратная связь|feedback|vote/.test(value)) return 'feedback';
+
+  return 'materials';
+}
+
+function getRoleServicePriority(card, roleMode = 'guest') {
+  const group = card.catalogGroup ?? getCatalogGroup(card);
+  const basePriority = card._priority ?? getServicePriority(card.title, card.cont);
+  const groupOrder = CATALOG_GROUP_ORDER.get(group) ?? CATALOG_GROUP_ORDER.size;
+  let roleOffset = groupOrder * 100;
+
+  if (roleMode === 'guest') {
+    roleOffset = {
+      learning: 0,
+      communications: 1,
+      materials: 2,
+      feedback: 3,
+      admin: 9,
+    }[group] ?? 8;
+  } else if (roleMode === 'admin') {
+    roleOffset = {
+      learning: 0,
+      admin: 1,
+      communications: 2,
+      materials: 3,
+      feedback: 4,
+    }[group] ?? 8;
+  } else {
+    roleOffset = {
+      learning: 0,
+      communications: 1,
+      materials: 2,
+      feedback: 3,
+      admin: 8,
+    }[group] ?? 8;
+  }
+
+  return roleOffset * 100 + basePriority;
+}
+
+function buildHomeCatalog(menuCards = [], role = 0) {
+  const roleMeta = getHomeRoleMeta(role);
+  const rankedCards = [...menuCards]
+    .map(card => ({
+      ...card,
+      _rolePriority: getRoleServicePriority(card, roleMeta.homeRoleMode),
+    }))
+    .sort((a, b) => a._rolePriority - b._rolePriority || a._menuIndex - b._menuIndex);
+
+  return {
+    ...roleMeta,
+    catalogServices: rankedCards,
+  };
+}
+
 function normalizeMenuCard(card, index = 0) {
   const meta = pickMeta(card.title, SERVICE_META, {
     tag: 'Сервис',
     summary: 'Быстрый переход к нужному разделу.',
   });
   const linkMeta = getLinkMeta(card.cont);
+  const catalogGroup = getCatalogGroup({ ...card, ...meta });
 
   return {
     ...card,
@@ -330,6 +448,7 @@ function normalizeMenuCard(card, index = 0) {
     ...linkMeta,
     _menuIndex: index,
     _priority: getServicePriority(card.title, card.cont),
+    catalogGroup,
     excerpt: getExcerpt(meta.summary, 90),
     imageSrc: getCardImageSrc(card.pic),
   };
@@ -355,16 +474,17 @@ app.get('/',async (req,res)=>{
    
     let rolen = 0
     try {
-        rolen = req.session.right ?? 0;
-        rolen = hlp.getRolesBySrvId(rolen,1)
+        rolen = getSessionPortalRole(req.session.right ?? req.session.role ?? 0)
         req.session.rolen = rolen
     } catch (error) {
         mlog(error);
+        req.session.rolen = 0
     }
     let cards = await db.get_cards(rolen)
     const menuCards = cards.filter(c => c.type === 0).map((card, index) => normalizeMenuCard(card, index))
     const infoCards = cards.filter(c => c.type === 1).map(normalizeInfoCard)
-    const prioritizedMenu = [...menuCards].sort((a, b) => a._priority - b._priority || a._menuIndex - b._menuIndex)
+    const homeCatalog = buildHomeCatalog(menuCards, rolen)
+    const prioritizedMenu = [...menuCards].sort((a, b) => getRoleServicePriority(a, homeCatalog.homeRoleMode) - getRoleServicePriority(b, homeCatalog.homeRoleMode) || a._menuIndex - b._menuIndex)
     const operationMenu = prioritizedMenu.filter(isOperationService)
     const serviceMenu = prioritizedMenu.filter(card => !isOperationService(card))
     const primaryMenu = serviceMenu.slice(0, 4)
@@ -374,6 +494,12 @@ app.get('/',async (req,res)=>{
     const utilityMenu = serviceMenu.filter(card => !primaryIndexes.has(card._menuIndex) && !secondaryIndexes.has(card._menuIndex))
     const featuredMenu = [...operationMenu, ...primaryMenu].slice(0, 4)
     const helpfulInfo = infoCards.filter(card => !isNoisyIntroInfo(card))
+    const infoGroup = {
+      title: 'Информация и регламенты',
+      description: 'Справка, правила и важные материалы для спокойной работы с сервисами.',
+      items: helpfulInfo,
+      hasItems: helpfulInfo.length > 0,
+    }
     const featuredInfo = null
     const secondaryInfo = helpfulInfo
     const accessMeta = getAccessMeta(rolen)
@@ -397,6 +523,10 @@ app.get('/',async (req,res)=>{
       utilityCount: utilityMenu.length,
       infoOverflowCount: secondaryInfo.length,
       auth: rolen,
+      isGuestHome: homeCatalog.homeRoleMode === 'guest',
+      isAdminHome: homeCatalog.homeRoleMode === 'admin',
+      infoGroup,
+      ...homeCatalog,
       ...accessMeta
     });
   })
