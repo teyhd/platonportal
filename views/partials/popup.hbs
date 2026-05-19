@@ -1,73 +1,66 @@
-<!-- Вход в систему-->
-<div id="modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+<!-- Вход в систему -->
+<div id="modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
   <div class="relative w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 text-slate-950 shadow-2xl">
-    <button id="closeModal" class="absolute right-3 top-3 text-xl text-slate-400 transition hover:text-slate-700">&times;</button>
-    <h3 class="text-xl font-semibold mb-4">Вход в систему</h3>
-    <!-- Здесь форма авторизации -->
-    <form>
-      <input id="pass" name="pin" type="password" placeholder="PIN" autocomplete="one-time-code" inputmode="numeric" class="mb-4 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-950 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      <button id="btnlogin" class="mb-2 w-full rounded-lg bg-blue-600 py-2.5 font-medium text-white transition hover:bg-blue-700">Войти</button>
+    <button id="closeLoginModal" type="button" class="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700" aria-label="Закрыть">
+      &times;
+    </button>
+    <h3 class="mb-4 text-xl font-semibold">Вход в систему</h3>
+    <form id="loginForm">
+      <input id="pass" name="pin" type="password" placeholder="PIN" autocomplete="one-time-code" inputmode="numeric" class="mb-4 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-950 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
+      <button id="btnlogin" type="submit" class="mb-2 w-full rounded-lg bg-blue-600 py-2.5 font-medium text-white transition hover:bg-blue-700">Войти</button>
     </form>
-    <div class="text-center mt-auto">
-      <a href="https://t.me/Platonicsbot"
-         class="block min-h-[10px] w-full rounded-lg bg-slate-950 p-2 text-white shadow-sm transition hover:bg-slate-800">
-         ЗАБЫЛ PIN / Восстановить PIN
+    <div class="text-center">
+      <a href="https://t.me/Platonicsbot" target="_blank" rel="noopener"
+         class="block w-full rounded-lg bg-slate-950 p-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800">
+         Забыли PIN / восстановить PIN
       </a>
     </div>
   </div>
 </div>
 
- <!-- V call -->
-<div id="modal2" class="fixed inset-0 z-50 hidden">
- 
+<!-- V.CALL -->
+<div id="modal2" class="fixed inset-0 z-50 hidden p-4">
   <div id="modal2-overlay" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
-  <!-- dialog -->
   <div class="relative mx-auto my-8 w-full max-w-xl">
     <div class="relative rounded-lg border border-slate-200 bg-white p-6 text-slate-950 shadow-2xl">
-      <button id="closeModal"
-              class="absolute top-3 right-3 flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
+      <button id="closeVcallModal" type="button"
+              class="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+              aria-label="Закрыть">
         &times;
       </button>
 
-      <h3 class="text-xl font-semibold mb-2">Ссылка на конференцию</h3>
-      <p class="mb-4 text-sm text-slate-500">Скопируйте ссылку-приглашение и нажмите войти</p>
+      <h3 class="mb-2 text-xl font-semibold">Ссылка на конференцию</h3>
+      <p class="mb-4 text-sm text-slate-500">Скопируйте ссылку-приглашение или сразу перейдите в комнату.</p>
 
-      <!-- Поле для длинной ссылки -->
-      <div class="flex gap-2">
+      <div class="flex flex-col gap-2 sm:flex-row">
         <textarea id="copy-link" readonly
-                  class="flex-1 h-28 resize-y rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm leading-relaxed text-slate-950
-                         focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-        <button id="copyBtn"
-                class="h-28 w-28 shrink-0 rounded-lg bg-slate-100 text-sm font-medium text-slate-900 transition hover:bg-slate-200">
+                  class="h-28 flex-1 resize-y rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm leading-relaxed text-slate-950 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"></textarea>
+        <button id="copyBtn" type="button"
+                class="h-12 rounded-lg bg-slate-100 px-4 text-sm font-medium text-slate-900 transition hover:bg-slate-200 sm:h-28 sm:w-28 sm:shrink-0">
           Скопировать
         </button>
       </div>
-      
-      <!-- Приватность и авторизация -->
+
       <div class="mt-4 grid gap-3 sm:grid-cols-2">
-        <!-- Сегменты: Публичная / Частная -->
         <fieldset id="privacyGroup" role="radiogroup" aria-label="Тип комнаты"
           class="rounded-lg border border-slate-200 bg-slate-50 p-2">
           <input type="hidden" id="privacyInput" name="privacy" value="public">
           <div class="grid grid-cols-2 gap-2">
             <button type="button" role="radio" aria-checked="true" data-value="public"
-              class="seg active inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm transition
-                    bg-blue-600 text-white">
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"><path d="M12 3a9 9 0 100 18 9 9 0 000-18Zm0 4.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3ZM9 17h6a3 3 0 00-6 0Z" stroke="currentColor" stroke-width="1.5"/></svg>
+              class="seg inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm text-white transition">
+              <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#globe"></use></svg>
               Публичная
             </button>
             <button type="button" role="radio" aria-checked="false" data-value="private"
-              class="seg inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm transition
-                    bg-white text-slate-700 hover:bg-slate-100">
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"><path d="M17 11V8a5 5 0 10-10 0v3M6 11h12v8H6v-8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              class="seg inline-flex items-center justify-center gap-2 rounded-lg bg-white px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-100">
+              <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#lock"></use></svg>
               Частная
             </button>
           </div>
-          <p id="privacyHint" class="mt-2 text-xs text-slate-500">Ссылку видят все с доступом к странице.</p>
+          <p id="privacyHint" class="mt-2 text-xs text-slate-500">Все ученики видят вашу комнату.</p>
         </fieldset>
 
-        <!-- Тумблер: Требовать авторизацию -->
         <label class="group flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
           <div>
             <div class="text-sm text-slate-900">Требовать авторизацию</div>
@@ -75,207 +68,51 @@
           </div>
           <span class="relative inline-flex h-7 w-12 items-center">
             <input id="requireAuth" name="require_auth" type="checkbox" class="peer sr-only">
-            <span aria-hidden="true"
-              class="absolute inset-0 rounded-full bg-slate-300 peer-checked:bg-blue-600 transition-colors"></span>
-            <span aria-hidden="true"
-              class="absolute left-1 h-5 w-5 rounded-full bg-white shadow transition-transform
-                    peer-checked:translate-x-5"></span>
+            <span aria-hidden="true" class="absolute inset-0 rounded-full bg-slate-300 transition-colors peer-checked:bg-blue-600"></span>
+            <span aria-hidden="true" class="absolute left-1 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5"></span>
           </span>
         </label>
       </div>
 
-      <!-- Кнопка для входа -->
-      <div class="mt-4 flex flex-col sm:flex-row gap-2">
-        <button id="joinBtn"
+      <div class="mt-4 flex flex-col gap-2 sm:flex-row">
+        <button id="joinBtn" type="button"
                 class="w-full rounded-lg bg-blue-600 py-2.5 font-medium text-white transition hover:bg-blue-700">
           Зайти в конференцию
         </button>
-        <button id="closeBtn"
+        <button id="closeBtn" type="button"
                 class="w-full rounded-lg bg-slate-100 py-2.5 font-medium text-slate-900 transition hover:bg-slate-200">
           Закрыть
         </button>
       </div>
 
-      <!-- toast -->
-      <div id="toast" class="pointer-events-none invisible opacity-0 transition
-                             fixed left-1/2 -translate-x-1/2 bottom-6
-                             rounded-lg bg-slate-950 px-3 py-2 text-sm text-white">
+      <div id="toast" class="pointer-events-none invisible fixed bottom-6 left-1/2 -translate-x-1/2 rounded-lg bg-slate-950 px-3 py-2 text-sm text-white opacity-0 transition">
         Ссылка скопирована
       </div>
     </div>
   </div>
 </div>
 
-<script>
-
-</script>
-
-<script>
-
-
-  $(document).ready(function () {
-      const g=document.getElementById('privacyGroup');if(!g)return;
-const btns=[...g.querySelectorAll('.seg')],hint=document.getElementById('privacyHint'),inp=document.getElementById('privacyInput');
-const texts={public:'Все ученики видят вашу комнату.',private:'Доступ только по ссылке.'};
-function set(v){inp.value=v;btns.forEach(b=>{const on=b.dataset.value===v;b.setAttribute('aria-checked',on);
-b.classList.toggle('active',on);
-b.className='seg inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm transition '+
-(on?'bg-blue-600 text-white':'bg-white text-slate-700 hover:bg-slate-100');
-});hint.textContent=texts[v]||'';}
-btns.forEach(b=>b.addEventListener('click',()=>set(b.dataset.value)));
-g.addEventListener('keydown',e=>{const i=btns.findIndex(b=>b.getAttribute('aria-checked')==='true');
-if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();
-const n=e.key==='ArrowRight'?(i+1)%btns.length:(i-1+btns.length)%btns.length;set(btns[n].dataset.value);btns[n].focus();}});
-set('public');
-
-  // ссылки для копирования и перехода задаются отдельно
-  let copyUrl = '';
-  let joinUrl = '';
-
-  function openModal2(copy, join,acc) {
-    $("#requireAuth").prop("checked", String(acc.need_auth).toLowerCase() == "true").trigger("change");
-   // $("#requireAuth").val() 
-    if (String(acc.pub).toLowerCase() == "true"){
-      //etPrivacy("public");
-      set('public')
-    } else {
-      //setPrivacy("private");
-      set('private')
-    }
-
-    copyUrl = copy || '';
-    joinUrl = join || '';
-    document.getElementById('copy-link').value = copyUrl;
-    document.getElementById('modal2').classList.remove('hidden');
-  }
-  function closeModal2() {
-    document.getElementById('modal2').classList.add('hidden');
-  }
-
-  // кнопки
-  const copyBtn  = document.getElementById('copyBtn');
-  const joinBtn  = document.getElementById('joinBtn');
-  const closeBtn = document.getElementById('closeBtn');
-  const closeX   = document.querySelector('#modal2 #closeModal');
-  const overlay  = document.getElementById('modal2-overlay');
-  const toast    = document.getElementById('toast');
-
-  copyBtn.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(copyUrl);
-    } catch {
-      const ta = document.getElementById('copy-link');
-      ta.select(); document.execCommand('copy');
-    }
-    toast.classList.remove('invisible','opacity-0');
-    setTimeout(()=>toast.classList.add('opacity-0'),1200);
-    setTimeout(()=>toast.classList.add('invisible'),1600);
-  });
-
-  joinBtn.addEventListener('click', () => {
-    if (joinUrl) window.open(joinUrl,'_blank','noopener');
-  });
-  [closeBtn, closeX, overlay].forEach(el=>el.addEventListener('click', closeModal2));
-  document.addEventListener('keydown', e=>{if(e.key==='Escape') closeModal2();});
-
-  // Отслеживаем клик по ссылке с href="#lesson"
-  $('a[href="#lesson"]').on("click", function (e) {
-    e.preventDefault(); // отменяем переход по ссылке
-    $.ajax({
-      type: 'GET',
-      url: '/getvlinks',
-      contentType: 'application/json',
-      //data: JSON.stringify(payload),
-      xhrFields: {
-        withCredentials: true
-      },
-      success: function (datas) {
-        datas.roomid = new URL(datas.roomid, window.location.origin + '/').href
-        openModal2(datas.roomid, datas.link, datas.acc);
-      },
-      error: function (jqXHR, textStatus, errorThrown) {
-        console.error("Ошибка отправки:", textStatus, errorThrown);
-      }
-    });
-   // 
-
-    
-  });
-
-  
-  $("#openModal").on("click", function () {
-    $("#modal").removeClass("hidden");
-  });
-
-  $("#closeModal").on("click", function () {
-    $("#modal").addClass("hidden");
-  });
-});
-</script>
-
-<script>
-$(function(){
-  function sendState(){
-    let pub = $("#privacyInput").val() === "public";
-    let needAuth = $("#requireAuth").is(":checked");
-    
-    $.ajax({
-      type: 'GET',
-      url: `/getvlinks`,
-      data: {
-        pub: pub,
-        need_auth: needAuth
-      },
-      contentType: 'application/json',
-      xhrFields: { withCredentials: true },
-      success: function(){},
-      error: function(err){ 
-        console.error("Ошибка:", err); 
-      }
-    });
-  }
-
-  // событие на сегменте «Публичная/Частная»
-  $("#privacyGroup .seg").on("click", function(){
-    $("#privacyInput").val($(this).data("value"));
-    sendState();
-  });
-
-  // событие на чекбоксе
-  $("#requireAuth").on("change", function(){
-    sendState();
-  });
-});
-</script>
-
-<!-- Модалка: Активные комнаты -->
-<div id="roomsModal" class="fixed inset-0 z-[100] hidden">
+<!-- Активные комнаты -->
+<div id="roomsModal" class="fixed inset-0 z-[100] hidden p-4">
   <div id="roomsBackdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
-  <div role="dialog" aria-modal="true" aria-labelledby="roomsTitle"
-       class="relative mx-auto my-10 w-full max-w-2xl">
+  <div role="dialog" aria-modal="true" aria-labelledby="roomsTitle" class="relative mx-auto my-10 w-full max-w-2xl">
     <div class="relative rounded-lg border border-slate-200 bg-white p-5 text-slate-950 shadow-2xl md:p-6">
-      <button id="roomsClose"
-              class="absolute top-3 right-3 flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+      <button id="roomsClose" type="button"
+              class="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
               aria-label="Закрыть">
         &times;
       </button>
 
-      <h3 id="roomsTitle" class="text-xl font-semibold mb-1">Активные комнаты</h3>
+      <h3 id="roomsTitle" class="mb-1 text-xl font-semibold">Активные комнаты</h3>
+      <div id="roomsList" class="grid gap-3 sm:grid-cols-2"></div>
 
-      <!-- Список комнат -->
-      <div id="roomsList" class="grid sm:grid-cols-2 gap-3">
-        <!-- Элементы подставляются скриптом -->
-      </div>
-
-      <!-- Пустой список -->
       <div id="roomsEmpty" class="hidden py-6 text-center text-sm text-slate-500">
         Сейчас нет активных комнат.
       </div>
 
-      <!-- Нижние кнопки -->
       <div class="mt-4 flex justify-end">
-        <button id="roomsClose2"
+        <button id="roomsClose2" type="button"
                 class="rounded-lg bg-slate-100 px-4 py-2 font-medium text-slate-900 transition hover:bg-slate-200">
           Закрыть
         </button>
@@ -286,118 +123,261 @@ $(function(){
 
 <script>
 (() => {
-  $('a[href="#room"]').on("click", function (e) {
-    let rooms = []
-    e.preventDefault(); // отменяем переход по ссылке
-    $.ajax({
-      type: 'GET',
-      url: '/rooms',
-      contentType: 'application/json',
-      xhrFields: {
-        withCredentials: true
-      },
-      success: function (datas) {
-        try {
-          datas.rooms.forEach(element => {
-            let romid = element?.room_info?.room_id ?? false
-            const isPublic = (() => {
-              const val = datas?.acc?.[element?.room_info?.room_id]?.pub;
-              return String(val).toLowerCase() === "true"; // undefined -> "undefined" -> false
-            })();
-            if (isPublic) rooms.push({roomid: element.room_info.room_id, title: element.room_info.room_title,peops:element.room_info.joined_participants});
-          });
-        } catch (error) {
-          console.error(error);
-        }
-        openRoomsModal(rooms) ;
-        //datas.roomid = window.location.href.split('#')[0] + datas.roomid
-        //openModal2(datas.roomid, datas.link, datas.acc);
-      },
-      error: function (jqXHR, textStatus, errorThrown) {
-        console.error("Ошибка отправки:", textStatus, errorThrown);
-      }
+  const qs = (selector, root = document) => root.querySelector(selector);
+  const qsa = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+
+  async function getJson(url) {
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
     });
-   // 
-
-    
-  });
-
-  const modal   = document.getElementById('roomsModal');
-  const list    = document.getElementById('roomsList');
-  const emptyEl = document.getElementById('roomsEmpty');
-  const closeEl = document.getElementById('roomsClose');
-  const close2  = document.getElementById('roomsClose2');
-  const back    = document.getElementById('roomsBackdrop');
-
-  function renderRooms(rooms = []) {
-    list.innerHTML = '';
-    if (!rooms.length) {
-      emptyEl.classList.remove('hidden');
-      return;
-    }
-    emptyEl.classList.add('hidden');
-
-    // rooms: [{roomid, title?}]
-    rooms.forEach(r => {
-      const rid   = String(r.roomid ?? '').trim();
-      const title = (r.title ?? `Комната ${rid || 'без ID'}`).toString();
-      const url   = `/jointo?roomid=${encodeURIComponent(rid)}`;
-      const peops = r.peops || 0;
-      const a = document.createElement('a');
-      a.href = url;
-      a.className = [
-        "block rounded-lg border border-slate-200 bg-slate-50 hover:bg-white",
-        "transition p-4 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-      ].join(' ');
-
-      a.innerHTML = `
-        <div class="flex items-start gap-3">
-          <div class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
-            <svg class="w-5 h-5 text-blue-400" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 6a6 6 0 00-6 6v5h12v-5a6 6 0 00-6-6Z" stroke="currentColor" stroke-width="1.5"/>
-              <circle cx="12" cy="10" r="2" stroke="currentColor" stroke-width="1.5"/>
-            </svg>
-          </div>
-          <div class="min-w-0">
-            <div class="font-medium truncate">${escapeHtml(title)}</div>
-            <div class="mt-0.5 text-xs text-slate-500">roomid: <span class="font-mono">${escapeHtml(rid)}</span></div>
-            <div class="mt-2 inline-flex items-center gap-2">
-              <span class="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-700">Участников: ${escapeHtml(peops)}</span>
-              <span class="rounded-md bg-blue-50 px-2 py-0.5 text-xs text-blue-700">активна</span>
-            </div>
-          </div>
-        </div>
-      `;
-      list.appendChild(a);
-    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
   }
 
-  function escapeHtml(s) {
-    return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  function showError(message, error) {
+    if (error) console.error(message, error);
+    window.PortalToast?.error?.(message);
+  }
+
+  const vcallModal = qs('#modal2');
+  const privacyGroup = qs('#privacyGroup');
+  const privacyInput = qs('#privacyInput');
+  const privacyHint = qs('#privacyHint');
+  const privacyButtons = qsa('.seg', privacyGroup || document);
+  const requireAuth = qs('#requireAuth');
+  const copyLink = qs('#copy-link');
+  const toast = qs('#toast');
+  let copyUrl = '';
+  let joinUrl = '';
+  let syncingModalState = false;
+
+  const privacyText = {
+    public: 'Все ученики видят вашу комнату.',
+    private: 'Доступ только по ссылке.',
+  };
+
+  function setPrivacy(value) {
+    if (!privacyInput) return;
+    privacyInput.value = value;
+    privacyButtons.forEach((button) => {
+      const active = button.dataset.value === value;
+      button.setAttribute('aria-checked', String(active));
+      button.className = [
+        'seg inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm transition',
+        active ? 'bg-blue-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100',
+      ].join(' ');
+    });
+    if (privacyHint) privacyHint.textContent = privacyText[value] || '';
+  }
+
+  async function sendVcallState() {
+    if (syncingModalState) return;
+    const params = new URLSearchParams({
+      pub: String(privacyInput?.value === 'public'),
+      need_auth: String(Boolean(requireAuth?.checked)),
+    });
+
+    try {
+      await getJson(`/getvlinks?${params.toString()}`);
+    } catch (error) {
+      showError('Не удалось обновить настройки комнаты', error);
+    }
+  }
+
+  function openVcallModal(copy, join, acc = {}) {
+    syncingModalState = true;
+    if (requireAuth) requireAuth.checked = String(acc.need_auth).toLowerCase() === 'true';
+    setPrivacy(String(acc.pub).toLowerCase() === 'true' ? 'public' : 'private');
+    syncingModalState = false;
+
+    copyUrl = copy || '';
+    joinUrl = join || '';
+    if (copyLink) copyLink.value = copyUrl;
+    vcallModal?.classList.remove('hidden');
+  }
+
+  function closeVcallModal() {
+    vcallModal?.classList.add('hidden');
+  }
+
+  async function openLessonModal() {
+    try {
+      const data = await getJson('/getvlinks');
+      const roomUrl = new URL(data.roomid, `${window.location.origin}/`).href;
+      openVcallModal(roomUrl, data.link, data.acc);
+    } catch (error) {
+      showError('Не удалось получить ссылку на конференцию', error);
+    }
+  }
+
+  privacyButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      setPrivacy(button.dataset.value);
+      sendVcallState();
+    });
+  });
+
+  privacyGroup?.addEventListener('keydown', (event) => {
+    if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+    const current = privacyButtons.findIndex((button) => button.getAttribute('aria-checked') === 'true');
+    const next = event.key === 'ArrowRight'
+      ? (current + 1) % privacyButtons.length
+      : (current - 1 + privacyButtons.length) % privacyButtons.length;
+    event.preventDefault();
+    const button = privacyButtons[next];
+    setPrivacy(button.dataset.value);
+    button.focus();
+    sendVcallState();
+  });
+
+  requireAuth?.addEventListener('change', sendVcallState);
+  setPrivacy('public');
+
+  qs('#copyBtn')?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(copyUrl);
+    } catch {
+      copyLink?.select();
+      document.execCommand('copy');
+    }
+    toast?.classList.remove('invisible', 'opacity-0');
+    window.PortalToast?.success?.('Ссылка скопирована');
+    window.setTimeout(() => toast?.classList.add('opacity-0'), 1200);
+    window.setTimeout(() => toast?.classList.add('invisible'), 1600);
+  });
+
+  qs('#joinBtn')?.addEventListener('click', () => {
+    if (joinUrl) window.open(joinUrl, '_blank', 'noopener');
+  });
+
+  [qs('#closeBtn'), qs('#closeVcallModal'), qs('#modal2-overlay')].forEach((element) => {
+    element?.addEventListener('click', closeVcallModal);
+  });
+
+  const roomsModal = qs('#roomsModal');
+  const roomsList = qs('#roomsList');
+  const roomsEmpty = qs('#roomsEmpty');
+
+  function closeRoomsModal() {
+    roomsModal?.classList.add('hidden');
+  }
+
+  function renderRooms(rooms = []) {
+    if (!roomsList || !roomsEmpty) return;
+    roomsList.innerHTML = '';
+
+    if (!rooms.length) {
+      roomsEmpty.classList.remove('hidden');
+      return;
+    }
+    roomsEmpty.classList.add('hidden');
+
+    rooms.forEach((room) => {
+      const rid = String(room.roomid ?? '').trim();
+      const title = String(room.title ?? `Комната ${rid || 'без ID'}`);
+      const people = String(room.peops ?? 0);
+
+      const link = document.createElement('a');
+      link.href = `/jointo?roomid=${encodeURIComponent(rid)}`;
+      link.className = 'block rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm transition hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500';
+
+      const row = document.createElement('div');
+      row.className = 'flex items-start gap-3';
+
+      const icon = document.createElement('div');
+      icon.className = 'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-500';
+      icon.innerHTML = '<svg class="h-5 w-5" aria-hidden="true"><use href="/icons/lucide.svg#video"></use></svg>';
+
+      const content = document.createElement('div');
+      content.className = 'min-w-0';
+
+      const name = document.createElement('div');
+      name.className = 'truncate font-medium';
+      name.textContent = title;
+
+      const roomId = document.createElement('div');
+      roomId.className = 'mt-0.5 text-xs text-slate-500';
+      roomId.innerHTML = 'roomid: ';
+      const code = document.createElement('span');
+      code.className = 'font-mono';
+      code.textContent = rid;
+      roomId.appendChild(code);
+
+      const badges = document.createElement('div');
+      badges.className = 'mt-2 inline-flex flex-wrap items-center gap-2';
+      const peopleBadge = document.createElement('span');
+      peopleBadge.className = 'rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-700';
+      peopleBadge.textContent = `Участников: ${people}`;
+      const activeBadge = document.createElement('span');
+      activeBadge.className = 'rounded-md bg-blue-50 px-2 py-0.5 text-xs text-blue-700';
+      activeBadge.textContent = 'активна';
+      badges.append(peopleBadge, activeBadge);
+
+      content.append(name, roomId, badges);
+      row.append(icon, content);
+      link.appendChild(row);
+      roomsList.appendChild(link);
+    });
   }
 
   function openRoomsModal(rooms) {
     renderRooms(Array.isArray(rooms) ? rooms : []);
-    modal.classList.remove('hidden');
-    // ловим Esc
-    document.addEventListener('keydown', escClose, { once: true });
+    roomsModal?.classList.remove('hidden');
   }
 
-  function closeRoomsModal() {
-    modal.classList.add('hidden');
+  async function loadRooms() {
+    try {
+      const data = await getJson('/rooms');
+      const rooms = [];
+      (data.rooms || []).forEach((element) => {
+        const roomInfo = element?.room_info || {};
+        const roomId = roomInfo.room_id;
+        const isPublic = String(data?.acc?.[roomId]?.pub).toLowerCase() === 'true';
+        if (isPublic) {
+          rooms.push({
+            roomid: roomId,
+            title: roomInfo.room_title,
+            peops: roomInfo.joined_participants,
+          });
+        }
+      });
+      openRoomsModal(rooms);
+    } catch (error) {
+      showError('Не удалось получить список комнат', error);
+    }
   }
 
-  function escClose(e) {
-    if (e.key === 'Escape') closeRoomsModal();
-  }
+  [qs('#roomsClose'), qs('#roomsClose2'), qs('#roomsBackdrop')].forEach((element) => {
+    element?.addEventListener('click', closeRoomsModal);
+  });
 
-  // клики на фон и кнопки
-  back.addEventListener('click', closeRoomsModal);
-  closeEl.addEventListener('click', closeRoomsModal);
-  close2.addEventListener('click', closeRoomsModal);
+  document.addEventListener('click', (event) => {
+    const lessonLink = event.target.closest('a[href="#lesson"]');
+    if (lessonLink) {
+      event.preventDefault();
+      openLessonModal();
+      return;
+    }
 
-  // Экспортируем функцию в глобальную область
-  window.openRoomsModal  = openRoomsModal;
+    const roomsLink = event.target.closest('a[href="#room"]');
+    if (roomsLink) {
+      event.preventDefault();
+      loadRooms();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeVcallModal();
+      closeRoomsModal();
+    }
+  });
+
+  window.openVcallModal = openVcallModal;
+  window.openRoomsModal = openRoomsModal;
   window.closeRoomsModal = closeRoomsModal;
 })();
 </script>

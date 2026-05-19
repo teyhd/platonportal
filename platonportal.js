@@ -217,8 +217,18 @@ function getCardImageSrc(pic = '') {
   const value = (pic ?? '').toString().trim();
   if (!value) return FALLBACK_CARD_ICON;
 
-  if (/^(https?:)?\/\//i.test(value) || /^data:image\//i.test(value)) {
+  if (/^data:image\//i.test(value)) {
     return value;
+  }
+
+  if (/^(https?:)?\/\//i.test(value)) {
+    try {
+      const url = new URL(value.startsWith('//') ? `https:${value}` : value);
+      if (url.hostname === 'platoniks.ru') {
+        return `${url.pathname}${url.search}`;
+      }
+    } catch (_) {}
+    return FALLBACK_CARD_ICON;
   }
 
   if (value.startsWith('/')) {

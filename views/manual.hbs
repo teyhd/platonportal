@@ -1,33 +1,23 @@
-<style>
-  iframe {
-    width: 100%;
-    height: 80vh;
-  }
-</style>
-
-<section class="max-w-7xl mx-auto px-8 py-10">
-
-  <div class="flex flex-col lg:flex-row gap-6">
-    <!-- Список файлов -->
-    <div class="bg-gray-800 text-white rounded-xl shadow-lg p-4 max-h-[500px] overflow-y-auto w-full lg:w-1/3">
-      <ul class="space-y-2 text-sm">
+<section class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+  <div class="flex flex-col gap-6 lg:flex-row">
+    <aside class="w-full rounded-lg border border-slate-700 bg-gray-800 p-4 text-white shadow-lg lg:w-1/3">
+      <ul class="max-h-[500px] space-y-2 overflow-y-auto text-sm">
         {{#each files}}
           <li>
             <a id="{{this}}"
                href="#"
-               class="block px-4 py-2 rounded hover:bg-gray-700 transition collection-item break-words leading-snug">
+               class="manual-file-link block rounded-lg px-4 py-2 leading-snug break-words transition hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
               {{this}}
             </a>
           </li>
         {{/each}}
       </ul>
-    </div>
+    </aside>
 
-    <!-- Просмотр документа -->
-    <div class="w-full lg:w-3/3">
+    <div class="w-full lg:flex-1">
       <iframe id="frame"
               src=""
-              class="rounded-xl shadow-lg border border-gray-700 bg-white dark:bg-gray-900 text-black dark:text-white">
+              class="h-[80vh] w-full rounded-lg border border-gray-700 bg-white text-black shadow-lg dark:bg-gray-900 dark:text-white">
         не удалось показать документ
       </iframe>
     </div>
@@ -35,11 +25,14 @@
 </section>
 
 <script>
-  $(document).ready(function () {
-    $(".collection-item").on("click", function (e) {
-      e.preventDefault();
-      const filename = $(this).attr("id");
-      $("#frame").attr("src", "docs/" + filename);
+(() => {
+  const frame = document.getElementById('frame');
+  document.querySelectorAll('.manual-file-link').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      const filename = link.id;
+      if (frame && filename) frame.src = `docs/${filename}`;
     });
   });
+})();
 </script>

@@ -26,8 +26,8 @@
 </header>
 <script>
 
-$(function () {
-  const $btn = $('#theme');
+(() => {
+  const btn = document.getElementById('theme');
   const root = document.documentElement;
 
   function isSystemDark() {
@@ -37,22 +37,22 @@ $(function () {
   function applyTheme(theme) {
     if (theme === 'dark') {
       root.classList.add('dark');
-      $btn.text('🌙');
+      if (btn) btn.textContent = 'dark';
     } else {
       root.classList.remove('dark');
-      $btn.text('🌞');
+      if (btn) btn.textContent = 'light';
     }
   }
 
   const savedTheme = localStorage.getItem('theme');
   applyTheme(savedTheme || (isSystemDark() ? 'dark' : 'light'));
 
-  $btn.on('click', function () {
+  btn?.addEventListener('click', () => {
     const isDark = root.classList.toggle('dark');
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    $btn.text(isDark ? '🌙' : '🌞');
+    btn.textContent = isDark ? 'dark' : 'light';
   });
-});
+})();
 
 </script>
 

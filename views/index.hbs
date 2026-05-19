@@ -1,77 +1,58 @@
-<style>
-  .l{
-    height: 400px;  
-  }
-  .h{
-    height: 300px;
-  }
-.bl{
- 
-}
- header, .main, footer {
-      padding-left: 200px;
-    }
-
-    @media only screen and (max-width : 992px) {
-      header, .main, footer {
-        padding-left: 0;
-      }
-    }
-    .tnews{
-          line-height: 20pt;
-           font-size: 14pt;
-    }
-    .card{
-      min-width: 150px;
-    }
-</style>
-
-<br>
-<div class="main">
-  <div class="row">
-    {{#each menu}}
-      <div class="bl col s6 m4 h4 l3">
-        <a href="{{this.link}}" class="black-text text-darken-3">
-          <div class="card hoverable">
-            <div class="card-image">
-              <img src="img/{{this.pic}}" alt="{{this.text}}">
-            </div>
-            <div class="card-content center-align">
-              <p>{{{this.text}}}</p>
-            </div>
-          </div>
-        </a>
+<main class="min-h-screen bg-slate-50 pt-16 text-slate-900">
+  <div class="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[18rem_1fr] lg:px-8">
+    <aside class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="mb-4 flex items-center gap-3">
+        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white">
+          <svg class="h-5 w-5" aria-hidden="true"><use href="/icons/lucide.svg#info"></use></svg>
+        </span>
+        <div>
+          <h1 class="text-base font-semibold">Информация</h1>
+          <p class="text-sm text-slate-500">важные объявления</p>
+        </div>
       </div>
-    {{/each}}
+
+      <div class="space-y-2">
+        {{#each info}}
+          <details class="group rounded-lg border border-slate-200 bg-slate-50">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-sm font-medium text-slate-800">
+              <span>{{title}}</span>
+              <svg class="h-4 w-4 shrink-0 text-slate-400 transition group-open:rotate-180" aria-hidden="true"><use href="/icons/lucide.svg#chevron-down"></use></svg>
+            </summary>
+            <div class="border-t border-slate-200 px-3 py-3 text-sm leading-6 text-slate-600">
+              {{{content}}}
+            </div>
+          </details>
+        {{/each}}
+      </div>
+
+      <div class="mt-4 border-t border-slate-200 pt-4">
+        {{#if auth}}
+          <a href="/logout" class="inline-flex min-h-[40px] w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100">
+            <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#log-out"></use></svg>
+            Выйти
+          </a>
+        {{else}}
+          <button type="button" data-open-login class="inline-flex min-h-[40px] w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">
+            <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#log-in"></use></svg>
+            Войти
+          </button>
+        {{/if}}
+      </div>
+    </aside>
+
+    <section>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {{#each menu}}
+          <a href="{{this.link}}" class="group overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <div class="aspect-[4/3] bg-slate-100">
+              <img src="img/{{this.pic}}" alt="{{this.text}}" class="h-full w-full object-cover transition duration-200 group-hover:scale-[1.02]">
+            </div>
+            <div class="flex min-h-[76px] items-center justify-center px-3 py-4 text-center text-sm font-semibold text-slate-800">
+              {{{this.text}}}
+            </div>
+          </a>
+        {{/each}}
+      </div>
+    </section>
   </div>
-</div>
-
-<ul id="slide-out" class="sidenav sidenav-fixed">
-  <li>
-    <nav class="cyan darken-1">
-      <div class="nav-wrapper">
-        <a href="/" class="brand-logo center hide-on-med-and-up flow-text">Информация</a>
-        <a href="/" class="brand-logo center hide-on-small-only">Информация</a>
-      </div>
-    </nav>
-  </li>
-
-  <li>
-    <ul class="collapsible">
-      {{#each info}}
-        <li>
-          <div class="collapsible-header"><i class="material-icons">info_outline</i>{{title}}</div>
-          <div class="collapsible-body center-align tnews">{{{content}}}</div>
-        </li>
-      {{/each}}
-    </ul>
-  </li>
-
-  <li>
-    {{#if auth}}
-      <a href="/logout"><i class="material-icons">account_circle</i>Выход</a>
-    {{else}}
-      <a class="modal-trigger" href="#modal1" name="login"><i class="material-icons">account_circle</i>Вход</a>
-    {{/if}}
-  </li>
-</ul>
+</main>

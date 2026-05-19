@@ -2,10 +2,15 @@
   "name": "mainportal",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "platonportal.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon platonportal"
+    "start": "node platonportal.js",
+    "dev": "nodemon platonportal.js",
+    "build:css": "tailwindcss -i ./tailwind.input.css -o ./public/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./tailwind.input.css -o ./public/css/tailwind.css --watch",
+    "build:icons": "node scripts/build-icons.mjs",
+    "build": "npm run build:icons && npm run build:css"
   },
   "dependencies": {
     "activedirectory": "^0.7.2",
@@ -32,7 +37,9 @@
   "author": "TEYHD",
   "license": "ISC",
   "devDependencies": {
+    "@tailwindcss/forms": "^0.5.11",
     "autoprefixer": "^10.4.27",
+    "lucide-static": "^1.16.0",
     "nodemon": "^3.1.0",
     "postcss": "^8.5.8",
     "tailwindcss": "^3.4.19"

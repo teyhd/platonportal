@@ -1,9 +1,9 @@
 .header-logo {
-    background-image: url(https://platoniks.ru/pgm/logo.png) !important;
+    background-image: url(/pgm/logo.png) !important;
 }
 
 #startupJoinModal {
-    background-image: url(https://platoniks.ru/pgm/0.jpg) !important;
+    background-image: url(/pgm/0.jpg) !important;
     background-size: cover;       /* растянуть по всей области */
     background-position: center;  /* центрировать */
     background-repeat: no-repeat; /* не повторять */

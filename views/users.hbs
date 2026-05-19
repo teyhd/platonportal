@@ -1,5 +1,6 @@
 {{!-- users.hbs --}}
-<main class="users-page-shell bg-gray-900 text-gray-100 pt-8 px-4 sm:px-6 lg:px-8 max-w-full w-full mx-auto">
+<script>document.body.classList.add('users-route');</script>
+<main class="users-page-shell bg-gray-900 text-gray-100 pt-20 px-4 sm:px-6 lg:px-8 max-w-full w-full mx-auto">
   <div class="users-page-grid">
     {{!-- Left sidebar: errrules --}}
     <aside class="min-w-0 xl:sticky xl:top-6 h-fit">
@@ -17,7 +18,7 @@
         <div class="p-4 space-y-3">
           <label class="relative block">
             <input id="errrules-search" type="search" placeholder="Поиск по имени / ID"
-                   class="browser-default w-full rounded-xl bg-gray-800 text-gray-100 placeholder:text-gray-500 border border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 px-4 py-2.5 outline-none">
+                   class="w-full rounded-xl bg-gray-800 text-gray-100 placeholder:text-gray-500 border border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 px-4 py-2.5 outline-none">
             <span class="pointer-events-none absolute right-3 top-2.5 text-gray-500">
               <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none"><path d="M21 21l-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
             </span>
@@ -87,7 +88,7 @@
       <div class="px-5 pt-4 flex items-center justify-between gap-3">
         <label class="relative w-full sm:w-80">
           <input id="srvroles-search" type="search" placeholder="Поиск сервиса"
-                 class="browser-default w-full rounded-xl bg-gray-800 text-gray-100 placeholder:text-gray-500 border border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 px-4 py-2.5 outline-none">
+                 class="w-full rounded-xl bg-gray-800 text-gray-100 placeholder:text-gray-500 border border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 px-4 py-2.5 outline-none">
           <span class="pointer-events-none absolute right-3 top-2.5 text-gray-500">
             <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none"><path d="M21 21l-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </span>
@@ -162,7 +163,7 @@
     <div class="flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
       <label class="relative w-full sm:w-72">
         <input id="user-search" type="search" placeholder="Поиск по имени или PIN"
-               class="browser-default w-full rounded-xl bg-gray-800 text-gray-100 placeholder:text-gray-500 border border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 px-4 py-2.5 outline-none">
+               class="w-full rounded-xl bg-gray-800 text-gray-100 placeholder:text-gray-500 border border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 px-4 py-2.5 outline-none">
         <span class="pointer-events-none absolute right-3 top-2.5 text-gray-500">
           <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5"><path d="M21 21l-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </span>
@@ -184,7 +185,7 @@
     <label for="filter-status" class="text-sm text-gray-400">Статус:</label>
     <div class="relative w-44 sm:w-56 md:w-64">
       <select id="filter-status"
-              class="browser-default block w-full appearance-none pr-8
+              class="block w-full appearance-none pr-8
                      rounded-lg bg-gray-800 text-gray-100
                      border border-gray-700 px-3 py-1.5
                      focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30">
@@ -204,7 +205,7 @@
     <label for="filter-type" class="text-sm text-gray-400">Роль:</label>
     <div class="relative w-44 sm:w-56 md:w-64">
       <select id="filter-type"
-              class="browser-default block w-full appearance-none pr-8
+              class="block w-full appearance-none pr-8
                      rounded-lg bg-gray-800 text-gray-100
                      border border-gray-700 px-3 py-1.5
                      focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30">
@@ -375,13 +376,13 @@
               <label class="flex flex-col gap-1">
                 <span class="text-sm text-gray-300">Имя</span>
                 <input name="name" id="f-name" type="text" required
-                       class="browser-default rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
+                       class="rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
               </label>
 
               <label class="flex flex-col gap-1">
                 <span class="text-sm text-gray-300">Подразделение</span>
                 <select name="kaf" id="f-kaf"
-                        class="browser-default block w-full appearance-none pr-8
+                        class="block w-full appearance-none pr-8
                                rounded-lg bg-gray-800 text-gray-100
                                border border-gray-700 px-3 py-1.5
                                focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30">
@@ -395,7 +396,7 @@
               <label class="flex flex-col gap-1">
                 <span class="text-sm text-gray-300">Роль</span>
                 <select name="type" id="f-type"
-                        class="browser-default block w-full appearance-none pr-8
+                        class="block w-full appearance-none pr-8
                      rounded-lg bg-gray-800 text-gray-100
                      border border-gray-700 px-3 py-1.5
                      focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30">
@@ -423,38 +424,38 @@
                   
                 </div>
                 <input name="pin" id="f-pin" type="text" maxlength="10"
-                       class="browser-default font-mono rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
+                       class="font-mono rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
                 <p id="pin-hint" class="text-xs text-gray-500">Уникальный код до 10 символов.</p>
               </label>
 
               <label class="flex flex-col gap-1">
                 <span class="text-sm text-gray-300">Email (SSO)</span>
                 <input name="email" id="f-email" type="email"
-                       class="browser-default rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
+                       class="rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
               </label>
 
               <label class="flex flex-col gap-1">
                 <span class="text-sm text-gray-300">Nick</span>
                 <input name="nickname" id="f-nickname" type="text"
-                       class="browser-default rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
+                       class="rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
               </label>
 
               <label class="flex flex-col gap-1">
                 <span class="text-sm text-gray-300">msgnickname</span>
                 <input name="msgnickname" id="f-msgnickname" type="text"
-                       class="browser-default rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
+                       class="rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
               </label>
 
               <label class="flex flex-col gap-1">
                 <span class="text-sm text-gray-300">msgnickname_normalized</span>
                 <input name="msgnickname_normalized" id="f-msgnickname-normalized" type="text"
-                       class="browser-default rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
+                       class="rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
               </label>
 
               <label class="flex flex-col gap-1">
                 <span class="text-sm text-gray-300">Telegram ID</span>
                 <input name="tg_id" id="f-tg-id" type="number"
-                       class="browser-default rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
+                       class="rounded-xl bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none">
               </label>
 
               <div class="flex flex-col gap-1">
@@ -521,14 +522,14 @@
                     <td class="px-4 py-3 text-sm text-gray-200">{{this.name}}</td>
                     <td class="px-4 py-3">
                         <input type="text"
-                            class="browser-default login-input w-full rounded-lg bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2
+                            class="login-input w-full rounded-lg bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2
                                     focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
                             placeholder="логин">
                     </td>
                     <td class="px-4 py-3">
                         <div class="flex items-center gap-2">
                         <input type="text"
-                                class="browser-default pass-input w-full rounded-lg bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2
+                                class="pass-input w-full rounded-lg bg-gray-800 text-gray-100 border border-gray-700 px-3 py-2
                                         focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
                                 placeholder="Новый пароль">
 
@@ -573,6 +574,12 @@
 {{!-- Tiny helpers CSS for buttons (keeps markup cleaner) --}}
 <style>
   .users-page-shell{min-height:calc(100vh - 3.5rem)}
+  body.users-route{background:#111827}
+  body.users-route>header{border-color:rgba(31,41,55,.92)!important;background:rgba(17,24,39,.92)!important;color:#f9fafb!important}
+  body.users-route>header .text-slate-950{color:#f9fafb!important}
+  body.users-route>header .text-slate-500{color:#9ca3af!important}
+  body.users-route>header .bg-slate-950{background:#4f46e5!important}
+  body.users-route>header .hover\:bg-slate-100:hover{background:rgba(31,41,55,.75)!important}
   .users-page-grid{display:grid;min-width:0;grid-template-columns:minmax(0,1fr);gap:1.5rem}
   @media (min-width:1280px){.users-page-grid{grid-template-columns:minmax(0,320px) minmax(0,1fr)}}
   .users-table{width:100%;min-width:42rem;table-layout:fixed}
