@@ -372,6 +372,13 @@ function isOperationService(card) {
   return href === '#lesson' || href === '#room';
 }
 
+function getCardOrder(card = {}) {
+  const rawOrder = card.crdorder;
+  if (rawOrder === null || rawOrder === undefined || rawOrder === '') return Number.MAX_SAFE_INTEGER;
+  const order = Number(rawOrder);
+  return Number.isFinite(order) ? order : Number.MAX_SAFE_INTEGER;
+}
+
 function getCatalogGroup(card = {}) {
   const value = `${card.title ?? ''} ${card.cont ?? ''} ${card.tag ?? ''} ${card.summary ?? ''}`.toLowerCase();
 
@@ -421,16 +428,17 @@ function getRoleServicePriority(card, roleMode = 'guest') {
 
 function buildHomeCatalog(menuCards = [], role = 0) {
   const roleMeta = getHomeRoleMeta(role);
-  const rankedCards = [...menuCards]
+  const catalogServices = [...menuCards]
+    .filter(card => !isOperationService(card))
     .map(card => ({
       ...card,
-      _rolePriority: getRoleServicePriority(card, roleMeta.homeRoleMode),
+      _cardOrder: getCardOrder(card),
     }))
-    .sort((a, b) => a._rolePriority - b._rolePriority || a._menuIndex - b._menuIndex);
+    .sort((a, b) => a._cardOrder - b._cardOrder || a._menuIndex - b._menuIndex);
 
   return {
     ...roleMeta,
-    catalogServices: rankedCards.filter(card => !isOperationService(card)),
+    catalogServices,
   };
 }
 
@@ -484,15 +492,10 @@ app.get('/',async (req,res)=>{
     const menuCards = cards.filter(c => c.type === 0).map((card, index) => normalizeMenuCard(card, index))
     const infoCards = cards.filter(c => c.type === 1).map(normalizeInfoCard)
     const homeCatalog = buildHomeCatalog(menuCards, rolen)
-    const prioritizedMenu = [...menuCards].sort((a, b) => getRoleServicePriority(a, homeCatalog.homeRoleMode) - getRoleServicePriority(b, homeCatalog.homeRoleMode) || a._menuIndex - b._menuIndex)
-    const operationMenu = prioritizedMenu.filter(isOperationService)
-    const serviceMenu = prioritizedMenu.filter(card => !isOperationService(card))
-    const primaryMenu = serviceMenu.slice(0, 4)
-    const primaryIndexes = new Set(primaryMenu.map(card => card._menuIndex))
-    const secondaryMenu = serviceMenu.filter(card => !primaryIndexes.has(card._menuIndex)).slice(0, 8)
-    const secondaryIndexes = new Set(secondaryMenu.map(card => card._menuIndex))
-    const utilityMenu = serviceMenu.filter(card => !primaryIndexes.has(card._menuIndex) && !secondaryIndexes.has(card._menuIndex))
-    const featuredMenu = [...operationMenu, ...primaryMenu].slice(0, 4)
+    const serviceCount = homeCatalog.catalogServices.length
+    const operationMenu = [...menuCards]
+      .filter(isOperationService)
+      .sort((a, b) => getRoleServicePriority(a, homeCatalog.homeRoleMode) - getRoleServicePriority(b, homeCatalog.homeRoleMode) || a._menuIndex - b._menuIndex)
     const helpfulInfo = infoCards.filter(card => !isNoisyIntroInfo(card))
     const infoGroup = {
       title: 'Информация и регламенты',
@@ -500,28 +503,16 @@ app.get('/',async (req,res)=>{
       items: helpfulInfo,
       hasItems: helpfulInfo.length > 0,
     }
-    const featuredInfo = null
-    const secondaryInfo = helpfulInfo
     const accessMeta = getAccessMeta(rolen)
-    const quickMenu = primaryMenu.slice(0, 3)
 
     res.render('new',{
       title: 'Гармония Образования',
       menu: menuCards,
       info: infoCards,
-      featuredMenu,
       operationMenu,
-      primaryMenu,
-      secondaryMenu,
-      utilityMenu,
-      featuredInfo,
-      secondaryInfo,
-      quickMenu,
       menuCount: menuCards.length,
+      serviceCount,
       infoCount: infoCards.length,
-      menuOverflowCount: secondaryMenu.length,
-      utilityCount: utilityMenu.length,
-      infoOverflowCount: secondaryInfo.length,
       auth: rolen,
       isGuestHome: homeCatalog.homeRoleMode === 'guest',
       isAdminHome: homeCatalog.homeRoleMode === 'admin',

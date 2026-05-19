@@ -1,5 +1,5 @@
 <main class="min-h-screen bg-[#f5f5f7] text-slate-950">
-  <div class="mx-auto max-w-[1500px] px-[16px] pb-10 pt-20 sm:pt-24 md:px-6 xl:pt-28">
+  <div class="mx-auto max-w-[1500px] px-[16px] pb-12 pt-20 sm:pt-24 md:px-6 xl:pt-28">
     <header class="max-w-4xl">
       <div class="flex flex-wrap items-center gap-2">
         <span class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-600 shadow-sm shadow-slate-950/5">
@@ -7,24 +7,26 @@
           {{roleLabel}}
         </span>
         <span class="inline-flex items-center rounded-full border border-slate-200 bg-white/75 px-3 py-1 text-xs font-medium text-slate-500">
-          {{menuCount}} сервисов
+          {{serviceCount}} сервисов
         </span>
       </div>
 
       <h1 class="mt-5 text-4xl font-semibold leading-[1.05] tracking-tight text-slate-950 md:text-5xl xl:text-6xl">
         {{homeTitle}}
       </h1>
-      <p class="mt-4 max-w-2xl text-base leading-7 text-slate-600 md:text-lg md:leading-8">
-        {{homeSubtitle}}
-      </p>
-      <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
-        {{homeHint}}
-      </p>
+      {{#if isGuestHome}}
+        <p class="mt-4 max-w-2xl text-base leading-7 text-slate-600 md:text-lg md:leading-8">
+          {{homeSubtitle}}
+        </p>
+        <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
+          {{homeHint}}
+        </p>
+      {{/if}}
     </header>
 
     {{#if operationMenu.length}}
       <section id="lesson-room-panel" data-lesson-room-panel data-auth="{{auth}}"
-               class="mt-7 max-w-4xl rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5 sm:mt-8 md:p-7">
+               class="mt-7 rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5 sm:mt-8 md:p-6">
         <div class="flex items-start justify-between gap-4">
           <div class="min-w-0">
             <p class="text-base font-semibold text-blue-700 md:text-lg">Уроки и комнаты</p>
@@ -38,11 +40,11 @@
           </div>
         </div>
 
-        <div class="mt-4 grid gap-3 md:mt-5">
+        <div class="mt-4 grid gap-3 md:mt-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_14rem]">
           {{#each operationMenu}}
             <a href="{{this.cont}}"
                class="group flex min-h-[112px] items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-white hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 md:min-h-[132px] md:gap-5 md:p-5">
-              <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-slate-950 p-2 shadow-sm shadow-slate-950/20 md:h-16 md:w-16">
+              <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-slate-950 p-2 shadow-sm shadow-slate-950/20 md:h-16 md:w-16">
                 <img src="{{this.imageSrc}}" alt="" class="h-full w-full object-contain" loading="lazy" />
               </span>
               <span class="min-w-0">
@@ -52,10 +54,8 @@
               </span>
             </a>
           {{/each}}
-        </div>
 
-        <div class="mt-4 grid max-w-xs gap-3 md:mt-5">
-          <div class="rounded-lg border border-slate-200 bg-white p-3 md:p-4">
+          <div class="rounded-lg border border-slate-200 bg-white p-4 lg:min-h-[132px]">
             <div class="text-sm font-semibold text-slate-500">Открытые комнаты</div>
             <div data-open-rooms-count class="mt-3 text-3xl font-semibold leading-none text-slate-950">0</div>
           </div>
@@ -63,21 +63,29 @@
       </section>
     {{/if}}
 
-    <section class="mt-7 sm:mt-8" aria-label="Каталог сервисов">
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+    <section class="mt-8" aria-labelledby="services-title">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Панель запуска</p>
+          <h2 id="services-title" class="mt-1 text-2xl font-semibold tracking-tight text-slate-950 md:text-3xl">
+            Приложения и сервисы
+          </h2>
+        </div>
+        <span class="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-500 shadow-sm shadow-slate-950/5">
+          {{serviceCount}}
+        </span>
+      </div>
+
+      <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {{#if isGuestHome}}
           <button type="button" data-open-login
-                  class="group flex min-h-[164px] flex-col justify-between rounded-lg border border-blue-200 bg-white p-4 text-left shadow-sm shadow-blue-950/5 transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20">
-            <span>
-              <span class="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm shadow-blue-950/20">
-                <svg class="h-5 w-5" aria-hidden="true"><use href="/icons/lucide.svg#log-in"></use></svg>
-              </span>
-              <span class="mt-4 block text-xs font-semibold uppercase tracking-[0.14em] text-blue-600">PIN</span>
-              <span class="mt-2 block text-lg font-semibold leading-6 text-slate-950 line-clamp-2">Войти в личный доступ</span>
-              <span class="mt-2 block text-sm leading-6 text-slate-500 line-clamp-2">Откроются персональные уроки, комнаты и закрытые сервисы.</span>
+                  class="group flex min-h-[148px] flex-col items-center justify-center rounded-lg border border-blue-200 bg-white p-3 text-center shadow-sm shadow-blue-950/5 transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 sm:min-h-[156px] md:min-h-[168px] md:p-4 xl:min-h-[176px]">
+            <span class="flex h-[76px] w-[76px] items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm shadow-blue-950/20 sm:h-20 sm:w-20 md:h-24 md:w-24 xl:h-28 xl:w-28">
+              <svg class="h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 xl:h-14 xl:w-14" aria-hidden="true"><use href="/icons/lucide.svg#log-in"></use></svg>
             </span>
-            <span class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-600">
-              Персонализировать
+            <span class="mt-3 block text-base font-semibold leading-6 text-slate-950">Войти по PIN</span>
+            <span class="mt-1.5 inline-flex items-center gap-1 text-sm font-semibold text-blue-600">
+              Открыть
               <svg class="h-4 w-4 transition group-hover:translate-x-0.5" aria-hidden="true"><use href="/icons/lucide.svg#arrow-right"></use></svg>
             </span>
           </button>
@@ -85,49 +93,59 @@
 
         {{#each catalogServices}}
           <a href="{{this.cont}}"
-             class="group flex min-h-[164px] flex-col justify-between rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20">
-            <span>
-              <span class="flex items-start gap-3">
-                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-2">
-                  <img src="{{this.imageSrc}}" alt="" class="h-full w-full object-contain" loading="lazy" />
-                </span>
-                <span class="min-w-0">
-                  <span class="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{{this.tag}}</span>
-                  <span class="mt-1 block text-lg font-semibold leading-6 text-slate-950 line-clamp-2">{{this.title}}</span>
-                </span>
-              </span>
-              <span class="mt-4 block text-sm leading-6 text-slate-500 line-clamp-2">{{this.summary}}</span>
+             class="group flex min-h-[148px] flex-col items-center justify-center rounded-lg border border-slate-200 bg-white p-3 text-center shadow-sm shadow-slate-950/5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 sm:min-h-[156px] md:min-h-[168px] md:p-4 xl:min-h-[176px]">
+            <span class="flex h-[76px] w-[76px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-3 sm:h-20 sm:w-20 md:h-24 md:w-24 md:p-4 xl:h-28 xl:w-28">
+              <img src="{{this.imageSrc}}" alt="" class="h-full w-full object-contain" loading="lazy" />
             </span>
-            <span class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
-              {{this.detailLabel}}
+            <span class="mt-3 block text-base font-semibold leading-6 text-slate-950 line-clamp-2">{{this.title}}</span>
+            <span class="mt-1.5 inline-flex items-center gap-1 text-sm font-semibold text-slate-500">
+              {{this.kindLabel}}
               <svg class="h-4 w-4 transition group-hover:translate-x-0.5" aria-hidden="true"><use href="/icons/lucide.svg#arrow-right"></use></svg>
             </span>
           </a>
         {{/each}}
-
-        {{#each infoGroup.items}}
-          <details class="group min-h-[164px] rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md focus-within:ring-4 focus-within:ring-blue-500/15">
-            <summary class="flex cursor-pointer list-none items-start gap-3 focus-visible:outline-none">
-              <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500">
-                <svg class="h-5 w-5" aria-hidden="true"><use href="/icons/lucide.svg#info"></use></svg>
-              </span>
-              <span class="min-w-0 flex-1">
-                <span class="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{{this.tag}}</span>
-                <span class="mt-1 block text-lg font-semibold leading-6 text-slate-950 line-clamp-2">{{this.title}}</span>
-                <span class="mt-3 block text-sm leading-6 text-slate-500 line-clamp-3">{{this.excerpt}}</span>
-              </span>
-              <span class="mt-1 shrink-0 text-slate-400 transition group-open:rotate-180 group-open:text-slate-700">
-                <svg class="h-5 w-5" aria-hidden="true"><use href="/icons/lucide.svg#chevron-down"></use></svg>
-              </span>
-            </summary>
-
-            <div class="mt-4 border-t border-slate-200 pt-4 text-sm leading-7 text-slate-600 whitespace-pre-line">
-              {{{this.cont}}}
-            </div>
-          </details>
-        {{/each}}
       </div>
     </section>
+
+    {{#if infoGroup.hasItems}}
+      <section class="mt-10" aria-labelledby="info-title">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Информация</p>
+            <h2 id="info-title" class="mt-1 text-2xl font-semibold tracking-tight text-slate-950 md:text-3xl">
+              Справка и регламенты
+            </h2>
+          </div>
+          <span class="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-500 shadow-sm shadow-slate-950/5">
+            {{infoGroup.items.length}}
+          </span>
+        </div>
+
+        <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {{#each infoGroup.items}}
+            <details class="group rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md focus-within:ring-4 focus-within:ring-blue-500/15">
+              <summary class="flex cursor-pointer list-none items-start gap-3 focus-visible:outline-none">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 md:h-14 md:w-14">
+                  <svg class="h-6 w-6" aria-hidden="true"><use href="/icons/lucide.svg#info"></use></svg>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{{this.tag}}</span>
+                  <span class="mt-1 block text-lg font-semibold leading-6 text-slate-950 line-clamp-2">{{this.title}}</span>
+                  <span class="mt-2 block text-sm leading-6 text-slate-500 line-clamp-3">{{this.excerpt}}</span>
+                </span>
+                <span class="mt-1 shrink-0 text-slate-400 transition group-open:rotate-180 group-open:text-slate-700">
+                  <svg class="h-5 w-5" aria-hidden="true"><use href="/icons/lucide.svg#chevron-down"></use></svg>
+                </span>
+              </summary>
+
+              <div class="mt-4 border-t border-slate-200 pt-4 text-sm leading-7 text-slate-600 whitespace-pre-line">
+                {{{this.cont}}}
+              </div>
+            </details>
+          {{/each}}
+        </div>
+      </section>
+    {{/if}}
   </div>
 </main>
 
