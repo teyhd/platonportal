@@ -1,8 +1,8 @@
 {{!-- users.hbs --}}
 <main class="pt-8 px-4 sm:px-6 lg:px-8 max-w-full w-full mx-auto">
-  <div class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-[minmax(0,280px)_minmax(0,1fr)] sm:gap-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
+  <div class="users-page-grid">
     {{!-- Left sidebar: errrules --}}
-    <aside class="min-w-0 lg:sticky lg:top-6 h-fit">
+    <aside class="min-w-0 xl:sticky xl:top-6 h-fit">
       <div class="rounded-2xl border border-gray-800 bg-gray-900/30 overflow-hidden">
         <div class="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
           <div>
@@ -227,18 +227,24 @@
     <h2 id="users-table-heading" class="sr-only">Список пользователей</h2>
 
     {{#if users.length}}
-      <div class="w-full overflow-x-auto rounded-2xl border border-gray-800">
-        <table class="min-w-full divide-y divide-gray-800">
+      <div class="w-full overflow-hidden rounded-2xl border border-gray-800">
+        <table class="users-table divide-y divide-gray-800">
+          <colgroup>
+            <col class="users-col-name">
+            <col class="users-col-kaf">
+            <col class="users-col-role">
+            <col class="users-col-status">
+            <col class="users-col-pin">
+            <col class="users-col-actions">
+          </colgroup>
           <thead class="bg-gray-900/50">
           <tr>
-            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Имя</th>
-            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Подразделение</th>
-            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Роль</th>
-            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Статус</th>
-            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">PIN</th>
-            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Nick</th>
-            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
-            <th scope="col" class="px-4 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Действия</th>
+            <th scope="col" class="users-th text-left">Имя</th>
+            <th scope="col" class="users-th text-left">Подразделение</th>
+            <th scope="col" class="users-th text-left">Роль</th>
+            <th scope="col" class="users-th text-left">Статус</th>
+            <th scope="col" class="users-th text-left">PIN</th>
+            <th scope="col" class="users-th text-right">Действия</th>
           </tr>
           </thead>
           <tbody class="divide-y divide-gray-800 bg-gray-900/30" id="users-tbody">
@@ -258,56 +264,55 @@
                 data-user-avatar-url-custom="{{this.avatar_url_custom}}"
                 data-user-display-name-custom="{{this.display_name_custom}}"
                 data-user-allow-discovery-outside-harmony="{{this.allow_discovery_outside_harmony}}">
-              <td class="px-4 py-3">
+              <td class="users-td">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded-full bg-indigo-600/20 flex items-center justify-center text-indigo-300 text-sm font-semibold">
                     {{#if this.name}}{{substr this.name 0 1}}{{else}}?{{/if}}
                   </div>
                   <div class="min-w-0">
-                    <div class="text-sm font-medium text-gray-100 truncate">{{this.name}}</div>
-                    <div class="text-xs text-gray-500">Nick: @{{this.msgnickname_normalized}}, ID: {{this.id}}</div>
+                    <div class="user-name-text text-sm font-medium text-gray-100 truncate">{{this.name}}</div>
+                    <div class="user-meta-line text-xs text-gray-500">Nick: {{#if this.msgnickname_normalized}}@{{this.msgnickname_normalized}}{{else}}{{#if this.nickname}}{{this.nickname}}{{else}}—{{/if}}{{/if}}, ID: {{this.id}}</div>
+                    {{#if this.email}}<div class="user-email-line text-xs text-gray-500">Email: {{this.email}}</div>{{/if}}
                   </div>
                 </div>
               </td>
-              <td class="px-4 py-3 text-sm text-gray-300 user-kaf-cell">{{#with (findById ../kafs this.kaf) as |k|}}{{#if k}}{{k.name}}{{else}}—{{/if}}{{/with}}</td>
-              <td class="px-4 py-3 text-sm">
+              <td class="users-td text-sm text-gray-300 user-kaf-cell">{{#with (findById ../kafs this.kaf) as |k|}}{{#if k}}{{k.name}}{{else}}—{{/if}}{{/with}}</td>
+              <td class="users-td text-sm">
                 {{#with (findById ../types this.type) as |t|}}
-                  <span class="inline-flex items-center rounded-md bg-gray-800 border border-gray-700 px-2 py-0.5 text-gray-200 text-xs">{{#if t}}{{t.name}}{{else}}—{{/if}}</span>
+                  <span class="users-badge inline-flex items-center rounded-md bg-gray-800 border border-gray-700 px-2 py-0.5 text-gray-200 text-xs">{{#if t}}{{t.name}}{{else}}—{{/if}}</span>
                 {{/with}}
               </td>
-              <td class="px-4 py-3">
+              <td class="users-td">
                 {{#if this.status}}
-                  <span class="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 text-xs">
+                  <span class="users-badge inline-flex items-center gap-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 text-xs">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Активен
                   </span>
                 {{else}}
-                  <span class="inline-flex items-center gap-1 rounded-md bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2 py-0.5 text-xs">
+                  <span class="users-badge inline-flex items-center gap-1 rounded-md bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2 py-0.5 text-xs">
                     <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Заблокирован
                   </span>
                 {{/if}}
               </td>
-              <td class="px-4 py-3 font-mono text-sm text-gray-200">{{this.pin}}</td>
-              <td class="px-4 py-3 text-sm text-gray-300 user-nickname-cell">{{#if this.nickname}}{{this.nickname}}{{else}}{{this.msgnickname_normalized}}{{/if}}</td>
-              <td class="px-4 py-3 text-sm text-gray-300 user-email-cell">{{this.email}}</td>
-              <td class="px-4 py-3">
-                <div class="flex items-center justify-end gap-2">
-                  <button type="button" class="btn-row open-drawer"
+              <td class="users-td font-mono text-sm text-gray-200 user-pin-cell">{{this.pin}}</td>
+              <td class="users-td">
+                <div class="users-actions">
+                  <button type="button" class="action-btn open-drawer"
                           data-open-tab="profile"
                           aria-label="Редактировать профиль">
-                    <svg viewBox="0 0 24 24" class="w-5 h-5 text-gray-300 hover:text-white"><path d="M4 21h4l11-11a2.828 2.828 0 1 0-4-4L4 17v4Z" fill="currentColor"/></svg>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21h4l11-11a2.828 2.828 0 1 0-4-4L4 17v4Z" fill="currentColor"/></svg>
                   </button>
-                  <button type="button" class="btn-row open-drawer"
+                  <button type="button" class="action-btn open-drawer"
                           data-open-tab="roles"
                           aria-label="Права">
-                    <svg viewBox="0 0 24 24" class="w-5 h-5 text-gray-300 hover:text-white"><path d="M12 3l9 4.5v9L12 21 3 16.5v-9L12 3Z" fill="currentColor"/></svg>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 4.5v9L12 21 3 16.5v-9L12 3Z" fill="currentColor"/></svg>
                   </button>
-                  <button type="button" class="btn-row open-drawer"
+                  <button type="button" class="action-btn open-drawer"
                           data-open-tab="logins"
                           aria-label="Логины">
-                    <svg viewBox="0 0 24 24" class="w-5 h-5 text-gray-300 hover:text-white"><path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 1 1 0 6H7a3 3 0 0 1-3-3Zm0 10a3 3 0 0 1 3-3h10a3 3 0 1 1 0 6H7a3 3 0 0 1-3-3Z" fill="currentColor"/></svg>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 1 1 0 6H7a3 3 0 0 1-3-3Zm0 10a3 3 0 0 1 3-3h10a3 3 0 1 1 0 6H7a3 3 0 0 1-3-3Z" fill="currentColor"/></svg>
                   </button>
-                  <button type="button" class="btn-row text-rose-400 hover:text-rose-300" data-action="delete" aria-label="Удалить">
-                    <svg viewBox="0 0 24 24" class="w-5 h-5"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m1 0v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7h10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  <button type="button" class="action-btn action-btn-danger" data-action="delete" aria-label="Удалить">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m1 0v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7h10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                   </button>
                 </div>
               </td>
@@ -331,7 +336,7 @@
 </main>
 
 {{!-- Slide-over drawer --}}
-<aside id="user-drawer" class="fixed z-50 hidden overflow-y-auto" aria-hidden="true" role="dialog" aria-modal="true" style="width: 90%; max-width: 800px; margin: 0 auto;">
+<aside id="user-drawer" class="fixed inset-0 z-50 hidden" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 transition-opacity" data-backdrop></div>
 
   <div class="absolute right-0 top-0 h-full w-full max-w-xl translate-x-full transition-transform">
@@ -568,7 +573,27 @@
 
 {{!-- Tiny helpers CSS for buttons (keeps markup cleaner) --}}
 <style>
-  .btn-row{padding:.375rem;border-radius:.5rem}
+  .users-page-grid{display:grid;min-width:0;grid-template-columns:minmax(0,1fr);gap:1.5rem}
+  @media (min-width:1280px){.users-page-grid{grid-template-columns:minmax(0,320px) minmax(0,1fr)}}
+  .users-table{width:100%;table-layout:fixed}
+  .users-col-name{width:31%}
+  .users-col-kaf{width:20%}
+  .users-col-role{width:14%}
+  .users-col-status{width:14%}
+  .users-col-pin{width:9%}
+  .users-col-actions{width:12%}
+  .users-th{padding:.65rem .75rem;font-size:.75rem;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.025em;white-space:nowrap}
+  .users-td{padding:.65rem .75rem;vertical-align:middle;overflow:hidden}
+  .user-meta-line,.user-email-line,.user-kaf-cell,.user-pin-cell,.users-badge{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .users-actions{display:grid;grid-template-columns:repeat(2,2.15rem);justify-content:end;gap:.35rem}
+  .action-btn{display:inline-flex;width:2.15rem;height:2.15rem;align-items:center;justify-content:center;border:1px solid #374151;border-radius:.5rem;background:rgba(31,41,55,.72);color:#d1d5db;transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .15s ease;touch-action:manipulation}
+  .action-btn:hover{border-color:#6366f1;background:rgba(55,65,81,.95);color:#fff}
+  .action-btn:active{transform:translateY(1px)}
+  .action-btn:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(129,140,248,.55)}
+  .action-btn svg{width:1.15rem;height:1.15rem;pointer-events:none}
+  .action-btn-danger{color:#fb7185}
+  .action-btn-danger:hover{border-color:#fb7185;color:#fecdd3;background:rgba(127,29,29,.45)}
+  @media (max-width:639px){.users-th,.users-td{padding:.5rem .4rem}.users-actions{grid-template-columns:2.15rem}}
   .tab-btn[data-active="true"]{background:#4f46e5;color:#fff}
   .tab-panel.hidden{display:none}
 </style>
@@ -683,15 +708,40 @@ function kafNameById(id){
   return KAF_LABELS[String(id)] || '—';
 }
 
+function escapeHtml(value){
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[ch]);
+}
+
+function nickValue(u){
+  const raw = String(u.msgnickname_normalized || u.nickname || '').trim();
+  if (!raw) return '—';
+  return raw.startsWith('@') ? raw : '@' + raw;
+}
+
+function userMetaText(u){
+  return `Nick: ${nickValue(u)}, ID: ${u.id ?? '—'}`;
+}
+
+function userEmailText(u){
+  const email = String(u.email || '').trim();
+  return email ? `Email: ${email}` : '';
+}
+
 function renderStatusBadge(status){
   if (Number(status)) {
     return `
-      <span class="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 text-xs">
+      <span class="users-badge inline-flex items-center gap-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 text-xs">
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Активен
       </span>`;
   }
   return `
-      <span class="inline-flex items-center gap-1 rounded-md bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2 py-0.5 text-xs">
+      <span class="users-badge inline-flex items-center gap-1 rounded-md bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2 py-0.5 text-xs">
         <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Заблокирован
       </span>`;
 }
@@ -700,48 +750,47 @@ function rowHTML(u){
   const initial = (u.name||'').trim().charAt(0) || '?';
   return `
   <tr class="hover:bg-gray-800/50 transition"
-      data-user-id="${u.id}"
-      data-user-name="${u.name||''}"
-      data-user-kaf="${u.kaf||''}"
-      data-user-type="${u.type||0}"
-      data-user-status="${u.status||0}"
-      data-user-pin="${u.pin||''}"
-      data-user-nickname="${u.nickname||''}"
-      data-user-msgnickname="${u.msgnickname||''}"
-      data-user-msgnickname-normalized="${u.msgnickname_normalized||''}"
-      data-user-email="${u.email||''}"
-      data-user-tg-id="${u.tg_id||''}"
-      data-user-allow-discovery-outside-harmony="${u.allow_discovery_outside_harmony||0}">
-    <td class="px-4 py-3">
+      data-user-id="${escapeHtml(u.id)}"
+      data-user-name="${escapeHtml(u.name||'')}"
+      data-user-kaf="${escapeHtml(u.kaf||'')}"
+      data-user-type="${escapeHtml(u.type||0)}"
+      data-user-status="${escapeHtml(u.status||0)}"
+      data-user-pin="${escapeHtml(u.pin||'')}"
+      data-user-nickname="${escapeHtml(u.nickname||'')}"
+      data-user-msgnickname="${escapeHtml(u.msgnickname||'')}"
+      data-user-msgnickname-normalized="${escapeHtml(u.msgnickname_normalized||'')}"
+      data-user-email="${escapeHtml(u.email||'')}"
+      data-user-tg-id="${escapeHtml(u.tg_id||'')}"
+      data-user-allow-discovery-outside-harmony="${escapeHtml(u.allow_discovery_outside_harmony||0)}">
+    <td class="users-td">
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-full bg-indigo-600/20 flex items-center justify-center text-indigo-300 text-sm font-semibold">${initial}</div>
+        <div class="w-8 h-8 rounded-full bg-indigo-600/20 flex items-center justify-center text-indigo-300 text-sm font-semibold">${escapeHtml(initial)}</div>
         <div class="min-w-0">
-          <div class="text-sm font-medium text-gray-100 truncate">${u.name||''}</div>
-          <div class="text-xs text-gray-500">ID: ${u.id}</div>
+          <div class="user-name-text text-sm font-medium text-gray-100 truncate">${escapeHtml(u.name||'')}</div>
+          <div class="user-meta-line text-xs text-gray-500">${escapeHtml(userMetaText(u))}</div>
+          ${userEmailText(u) ? `<div class="user-email-line text-xs text-gray-500">${escapeHtml(userEmailText(u))}</div>` : ''}
         </div>
       </div>
     </td>
-    <td class="px-4 py-3 text-sm text-gray-300 user-kaf-cell">${kafNameById(u.kaf)}</td>
-    <td class="px-4 py-3 text-sm">
-      <span class="inline-flex items-center rounded-md bg-gray-800 border border-gray-700 px-2 py-0.5 text-gray-200 text-xs">${typeNameById(u.type)}</span>
+    <td class="users-td text-sm text-gray-300 user-kaf-cell">${escapeHtml(kafNameById(u.kaf))}</td>
+    <td class="users-td text-sm">
+      <span class="users-badge inline-flex items-center rounded-md bg-gray-800 border border-gray-700 px-2 py-0.5 text-gray-200 text-xs">${escapeHtml(typeNameById(u.type))}</span>
     </td>
-    <td class="px-4 py-3">${renderStatusBadge(u.status)}</td>
-    <td class="px-4 py-3 font-mono text-sm text-gray-200">${u.pin||''}</td>
-    <td class="px-4 py-3 text-sm text-gray-300 user-nickname-cell">${u.nickname || u.msgnickname_normalized || ''}</td>
-    <td class="px-4 py-3 text-sm text-gray-300 user-email-cell">${u.email || ''}</td>
-    <td class="px-4 py-3">
-      <div class="flex items-center justify-end gap-2">
-        <button type="button" class="btn-row open-drawer" data-open-tab="profile" aria-label="Редактировать профиль">
-          <svg viewBox="0 0 24 24" class="w-5 h-5 text-gray-300 hover:text-white"><path d="M4 21h4l11-11a2.828 2.828 0 1 0-4-4L4 17v4Z" fill="currentColor"/></svg>
+    <td class="users-td">${renderStatusBadge(u.status)}</td>
+    <td class="users-td font-mono text-sm text-gray-200 user-pin-cell">${escapeHtml(u.pin||'')}</td>
+    <td class="users-td">
+      <div class="users-actions">
+        <button type="button" class="action-btn open-drawer" data-open-tab="profile" aria-label="Редактировать профиль">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21h4l11-11a2.828 2.828 0 1 0-4-4L4 17v4Z" fill="currentColor"/></svg>
         </button>
-        <button type="button" class="btn-row open-drawer" data-open-tab="roles" aria-label="Права">
-          <svg viewBox="0 0 24 24" class="w-5 h-5 text-gray-300 hover:text-white"><path d="M12 3l9 4.5v9L12 21 3 16.5v-9L12 3Z" fill="currentColor"/></svg>
+        <button type="button" class="action-btn open-drawer" data-open-tab="roles" aria-label="Права">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 4.5v9L12 21 3 16.5v-9L12 3Z" fill="currentColor"/></svg>
         </button>
-        <button type="button" class="btn-row open-drawer" data-open-tab="logins" aria-label="Логины">
-          <svg viewBox="0 0 24 24" class="w-5 h-5 text-gray-300 hover:text-white"><path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 1 1 0 6H7a3 3 0 0 1-3-3Zm0 10a3 3 0 0 1 3-3h10a3 3 0 1 1 0 6H7a3 3 0 0 1-3-3Z" fill="currentColor"/></svg>
+        <button type="button" class="action-btn open-drawer" data-open-tab="logins" aria-label="Логины">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 1 1 0 6H7a3 3 0 0 1-3-3Zm0 10a3 3 0 0 1 3-3h10a3 3 0 1 1 0 6H7a3 3 0 0 1-3-3Z" fill="currentColor"/></svg>
         </button>
-        <button type="button" class="btn-row text-rose-400 hover:text-rose-300" data-action="delete" aria-label="Удалить">
-          <svg viewBox="0 0 24 24" class="w-5 h-5"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m1 0v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7h10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <button type="button" class="action-btn action-btn-danger" data-action="delete" aria-label="Удалить">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m1 0v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7h10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
       </div>
     </td>
@@ -769,10 +818,27 @@ function updateRowUI(u){
   tr.dataset.userAllowDiscoveryOutsideHarmony = String(u.allow_discovery_outside_harmony || 0);
 
   // Имя + ID
-  const nameEl = qs('.text-sm.font-medium', tr);
+  const nameEl = qs('.user-name-text', tr);
   if (nameEl) nameEl.textContent = u.name || '';
-  const idEl = qsa('div.text-xs.text-gray-500', tr).find(d => d.textContent.startsWith('ID:'));
-  if (idEl) idEl.textContent = `ID: ${u.id}`;
+  let metaEl = qs('.user-meta-line', tr);
+  if (!metaEl && nameEl?.parentElement) {
+    metaEl = document.createElement('div');
+    metaEl.className = 'user-meta-line text-xs text-gray-500';
+    nameEl.after(metaEl);
+  }
+  if (metaEl) metaEl.textContent = userMetaText(u);
+  let emailEl = qs('.user-email-line', tr);
+  const emailText = userEmailText(u);
+  if (emailText) {
+    if (!emailEl) {
+      emailEl = document.createElement('div');
+      emailEl.className = 'user-email-line text-xs text-gray-500';
+      metaEl?.after(emailEl);
+    }
+    emailEl.textContent = emailText;
+  } else {
+    emailEl?.remove();
+  }
 
   // Подразделение
   const kafTd = qs('.user-kaf-cell', tr);
@@ -793,11 +859,6 @@ function updateRowUI(u){
   const pinTd = tr.children[4];
   if (pinTd) pinTd.textContent = u.pin || '';
 
-  const nickTd = qs('.user-nickname-cell', tr);
-  if (nickTd) nickTd.textContent = u.nickname || u.msgnickname_normalized || '';
-
-  const emailTd = qs('.user-email-cell', tr);
-  if (emailTd) emailTd.textContent = u.email || '';
 }
 
 /* ===== Open drawer (delegated) ===== */
