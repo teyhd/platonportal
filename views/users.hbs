@@ -1098,11 +1098,29 @@ qs('#filter-type')?.addEventListener('change',  applyFilters);
       const res = await fetch('/api/srvs-roles', {
         method: 'PUT',
         headers: {'Content-Type':'application/json'},
+        credentials: 'same-origin',
         body: JSON.stringify({ pairs })
       });
-      if(!res.ok) throw new Error('Ошибка сохранения');
+      if(!res.ok) {
+        let message = 'Ошибка сохранения';
+        try {
+          const data = await res.json();
+          if(data?.message === 'forbidden') message = 'Нет прав на сохранение справочника ролей';
+          else if(data?.message) message = data.message;
+        } catch (_) {}
+        throw new Error(message);
+      }
+
+      tbody.querySelectorAll('tr').forEach(tr=>{
+        const allowed = Array.from(tr.querySelectorAll('.srv-role-checkbox:checked'))
+          .map(cb => cb.dataset.roleId)
+          .filter(Boolean);
+        tr.dataset.allowedRoles = allowed.join(',');
+      });
+
       closeDrawer();
-      // опционально: перезагрузить справочник в памяти/на странице (если нужно)
+      if(typeof toast === 'function') toast('Настройки ролей сохранены');
+      setTimeout(()=>window.location.reload(), 350);
     }catch(err){
       alert(err.message);
     }

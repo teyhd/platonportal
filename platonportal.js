@@ -216,6 +216,113 @@ function getExcerpt(value = '', limit = 140) {
   return `${plain.slice(0, limit).trimEnd()}…`;
 }
 
+function getPlainInfoText(value = '') {
+  return value
+    .toString()
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|li|tr|h[1-6])>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&mdash;/gi, '—')
+    .replace(/&ndash;/gi, '–')
+    .replace(/&quot;/gi, '"')
+    .replace(/&amp;/gi, '&')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n\s+/g, '\n')
+    .replace(/\n{2,}/g, '\n')
+    .trim();
+}
+
+function splitInfoLines(value = '', limit = 5) {
+  const prepared = getPlainInfoText(value)
+    .replace(/\s+(?=\d\+?\s+\d{1,2}[:.]\d{2}\s*[-–—])/g, '\n')
+    .replace(/\s+(?=\d\s*четверть\s*[-–—])/gi, '\n')
+    .replace(/\s+(?=\d+\s*класс\s*[-–—])/gi, '\n')
+    .replace(/\s+(?=(Instagram|Telegram|YouTube|ВКонтакте)\b)/gi, '\n')
+    .replace(/\s*[•●]\s*/g, '\n');
+
+  let lines = prepared
+    .split(/\n+/)
+    .map(line => line.trim().replace(/\s{2,}/g, ' '))
+    .filter(Boolean);
+
+  if (lines.length <= 1 && prepared.length > 120) {
+    lines = prepared.match(/.{1,105}(?:\s+|$)/g)?.map(line => line.trim()).filter(Boolean) ?? lines;
+  }
+
+  return lines.slice(0, limit).map((line, index) => {
+    if (index === limit - 1 && lines.length > limit && !line.endsWith('…')) return `${line}…`;
+    return line;
+  });
+}
+
+function getInfoPresentation(card = {}) {
+  const value = `${card.title ?? ''} ${card.cont ?? ''} ${card.tag ?? ''}`.toLowerCase();
+
+  if (/учебн.*график|график.*учебн|четверт|каникул/.test(value)) {
+    return {
+      parentPriority: 0,
+      isPrimaryInfo: true,
+      audienceLabel: 'Учебный год',
+      parentSummary: 'Четверти, каникулы и ключевые даты учебного года.',
+      iconName: 'chart-column',
+      cardClass: 'border-blue-200 bg-blue-50/70 shadow-blue-950/5',
+      iconClass: 'border-blue-200 bg-white text-blue-700',
+      badgeClass: 'text-blue-700',
+    };
+  }
+
+  if (/администрац|директор|учредител|команда/.test(value)) {
+    return {
+      parentPriority: 1,
+      isPrimaryInfo: true,
+      audienceLabel: 'К кому обращаться',
+      parentSummary: 'Администрация школы и зоны ответственности.',
+      iconName: 'house',
+      cardClass: 'border-emerald-200 bg-emerald-50/70 shadow-emerald-950/5',
+      iconClass: 'border-emerald-200 bg-white text-emerald-700',
+      badgeClass: 'text-emerald-700',
+    };
+  }
+
+  if (/социальн|instagram|telegram|youtube|вконтакте|vk\.com/.test(value)) {
+    return {
+      parentPriority: 2,
+      isPrimaryInfo: true,
+      audienceLabel: 'Связь и новости',
+      parentSummary: 'Официальные каналы, где публикуются новости школы.',
+      iconName: 'globe',
+      cardClass: 'border-indigo-200 bg-indigo-50/70 shadow-indigo-950/5',
+      iconClass: 'border-indigo-200 bg-white text-indigo-700',
+      badgeClass: 'text-indigo-700',
+    };
+  }
+
+  if (/звонк|расписан/.test(value)) {
+    return {
+      parentPriority: 10,
+      isPrimaryInfo: false,
+      audienceLabel: 'Режим дня',
+      parentSummary: 'Время уроков, перемен и школьных смен.',
+      iconName: 'info',
+      cardClass: 'border-slate-200 bg-white shadow-slate-950/5',
+      iconClass: 'border-slate-200 bg-slate-50 text-slate-500',
+      badgeClass: 'text-slate-500',
+    };
+  }
+
+  return {
+    parentPriority: 20,
+    isPrimaryInfo: false,
+    audienceLabel: card.tag ?? 'Информация',
+    parentSummary: 'Полезная информация для родителей и учеников.',
+    iconName: 'info',
+    cardClass: 'border-slate-200 bg-white shadow-slate-950/5',
+    iconClass: 'border-slate-200 bg-slate-50 text-slate-500',
+    badgeClass: 'text-slate-500',
+  };
+}
+
 const FALLBACK_CARD_ICON = '/img/platon.png';
 
 function getCardImageSrc(pic = '') {
@@ -467,11 +574,14 @@ function normalizeMenuCard(card, index = 0) {
 
 function normalizeInfoCard(card) {
   const meta = pickMeta(card.title, INFO_META, { tag: 'Информация' });
+  const presentation = getInfoPresentation({ ...card, ...meta });
 
   return {
     ...card,
     ...meta,
-    excerpt: getExcerpt(card.cont),
+    ...presentation,
+    excerpt: getExcerpt(card.cont, 120),
+    lines: splitInfoLines(card.cont),
   };
 }
 
@@ -499,12 +609,20 @@ app.get('/',async (req,res)=>{
     const operationMenu = [...menuCards]
       .filter(isOperationService)
       .sort((a, b) => getRoleServicePriority(a, homeCatalog.homeRoleMode) - getRoleServicePriority(b, homeCatalog.homeRoleMode) || a._menuIndex - b._menuIndex)
-    const helpfulInfo = infoCards.filter(card => !isNoisyIntroInfo(card))
+    const helpfulInfo = infoCards
+      .filter(card => !isNoisyIntroInfo(card))
+      .sort((a, b) => a.parentPriority - b.parentPriority || getCardOrder(a) - getCardOrder(b))
+    const primaryInfo = helpfulInfo.filter(card => card.isPrimaryInfo)
+    const secondaryInfo = helpfulInfo.filter(card => !card.isPrimaryInfo)
     const infoGroup = {
-      title: 'Информация и регламенты',
-      description: 'Справка, правила и важные материалы для спокойной работы с сервисами.',
+      title: 'Родителям',
+      description: 'Учебный график, контакты администрации, новости и полезные школьные материалы.',
       items: helpfulInfo,
+      primaryItems: primaryInfo,
+      secondaryItems: secondaryInfo,
       hasItems: helpfulInfo.length > 0,
+      hasPrimaryItems: primaryInfo.length > 0,
+      hasSecondaryItems: secondaryInfo.length > 0,
     }
     const accessMeta = getAccessMeta(rolen)
 
@@ -677,8 +795,9 @@ app.get('/balalayka', (req, res) => {
 });
 
 app.get('/users', async (req, res) => {
-  const rolen = Number(req.session?.right ?? 0);
+  const rolen = getSessionPortalRole(req.session?.right ?? req.session?.role ?? req.session?.rolen ?? 0);
   if (rolen < 5) return res.redirect('/');
+  req.session.rolen = rolen;
 
   try {
     const users    = await db.get_users();
@@ -705,10 +824,10 @@ app.get('/users', async (req, res) => {
 });
 
 // === API для справочника "какие роли доступны в каждом сервисе" ===
-// Требуем хотя бы роль > 0. Для UI-страницы можно поставить redirect, для API — 403.
+// Требуем административный доступ: это тот же справочник, который меняется со страницы /users.
 app.get('/api/srvs-roles', async (req, res) => {
-  const rolen = Number(req.session?.role ?? 0);
-  if (rolen === 0) return res.status(403).json({ ok:false, message:'forbidden' });
+  const rolen = getSessionPortalRole(req.session?.right ?? req.session?.role ?? req.session?.rolen ?? 0);
+  if (rolen < 5) return res.status(403).json({ ok:false, message:'forbidden' });
 
   try {
     const services = await db.get_services_with_allowed_roles(); // [{id,name,roles:[{id,name}]}]
@@ -722,11 +841,11 @@ app.get('/api/srvs-roles', async (req, res) => {
 
 // Сохранить связки целиком (UI отправляет полный набор pairs)
 app.put('/api/srvs-roles', async (req, res) => {
-  const rolen = Number(req.session?.role ?? 0);
-  if (rolen === 0) return res.status(403).json({ ok:false, message:'forbidden' });
+  const rolen = getSessionPortalRole(req.session?.right ?? req.session?.role ?? req.session?.rolen ?? 0);
+  if (rolen < 5) return res.status(403).json({ ok:false, message:'forbidden' });
 
   const pairs = Array.isArray(req.body?.pairs) ? req.body.pairs : [];
-  // ожидается: [{ srv_name: <number>, role_id: <number> }, ...]
+  // ожидается: [{ srv_id: <number>, role_id: <number> }, ...]
 
   try {
     await db.replace_srvs_roles(pairs);

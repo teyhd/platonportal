@@ -1,23 +1,22 @@
-<header class="fixed inset-x-0 top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur-md">
-  <div class="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 md:px-6">
-    <a href="/" class="group flex min-h-[44px] min-w-0 items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2" aria-label="На главную">
-      <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-sm font-semibold text-white shadow-sm shadow-slate-950/20">
+<header class="fixed inset-x-0 top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
+  <div class="mx-auto flex h-12 max-w-[1500px] items-center justify-between gap-3 px-[16px] md:px-6">
+    <a href="/" class="group flex min-h-[36px] min-w-0 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2" aria-label="На главную">
+      <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-xs font-semibold text-white shadow-sm shadow-slate-950/20">
         Г
       </span>
       <span class="min-w-0">
-        <span class="block truncate text-sm font-semibold leading-tight text-slate-950 md:text-base">{{title}}</span>
-        <span class="hidden text-xs font-medium text-slate-500 sm:block">единый центр сервисов</span>
+        <span class="block truncate text-sm font-semibold leading-tight text-slate-950">{{title}}</span>
       </span>
     </a>
 
     <div class="flex shrink-0 items-center gap-2">
       <button id="theme" class="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500" title="Сменить тему" hidden>🌞</button>
       {{#if auth}}
-        <button id="logoutBtn" class="min-h-[44px] rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition duration-150 hover:bg-red-100 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2">
+        <button id="logoutBtn" class="inline-flex min-h-[36px] items-center justify-center rounded-lg border border-transparent px-3 py-1.5 text-sm font-semibold text-red-700 transition duration-150 hover:border-red-200 hover:bg-red-50 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2">
           Выйти
         </button>
       {{else}}
-        <button id="openModal" class="min-h-[44px] rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-900/10 transition duration-150 hover:bg-blue-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+        <button id="openModal" class="inline-flex min-h-[36px] items-center justify-center rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm shadow-blue-900/10 transition duration-150 hover:bg-blue-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
           Войти
         </button>
       {{/if}}
@@ -58,10 +57,10 @@
 
 
 <div id="tg-inapp-banner"
-     class="fixed inset-x-0 top-16 z-30 hidden px-[16px]"
+     class="fixed inset-x-0 top-12 z-30 hidden px-[16px]"
      role="region" aria-label="Ограничения встроенного браузера">
   <div class="pointer-events-none w-full" style="padding-top: env(safe-area-inset-top);">
-    <div class="mx-auto max-w-7xl">
+    <div class="mx-auto max-w-[1500px]">
       <div class="pointer-events-auto rounded-lg border border-blue-100 bg-white/95 text-slate-900 shadow-lg shadow-slate-950/10 backdrop-blur-md">
         <div class="flex items-center justify-between gap-2 px-3 py-2 sm:gap-3 sm:px-4 sm:py-3">
           <p class="min-w-0 text-xs leading-4 text-slate-600 sm:text-sm sm:leading-5">

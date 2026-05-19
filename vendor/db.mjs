@@ -298,9 +298,18 @@ export async function get_services_with_allowed_roles() {
 // Полная замена справочника srvs_roles
 export async function replace_srvs_roles(pairs) {
   // pairs: [{srv_id, role_id}]
-  const filtered = (pairs || [])
-    .filter(p => Number.isInteger(p?.srv_id) && Number.isInteger(p?.role_id))
-    .map(p => [p.srv_id, p.role_id]);
+  const seen = new Set();
+  const filtered = [];
+  for (const p of pairs || []) {
+    const srvId = Number(p?.srv_id);
+    const roleId = Number(p?.role_id);
+    if (!Number.isInteger(srvId) || !Number.isInteger(roleId)) continue;
+
+    const key = `${srvId}:${roleId}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    filtered.push([srvId, roleId]);
+  }
 
   const conn = await usr.getConnection();
   try {
