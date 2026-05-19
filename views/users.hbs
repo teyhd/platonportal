@@ -586,13 +586,13 @@
   .users-td{padding:.65rem .75rem;vertical-align:middle;overflow:hidden}
   .user-meta-line,.user-email-line,.user-kaf-cell,.user-pin-cell,.users-badge{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .users-actions{display:grid;grid-template-columns:repeat(2,2.15rem);justify-content:end;gap:.35rem}
-  .action-btn{display:inline-flex;width:2.15rem;height:2.15rem;align-items:center;justify-content:center;border:1px solid #374151;border-radius:.5rem;background:rgba(31,41,55,.72);color:#d1d5db;transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .15s ease;touch-action:manipulation}
-  .action-btn:hover{border-color:#6366f1;background:rgba(55,65,81,.95);color:#fff}
+  .action-btn{display:inline-flex;width:2.15rem;height:2.15rem;align-items:center;justify-content:center;border:1px solid transparent;border-radius:.5rem;background:transparent;color:#d1d5db;transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .15s ease;touch-action:manipulation}
+  .action-btn:hover{border-color:rgba(75,85,99,.45);background:rgba(31,41,55,.42);color:#fff}
   .action-btn:active{transform:translateY(1px)}
   .action-btn:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(129,140,248,.55)}
   .action-btn svg{width:1.15rem;height:1.15rem;pointer-events:none}
   .action-btn-danger{color:#fb7185}
-  .action-btn-danger:hover{border-color:#fb7185;color:#fecdd3;background:rgba(127,29,29,.45)}
+  .action-btn-danger:hover{border-color:rgba(244,63,94,.35);color:#fda4af;background:rgba(127,29,29,.22)}
   @media (max-width:639px){.users-th,.users-td{padding:.5rem .4rem}.users-actions{grid-template-columns:2.15rem}}
   .tab-btn[data-active="true"]{background:#4f46e5;color:#fff}
   .tab-panel.hidden{display:none}
