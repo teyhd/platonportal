@@ -233,7 +233,7 @@ function getPlainInfoText(value = '') {
     .trim();
 }
 
-function splitInfoLines(value = '', limit = 5) {
+function getInfoLines(value = '') {
   const prepared = getPlainInfoText(value)
     .replace(/\s+(?=\d\+?\s+\d{1,2}[:.]\d{2}\s*[-–—])/g, '\n')
     .replace(/\s+(?=\d\s*четверть\s*[-–—])/gi, '\n')
@@ -250,10 +250,17 @@ function splitInfoLines(value = '', limit = 5) {
     lines = prepared.match(/.{1,105}(?:\s+|$)/g)?.map(line => line.trim()).filter(Boolean) ?? lines;
   }
 
-  return lines.slice(0, limit).map((line, index) => {
-    if (index === limit - 1 && lines.length > limit && !line.endsWith('…')) return `${line}…`;
-    return line;
-  });
+  return lines;
+}
+
+function getInfoLineModel(value = '', limit = 5) {
+  const fullLines = getInfoLines(value);
+  return {
+    fullLines,
+    previewLines: fullLines.slice(0, limit),
+    hasMoreLines: fullLines.length > limit,
+    moreLinesCount: Math.max(fullLines.length - limit, 0),
+  };
 }
 
 function getInfoPresentation(card = {}) {
@@ -575,13 +582,14 @@ function normalizeMenuCard(card, index = 0) {
 function normalizeInfoCard(card) {
   const meta = pickMeta(card.title, INFO_META, { tag: 'Информация' });
   const presentation = getInfoPresentation({ ...card, ...meta });
+  const lineModel = getInfoLineModel(card.cont);
 
   return {
     ...card,
     ...meta,
     ...presentation,
+    ...lineModel,
     excerpt: getExcerpt(card.cont, 120),
-    lines: splitInfoLines(card.cont),
   };
 }
 

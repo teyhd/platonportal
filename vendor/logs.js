@@ -31,13 +31,15 @@ export function mlog (par) {
       }
       
     } 
-    fs.writeFileSync(path.join(appDir,'logs',`${curdate(datecreate.getDate())}.${curdate(datecreate.getMonth()+1)} log.txt`),
-    texta,
-    {
-      encoding: "utf8",
-      flag: "a+",
-      //mode: 0o666
-    });
+    const logDir = path.join(appDir, 'logs');
+    fs.ensureDirSync(logDir);
+    fs.writeFileSync(path.join(logDir, `${curdate(datecreate.getDate())}.${curdate(datecreate.getMonth()+1)} log.txt`),
+      texta,
+      {
+        encoding: "utf8",
+        flag: "a+",
+        //mode: 0o666
+      });
   
     console.log(texta);
     return texta
