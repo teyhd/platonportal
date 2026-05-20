@@ -15,6 +15,7 @@ const ICONS = [
   'log-out',
   'printer',
   'sparkles',
+  'users',
   'video',
 ];
 

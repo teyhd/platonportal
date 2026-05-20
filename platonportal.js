@@ -287,6 +287,27 @@ function getPlainInfoText(value = '') {
   return getPlainInfoFragment(value).trim();
 }
 
+function normalizeInfoTitle(value = '') {
+  return getPlainInfoText(value).replace(/\s+/g, ' ').trim();
+}
+
+function normalizeInfoCompare(value = '') {
+  return normalizeInfoTitle(value)
+    .toLowerCase()
+    .replace(/ё/g, 'е')
+    .replace(/[^\p{L}\p{N}]+/gu, '');
+}
+
+function getInfoDisplayTitle(value = '') {
+  const title = normalizeInfoTitle(value);
+
+  if (/^ссылки?\s+на\s+график\s+года\s+по\s+четвертям/i.test(title)) {
+    return 'Графики по четвертям';
+  }
+
+  return title || 'Информация';
+}
+
 function normalizeInfoHref(href = '') {
   const value = decodeHtmlEntities(href).trim();
 
@@ -369,7 +390,7 @@ function renderInfoLineHtml(line = '') {
   return html.trim();
 }
 
-function getInfoRawLines(value = '') {
+function getInfoRawLines(value = '', repeatedTitle = '') {
   const prepared = value
     .toString()
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
@@ -393,20 +414,44 @@ function getInfoRawLines(value = '') {
     lines = plain.match(/.{1,105}(?:\s+|$)/g)?.map(line => line.trim()).filter(Boolean) ?? lines;
   }
 
+  const repeatedTitleKey = normalizeInfoCompare(repeatedTitle);
+  if (repeatedTitleKey && lines.length && normalizeInfoCompare(lines[0]) === repeatedTitleKey) {
+    lines = lines.slice(1);
+  }
+
   return lines;
 }
 
-function getInfoLines(value = '') {
-  return getInfoRawLines(value)
-    .map(line => ({
-      text: getPlainInfoText(line),
-      html: renderInfoLineHtml(line),
-    }))
+function isInfoSectionLine(rawLine = '', text = '') {
+  const value = normalizeInfoTitle(text);
+
+  if (!value || /<a\b/i.test(rawLine) || /https?:\/\//i.test(rawLine) || /@[A-Za-z0-9_]{5,32}\b/.test(rawLine)) return false;
+  if (value.length > 56 || value.split(/\s+/).length > 5) return false;
+  if (/^\d/.test(value) || /[–—]/.test(value) || /\d{1,2}[:.]\d{2}/.test(value)) return false;
+  if (/[,:;.!?]$/.test(value) || /:/.test(value)) return false;
+
+  return true;
+}
+
+function getInfoLines(value = '', repeatedTitle = '') {
+  return getInfoRawLines(value, repeatedTitle)
+    .map(line => {
+      const text = getPlainInfoText(line);
+      return {
+        text,
+        html: renderInfoLineHtml(line),
+        isSection: isInfoSectionLine(line, text),
+      };
+    })
     .filter(line => line.text || line.html);
 }
 
-function getInfoLineModel(value = '', limit = 5) {
-  const fullLines = getInfoLines(value);
+function getInfoLineModel(value = '', options = {}) {
+  const limit = typeof options === 'number'
+    ? options
+    : (Number.isFinite(Number(options.limit)) ? Number(options.limit) : 5);
+  const repeatedTitle = typeof options === 'object' ? options.repeatedTitle : '';
+  const fullLines = getInfoLines(value, repeatedTitle);
   return {
     fullLines,
     previewLines: fullLines.slice(0, limit),
@@ -428,6 +473,21 @@ function getInfoPresentation(card = {}) {
       cardClass: 'border-blue-200 bg-blue-50/70 shadow-blue-950/5',
       iconClass: 'border-blue-200 bg-white text-blue-700',
       badgeClass: 'text-blue-700',
+      previewLimit: 4,
+    };
+  }
+
+  if (/руководител.*кафедр|кафедр/.test(value)) {
+    return {
+      parentPriority: 2,
+      isPrimaryInfo: true,
+      audienceLabel: 'Кафедры',
+      parentSummary: 'Руководители предметных направлений и зон поддержки.',
+      iconName: 'users',
+      cardClass: 'border-teal-200 bg-teal-50/70 shadow-teal-950/5',
+      iconClass: 'border-teal-200 bg-white text-teal-700',
+      badgeClass: 'text-teal-700',
+      previewLimit: 4,
     };
   }
 
@@ -441,12 +501,13 @@ function getInfoPresentation(card = {}) {
       cardClass: 'border-emerald-200 bg-emerald-50/70 shadow-emerald-950/5',
       iconClass: 'border-emerald-200 bg-white text-emerald-700',
       badgeClass: 'text-emerald-700',
+      previewLimit: 4,
     };
   }
 
   if (/социальн|instagram|telegram|youtube|вконтакте|vk\.com/.test(value)) {
     return {
-      parentPriority: 2,
+      parentPriority: 3,
       isPrimaryInfo: true,
       audienceLabel: 'Связь и новости',
       parentSummary: 'Официальные каналы, где публикуются новости школы.',
@@ -454,6 +515,7 @@ function getInfoPresentation(card = {}) {
       cardClass: 'border-indigo-200 bg-indigo-50/70 shadow-indigo-950/5',
       iconClass: 'border-indigo-200 bg-white text-indigo-700',
       badgeClass: 'text-indigo-700',
+      previewLimit: 4,
     };
   }
 
@@ -732,12 +794,19 @@ function normalizeMenuCard(card, index = 0) {
 }
 
 function normalizeInfoCard(card) {
-  const meta = pickMeta(card.title, INFO_META, { tag: 'Информация' });
-  const presentation = getInfoPresentation({ ...card, ...meta });
-  const lineModel = getInfoLineModel(card.cont);
+  const originalTitle = normalizeInfoTitle(card.title);
+  const title = getInfoDisplayTitle(originalTitle);
+  const meta = pickMeta(originalTitle, INFO_META, { tag: 'Информация' });
+  const presentation = getInfoPresentation({ ...card, title, originalTitle, ...meta });
+  const lineModel = getInfoLineModel(card.cont, {
+    limit: presentation.previewLimit ?? 5,
+    repeatedTitle: originalTitle,
+  });
 
   return {
     ...card,
+    originalTitle,
+    title,
     ...meta,
     ...presentation,
     ...lineModel,
