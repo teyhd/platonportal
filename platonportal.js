@@ -17,6 +17,7 @@ import session from 'express-session'
 import cookieParser from 'cookie-parser'
 import path from 'path'
 import fs from 'fs-extra'
+import crypto from 'crypto'
 import { fileURLToPath } from 'url';
 //import { console } from 'inspector/promises';
 
@@ -576,6 +577,131 @@ function getCardImageSrc(pic = '') {
   return clean.startsWith('img/') ? `/${clean}` : `/img/${clean}`;
 }
 
+const CARD_IMAGE_UPLOAD_DIR = path.join(publicPath, 'img', 'cards');
+const CARD_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
+const CARD_IMAGE_TYPES = new Map([
+  ['image/png', 'png'],
+  ['image/jpeg', 'jpg'],
+  ['image/jpg', 'jpg'],
+  ['image/webp', 'webp'],
+]);
+
+function serializeCardForAdmin(card = {}) {
+  return {
+    ...card,
+    imageSrc: getCardImageSrc(card.pic),
+  };
+}
+
+function getLimitedString(value = '', limit = 0) {
+  const text = (value ?? '').toString().trim();
+  return limit > 0 ? text.slice(0, limit) : text;
+}
+
+async function validateCardPayload(body = {}) {
+  const type = Number(body.type);
+  if (![0, 1].includes(type)) {
+    return { error: 'type must be 0 or 1' };
+  }
+
+  const title = getLimitedString(body.title, 50);
+  const cont = getLimitedString(body.cont, 3000);
+  const pic = getLimitedString(body.pic, 50);
+  const role = Number(body.role);
+  const shows = Number(body.shows);
+  const crdorder = Number(body.crdorder);
+
+  if (!title) return { error: 'title required' };
+  if ((body.title ?? '').toString().trim().length > 50) return { error: 'title too long' };
+  if ((body.cont ?? '').toString().trim().length > 3000) return { error: 'content too long' };
+  if ((body.pic ?? '').toString().trim().length > 50) return { error: 'pic too long' };
+  if (!Number.isInteger(role)) return { error: 'role required' };
+  if (!Number.isInteger(shows) || ![0, 1].includes(shows)) return { error: 'shows must be 0 or 1' };
+  if (!Number.isInteger(crdorder) || crdorder < 0 || crdorder > 127) return { error: 'crdorder must be from 0 to 127' };
+
+  const roles = await db.get_card_role_options();
+  const allowedRoleIds = new Set(roles.map(item => Number(item.id)));
+  if (!allowedRoleIds.has(role)) return { error: 'role is not allowed' };
+
+  return {
+    data: {
+      type,
+      title,
+      cont,
+      pic,
+      role,
+      shows,
+      crdorder,
+    },
+  };
+}
+
+function parseImageUploadPayload(body = {}) {
+  const rawData = (body.contentBase64 ?? body.fileBase64 ?? body.dataUrl ?? '').toString().trim();
+  let mime = (body.contentType ?? body.mime ?? '').toString().trim().toLowerCase();
+  let base64 = rawData;
+
+  const dataUrlMatch = rawData.match(/^data:(image\/(?:png|jpe?g|webp));base64,([\s\S]+)$/i);
+  if (dataUrlMatch) {
+    mime = dataUrlMatch[1].toLowerCase();
+    base64 = dataUrlMatch[2];
+  }
+
+  if (!CARD_IMAGE_TYPES.has(mime)) {
+    return { error: 'unsupported image type' };
+  }
+
+  const compactBase64 = base64.replace(/\s+/g, '');
+  if (!compactBase64 || !/^[A-Za-z0-9+/]+={0,2}$/.test(compactBase64)) {
+    return { error: 'bad image payload' };
+  }
+
+  const buffer = Buffer.from(compactBase64, 'base64');
+  if (!buffer.length || buffer.length > CARD_IMAGE_MAX_BYTES) {
+    return { error: 'image is too large' };
+  }
+
+  if (!hasAllowedImageSignature(buffer, mime)) {
+    return { error: 'bad image signature' };
+  }
+
+  return {
+    buffer,
+    extension: CARD_IMAGE_TYPES.get(mime),
+    fileName: (body.fileName ?? body.filename ?? 'card').toString(),
+  };
+}
+
+function hasAllowedImageSignature(buffer, mime) {
+  if (mime === 'image/png') {
+    return buffer.length > 8 && buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+  }
+
+  if (mime === 'image/jpeg' || mime === 'image/jpg') {
+    return buffer.length > 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+  }
+
+  if (mime === 'image/webp') {
+    return buffer.length > 12
+      && buffer.subarray(0, 4).toString('ascii') === 'RIFF'
+      && buffer.subarray(8, 12).toString('ascii') === 'WEBP';
+  }
+
+  return false;
+}
+
+function getSafeImageFileName(fileName = 'card', extension = 'webp') {
+  const baseName = path.basename(fileName)
+    .replace(/\.[^.]+$/, '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 16) || 'card';
+  const suffix = crypto.randomBytes(4).toString('hex');
+  return `${baseName}-${Date.now()}-${suffix}.${extension}`;
+}
+
 function getLinkMeta(href = '') {
   const value = (href ?? '').toString().trim();
 
@@ -617,7 +743,7 @@ function getAccessMeta(role = 0) {
     };
   }
 
-  if (role >= 5) {
+  if (role === 5) {
     return {
       accessLabel: 'Расширенный доступ',
       accessNote: 'Быстрый доступ к урокам, комнатам и сервисам.',
@@ -651,6 +777,33 @@ function getSessionPortalRole(sessionRight = 0) {
   return normalizeRoleValue(sessionRight);
 }
 
+function getSessionPortalRoles(sessionRight = 0) {
+  if (Array.isArray(sessionRight)) {
+    const roles = hlp.getRolesBySrvId(sessionRight, 1);
+    const values = Array.isArray(roles) ? roles : [roles];
+    return values
+      .map(value => Number(value))
+      .filter(value => Number.isFinite(value));
+  }
+
+  const role = Number(sessionRight);
+  return Number.isFinite(role) ? [role] : [];
+}
+
+function hasPortalAdminRole(session = {}) {
+  const sessionRight = session?.right ?? session?.role ?? 0;
+  return getSessionPortalRoles(sessionRight).includes(5);
+}
+
+function requirePortalAdminJson(req, res) {
+  if (!hasPortalAdminRole(req.session)) {
+    return res.status(403).json({ ok: false, message: 'forbidden' });
+  }
+
+  req.session.rolen = 5;
+  return null;
+}
+
 function getHomeRoleMeta(role = 0) {
   const normalizedRole = normalizeRoleValue(role);
 
@@ -664,7 +817,7 @@ function getHomeRoleMeta(role = 0) {
     };
   }
 
-  if (normalizedRole >= 5) {
+  if (normalizedRole === 5) {
     return {
       homeRoleMode: 'admin',
       roleLabel: 'Расширенный доступ',
@@ -831,6 +984,7 @@ app.get('/',async (req,res)=>{
         req.session.rolen = 0
     }
     let cards = await db.get_cards(rolen)
+    const canManageCards = hasPortalAdminRole(req.session)
     const menuCards = cards.filter(c => c.type === 0).map((card, index) => normalizeMenuCard(card, index))
     const infoCards = cards.filter(c => c.type === 1).map(normalizeInfoCard)
     const homeCatalog = buildHomeCatalog(menuCards, rolen)
@@ -864,6 +1018,7 @@ app.get('/',async (req,res)=>{
       serviceCount,
       infoCount: infoCards.length,
       auth: rolen,
+      canManageCards,
       isGuestHome: homeCatalog.homeRoleMode === 'guest',
       isAdminHome: homeCatalog.homeRoleMode === 'admin',
       infoGroup,
@@ -1023,10 +1178,112 @@ app.get('/balalayka', (req, res) => {
   });
 });
 
+app.get('/api/cards', async (req, res) => {
+  const forbidden = requirePortalAdminJson(req, res);
+  if (forbidden) return forbidden;
+
+  try {
+    const [cards, roles] = await Promise.all([
+      db.get_all_cards(),
+      db.get_card_role_options(),
+    ]);
+    res.json({
+      ok: true,
+      cards: cards.map(serializeCardForAdmin),
+      roles,
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, message: 'db error' });
+  }
+});
+
+app.post('/api/cards', async (req, res) => {
+  const forbidden = requirePortalAdminJson(req, res);
+  if (forbidden) return forbidden;
+
+  try {
+    const validated = await validateCardPayload(req.body || {});
+    if (validated.error) return res.status(400).json({ ok: false, message: validated.error });
+
+    const id = await db.create_card(validated.data);
+    const card = await db.get_card_by_id(id);
+    res.status(201).json({ ok: true, card: serializeCardForAdmin(card) });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, message: 'db error' });
+  }
+});
+
+app.put('/api/cards/:id', async (req, res) => {
+  const forbidden = requirePortalAdminJson(req, res);
+  if (forbidden) return forbidden;
+
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ ok: false, message: 'bad id' });
+
+  try {
+    const validated = await validateCardPayload(req.body || {});
+    if (validated.error) return res.status(400).json({ ok: false, message: validated.error });
+
+    const ok = await db.update_card(id, validated.data);
+    if (!ok) return res.status(404).json({ ok: false, message: 'Not found' });
+
+    const card = await db.get_card_by_id(id);
+    res.json({ ok: true, card: serializeCardForAdmin(card) });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, message: 'db error' });
+  }
+});
+
+app.patch('/api/cards/:id/shows', async (req, res) => {
+  const forbidden = requirePortalAdminJson(req, res);
+  if (forbidden) return forbidden;
+
+  const id = Number(req.params.id);
+  const shows = Number(req.body?.shows);
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ ok: false, message: 'bad id' });
+  if (!Number.isInteger(shows) || ![0, 1].includes(shows)) {
+    return res.status(400).json({ ok: false, message: 'shows must be 0 or 1' });
+  }
+
+  try {
+    const ok = await db.set_card_visibility(id, shows);
+    if (!ok) return res.status(404).json({ ok: false, message: 'Not found' });
+
+    const card = await db.get_card_by_id(id);
+    res.json({ ok: true, card: serializeCardForAdmin(card) });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, message: 'db error' });
+  }
+});
+
+app.post('/api/cards/upload-image', async (req, res) => {
+  const forbidden = requirePortalAdminJson(req, res);
+  if (forbidden) return forbidden;
+
+  try {
+    const parsed = parseImageUploadPayload(req.body || {});
+    if (parsed.error) return res.status(400).json({ ok: false, message: parsed.error });
+
+    await fs.ensureDir(CARD_IMAGE_UPLOAD_DIR);
+    const safeName = getSafeImageFileName(parsed.fileName, parsed.extension);
+    const filePath = path.join(CARD_IMAGE_UPLOAD_DIR, safeName);
+    await fs.writeFile(filePath, parsed.buffer, { flag: 'wx' });
+
+    const pic = `cards/${safeName}`;
+    res.json({ ok: true, pic, imageSrc: getCardImageSrc(pic) });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, message: 'upload error' });
+  }
+});
+
 app.get('/users', async (req, res) => {
-  const rolen = getSessionPortalRole(req.session?.right ?? req.session?.role ?? req.session?.rolen ?? 0);
-  if (rolen < 5) return res.redirect('/');
-  req.session.rolen = rolen;
+  if (!hasPortalAdminRole(req.session)) return res.redirect('/');
+  req.session.rolen = 5;
 
   try {
     const users    = await db.get_users();
@@ -1055,8 +1312,8 @@ app.get('/users', async (req, res) => {
 // === API для справочника "какие роли доступны в каждом сервисе" ===
 // Требуем административный доступ: это тот же справочник, который меняется со страницы /users.
 app.get('/api/srvs-roles', async (req, res) => {
-  const rolen = getSessionPortalRole(req.session?.right ?? req.session?.role ?? req.session?.rolen ?? 0);
-  if (rolen < 5) return res.status(403).json({ ok:false, message:'forbidden' });
+  const forbidden = requirePortalAdminJson(req, res);
+  if (forbidden) return forbidden;
 
   try {
     const services = await db.get_services_with_allowed_roles(); // [{id,name,roles:[{id,name}]}]
@@ -1070,8 +1327,8 @@ app.get('/api/srvs-roles', async (req, res) => {
 
 // Сохранить связки целиком (UI отправляет полный набор pairs)
 app.put('/api/srvs-roles', async (req, res) => {
-  const rolen = getSessionPortalRole(req.session?.right ?? req.session?.role ?? req.session?.rolen ?? 0);
-  if (rolen < 5) return res.status(403).json({ ok:false, message:'forbidden' });
+  const forbidden = requirePortalAdminJson(req, res);
+  if (forbidden) return forbidden;
 
   const pairs = Array.isArray(req.body?.pairs) ? req.body.pairs : [];
   // ожидается: [{ srv_id: <number>, role_id: <number> }, ...]
@@ -1087,6 +1344,9 @@ app.put('/api/srvs-roles', async (req, res) => {
 
 // Получить полный профиль пользователя (для шторки)
 app.get('/api/users/:id', async (req, res) => {
+  const forbidden = requirePortalAdminJson(req, res);
+  if (forbidden) return forbidden;
+
   const id = Number(req.params.id);
   const user = await db.get_user_by_id(id);
   if (!user) return res.status(404).json({ ok:false, message: 'Not found' });
@@ -1098,6 +1358,9 @@ app.get('/api/users/:id', async (req, res) => {
 
 // Создать пользователя
 app.post('/api/users', async (req, res) => {
+  const forbidden = requirePortalAdminJson(req, res);
+  if (forbidden) return forbidden;
+
   const body = req.body || {};
   const data = {
     name: String(body.name ?? '').trim(),
@@ -1127,6 +1390,9 @@ app.post('/api/users', async (req, res) => {
 
 // Обновить пользователя
 app.put('/api/users/:id', async (req, res) => {
+  const forbidden = requirePortalAdminJson(req, res);
+  if (forbidden) return forbidden;
+
   const id = Number(req.params.id);
   const body = req.body || {};
   const data = {
@@ -1160,6 +1426,9 @@ app.put('/api/users/:id', async (req, res) => {
 
 // Заменить набор ролей пользователя целиком
 app.put('/api/users/:id/rights', async (req, res) => {
+  const forbidden = requirePortalAdminJson(req, res);
+  if (forbidden) return forbidden;
+
   const id = Number(req.params.id);
   const pairs = Array.isArray(req.body?.pairs) ? req.body.pairs : [];
   // ожидается массив объектов {srv_name, role_id}
@@ -1176,6 +1445,9 @@ app.put('/api/users/:id/rights', async (req, res) => {
 
 // Сохранить логины по сервисам (батч)
 app.put('/api/users/:id/logins', async (req, res) => {
+  const forbidden = requirePortalAdminJson(req, res);
+  if (forbidden) return forbidden;
+
   const id = Number(req.params.id);
   const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
   // ожидается массив {srv_name, login, new_password}
@@ -1200,6 +1472,9 @@ app.put('/api/users/:id/logins', async (req, res) => {
 
 // Удалить пользователя
 app.delete('/api/users/:id', async (req, res) => {
+  const forbidden = requirePortalAdminJson(req, res);
+  if (forbidden) return forbidden;
+
   const id = Number(req.params.id);
   if (!id) return res.status(400).json({ ok:false, message:'bad id' });
   try {
@@ -1331,17 +1606,16 @@ app.get('/auth',async (req,res)=>{
 app.get('/logout', function(req, res) {
     mlog( req.session.name,"вышел из системы");
     req.session.uid = null;
-    req.session.name = null
-    req.session.uid = null
-    req.session.roles = null
-    //res.send('ok');
-    req.session.save(function (err) {
-      if (err) next(err)
-      req.session.regenerate(function (err) {
-        if (err) next(err)
-        res.redirect('/')
-      })
-    })
+    req.session.name = null;
+    req.session.role = null;
+    req.session.roles = null;
+    req.session.right = null;
+    req.session.rolen = null;
+    req.session.logins = null;
+    req.session.destroy(() => {
+      res.clearCookie('sso.sid', { path: '/' });
+      res.redirect('/');
+    });
 })
 
 // server/tg-probe.js

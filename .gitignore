@@ -4,6 +4,7 @@
 logs
 .env
 vendor/logs/
+public/img/cards/
 docs*
 docs
 *docs*

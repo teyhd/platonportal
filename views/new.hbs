@@ -8,6 +8,19 @@
       {{/unless}}
     </header>
 
+    {{#if canManageCards}}
+      <div class="mt-4 flex flex-wrap items-center gap-3">
+        <button type="button" data-card-admin-open
+                class="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-slate-950/15 transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20">
+          <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#settings"></use></svg>
+          Управлять карточками
+        </button>
+        <span class="inline-flex min-h-[32px] items-center rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700">
+          Админ
+        </span>
+      </div>
+    {{/if}}
+
     {{#if operationMenu.length}}
       <section id="lesson-room-panel" data-lesson-room-panel data-auth="{{auth}}"
                class="mt-5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5 sm:mt-6 md:p-5">
@@ -188,6 +201,540 @@
     {{/if}}
   </div>
 </main>
+
+{{#if canManageCards}}
+<aside id="cards-admin-drawer" class="fixed inset-0 z-50 hidden" data-cards-admin aria-labelledby="cards-admin-title" role="dialog" aria-modal="true">
+  <div class="absolute inset-0 bg-slate-950/45 opacity-0 backdrop-blur-sm transition-opacity" data-card-admin-backdrop></div>
+  <div class="absolute right-0 top-0 h-full w-full max-w-6xl translate-x-full bg-white shadow-2xl shadow-slate-950/25 transition-transform" data-card-admin-panel>
+    <div class="flex h-full flex-col">
+      <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-4 py-4 sm:px-6">
+        <div class="min-w-0">
+          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-blue-700">Главная страница</p>
+          <h2 id="cards-admin-title" class="mt-1 text-xl font-semibold tracking-tight text-slate-950">Карточки и материалы</h2>
+        </div>
+        <button type="button" data-card-admin-close
+                class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-blue-300 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20"
+                aria-label="Закрыть">
+          <svg class="h-5 w-5" aria-hidden="true"><use href="/icons/lucide.svg#x"></use></svg>
+        </button>
+      </div>
+
+      <div class="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1fr)_24rem]">
+        <section class="flex min-h-0 flex-col border-b border-slate-200 lg:border-b-0 lg:border-r" aria-label="Список карточек">
+          <div class="space-y-3 border-b border-slate-200 p-4 sm:p-5">
+            <div class="flex flex-wrap items-center gap-2" data-card-filter-group>
+              <button type="button" data-card-filter="all" class="card-filter-btn rounded-lg bg-slate-950 px-3 py-2 text-sm font-semibold text-white">Все</button>
+              <button type="button" data-card-filter="services" class="card-filter-btn rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">Сервисы</button>
+              <button type="button" data-card-filter="materials" class="card-filter-btn rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">Материалы</button>
+              <button type="button" data-card-filter="hidden" class="card-filter-btn rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">Скрытые</button>
+            </div>
+            <div class="flex flex-col gap-3 sm:flex-row">
+              <label class="relative min-w-0 flex-1">
+                <input type="search" data-card-search placeholder="Поиск"
+                       class="w-full rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-10 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10" />
+                <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true"><use href="/icons/lucide.svg#search"></use></svg>
+              </label>
+              <button type="button" data-card-new
+                      class="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20">
+                <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#plus"></use></svg>
+                Новая
+              </button>
+            </div>
+          </div>
+
+          <div class="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5">
+            <div data-card-list class="grid gap-2 xl:grid-cols-2"></div>
+            <div data-card-empty class="hidden rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+              Карточки не найдены
+            </div>
+          </div>
+        </section>
+
+        <section class="min-h-0 overflow-y-auto bg-slate-50 p-4 sm:p-5" aria-label="Редактор карточки">
+          <form data-card-form class="space-y-4">
+            <input type="hidden" data-card-id />
+
+            <div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-5 text-amber-900">
+              HTML виден пользователям выбранной роли.
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <label class="block">
+                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Тип</span>
+                <select data-card-type class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-400 focus:ring-blue-500/20">
+                  <option value="0">Сервис</option>
+                  <option value="1">Материал</option>
+                </select>
+              </label>
+              <label class="block">
+                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Роль</span>
+                <select data-card-role class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-400 focus:ring-blue-500/20"></select>
+              </label>
+            </div>
+
+            <label class="block">
+              <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Заголовок</span>
+              <input type="text" data-card-title maxlength="50"
+                     class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-400 focus:ring-blue-500/20" />
+            </label>
+
+            <label class="block">
+              <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Ссылка или HTML</span>
+              <textarea data-card-content rows="8" maxlength="3000"
+                        class="mt-1 w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm leading-5 focus:border-blue-400 focus:ring-blue-500/20"></textarea>
+            </label>
+
+            <div class="grid grid-cols-2 gap-3">
+              <label class="block">
+                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Порядок</span>
+                <input type="number" min="0" max="127" data-card-order
+                       class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-400 focus:ring-blue-500/20" />
+              </label>
+              <label class="flex items-end">
+                <span class="inline-flex min-h-[42px] w-full items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700">
+                  <input type="checkbox" data-card-shows class="rounded border-slate-300 text-blue-600 focus:ring-blue-500/30" />
+                  Показывать
+                </span>
+              </label>
+            </div>
+
+            <div class="rounded-lg border border-slate-200 bg-white p-3">
+              <label class="block">
+                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Изображение</span>
+                <input type="text" data-card-pic maxlength="50"
+                       class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-400 focus:ring-blue-500/20" />
+              </label>
+              <div class="mt-3 flex items-center gap-3">
+                <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-2">
+                  <img data-card-image-preview src="/img/platon.png" alt="" class="h-full w-full object-contain" />
+                </span>
+                <label class="inline-flex min-h-[40px] cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700">
+                  <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#upload"></use></svg>
+                  Загрузить
+                  <input type="file" data-card-image-file accept="image/png,image/jpeg,image/webp" class="sr-only" />
+                </label>
+              </div>
+            </div>
+
+            <div class="rounded-lg border border-slate-200 bg-white p-3">
+              <div class="mb-2 flex items-center justify-between gap-3">
+                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Preview</span>
+                <span data-card-preview-kind class="rounded-lg bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">Сервис</span>
+              </div>
+              <div data-card-service-preview class="rounded-lg border border-slate-200 bg-white p-3 text-center">
+                <span class="mx-auto flex h-16 w-16 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-2">
+                  <img data-card-service-image src="/img/platon.png" alt="" class="h-full w-full object-contain" />
+                </span>
+                <div data-card-service-title class="mt-3 text-sm font-semibold text-slate-950">Новая карточка</div>
+              </div>
+              <iframe data-card-html-preview title="Предпросмотр HTML" sandbox=""
+                      class="mt-2 hidden h-40 w-full rounded-lg border border-slate-200 bg-white"></iframe>
+            </div>
+
+            <div class="sticky bottom-0 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50/95 p-3 backdrop-blur">
+              <button type="button" data-card-toggle
+                      class="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-amber-300 hover:text-amber-700">
+                <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#eye-off"></use></svg>
+                Скрыть
+              </button>
+              <button type="submit"
+                      class="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20">
+                <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#save"></use></svg>
+                Сохранить
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </div>
+</aside>
+{{/if}}
+
+{{#if canManageCards}}
+<script>
+(() => {
+  const drawer = document.querySelector('[data-cards-admin]');
+  if (!drawer) return;
+
+  const qs = (selector, root = drawer) => root.querySelector(selector);
+  const qsa = (selector, root = drawer) => Array.from(root.querySelectorAll(selector));
+  const fallbackIcon = '/img/platon.png';
+  const state = {
+    cards: [],
+    roles: [],
+    filter: 'all',
+    search: '',
+    selectedId: null,
+  };
+
+  const backdrop = qs('[data-card-admin-backdrop]');
+  const panel = qs('[data-card-admin-panel]');
+  const list = qs('[data-card-list]');
+  const empty = qs('[data-card-empty]');
+  const form = qs('[data-card-form]');
+  const fields = {
+    id: qs('[data-card-id]'),
+    type: qs('[data-card-type]'),
+    role: qs('[data-card-role]'),
+    title: qs('[data-card-title]'),
+    content: qs('[data-card-content]'),
+    order: qs('[data-card-order]'),
+    shows: qs('[data-card-shows]'),
+    pic: qs('[data-card-pic]'),
+    file: qs('[data-card-image-file]'),
+    imagePreview: qs('[data-card-image-preview]'),
+    servicePreview: qs('[data-card-service-preview]'),
+    serviceImage: qs('[data-card-service-image]'),
+    serviceTitle: qs('[data-card-service-title]'),
+    htmlPreview: qs('[data-card-html-preview]'),
+    previewKind: qs('[data-card-preview-kind]'),
+    toggle: qs('[data-card-toggle]'),
+  };
+
+  function toast(message, ok = true) {
+    if (window.PortalToast) {
+      (ok ? window.PortalToast.success : window.PortalToast.error)(message);
+      return;
+    }
+    window.alert(message);
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    })[ch]);
+  }
+
+  function cardImageSrc(pic) {
+    const value = String(pic || '').trim();
+    if (!value) return fallbackIcon;
+    if (/^data:image\//i.test(value)) return value;
+
+    if (/^(https?:)?\/\//i.test(value)) {
+      try {
+        const url = new URL(value.startsWith('//') ? `https:${value}` : value);
+        return url.hostname === 'platoniks.ru' ? `${url.pathname}${url.search}` : fallbackIcon;
+      } catch (_) {
+        return fallbackIcon;
+      }
+    }
+
+    if (value.startsWith('/')) return value;
+
+    const clean = value.replace(/\\/g, '/').replace(/^\.?\//, '').replace(/^public\//, '');
+    return clean.startsWith('img/') ? `/${clean}` : `/img/${clean}`;
+  }
+
+  async function api(url, options = {}) {
+    const response = await fetch(url, {
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...(options.headers || {}),
+      },
+      ...options,
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok === false) {
+      throw new Error(data.message || `HTTP ${response.status}`);
+    }
+    return data;
+  }
+
+  function openDrawer() {
+    drawer.classList.remove('hidden');
+    window.requestAnimationFrame(() => {
+      backdrop.style.opacity = '1';
+      panel.style.transform = 'translateX(0)';
+    });
+    if (!state.cards.length) loadCards();
+  }
+
+  function closeDrawer() {
+    backdrop.style.opacity = '0';
+    panel.style.transform = 'translateX(100%)';
+    window.setTimeout(() => drawer.classList.add('hidden'), 180);
+  }
+
+  function populateRoles() {
+    fields.role.innerHTML = state.roles
+      .map((role) => `<option value="${escapeHtml(role.id)}">${escapeHtml(role.id)} - ${escapeHtml(role.name)}</option>`)
+      .join('');
+  }
+
+  function typeLabel(type) {
+    return Number(type) === 1 ? 'Материал' : 'Сервис';
+  }
+
+  function roleName(roleId) {
+    const role = state.roles.find((item) => Number(item.id) === Number(roleId));
+    return role ? role.name : String(roleId);
+  }
+
+  function filteredCards() {
+    const query = state.search.toLowerCase();
+    return state.cards.filter((card) => {
+      const type = Number(card.type);
+      const hidden = Number(card.shows) !== 1;
+      const filterOk =
+        state.filter === 'all' ||
+        (state.filter === 'services' && type === 0) ||
+        (state.filter === 'materials' && type === 1) ||
+        (state.filter === 'hidden' && hidden);
+      const haystack = `${card.id} ${card.title || ''} ${card.cont || ''} ${card.pic || ''}`.toLowerCase();
+      return filterOk && (!query || haystack.includes(query));
+    });
+  }
+
+  function renderFilters() {
+    qsa('[data-card-filter]').forEach((button) => {
+      const active = button.dataset.cardFilter === state.filter;
+      button.className = active
+        ? 'card-filter-btn rounded-lg bg-slate-950 px-3 py-2 text-sm font-semibold text-white'
+        : 'card-filter-btn rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700';
+    });
+  }
+
+  function renderList() {
+    renderFilters();
+    const items = filteredCards();
+    empty.classList.toggle('hidden', items.length > 0);
+
+    list.innerHTML = items.map((card) => {
+      const selected = Number(card.id) === Number(state.selectedId);
+      const hidden = Number(card.shows) !== 1;
+      return `
+        <button type="button" data-card-select="${escapeHtml(card.id)}"
+                class="w-full rounded-lg border p-3 text-left transition ${selected ? 'border-blue-400 bg-blue-50 ring-4 ring-blue-500/10' : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'} ${hidden ? 'opacity-70' : ''}">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="truncate text-sm font-semibold text-slate-950">${escapeHtml(card.title || 'Без названия')}</div>
+              <div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+                <span class="rounded-md bg-slate-100 px-2 py-0.5">${typeLabel(card.type)}</span>
+                <span class="rounded-md bg-slate-100 px-2 py-0.5">роль ${escapeHtml(roleName(card.role))}</span>
+                <span class="rounded-md bg-slate-100 px-2 py-0.5">#${escapeHtml(card.id)}</span>
+              </div>
+            </div>
+            <span class="shrink-0 rounded-md px-2 py-1 text-xs font-semibold ${hidden ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-700'}">
+              ${hidden ? 'скрыта' : 'видна'}
+            </span>
+          </div>
+          <div class="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">${escapeHtml(card.cont || card.pic || '')}</div>
+        </button>
+      `;
+    }).join('');
+  }
+
+  function defaultCard() {
+    return {
+      id: '',
+      type: 0,
+      title: '',
+      cont: '',
+      pic: '',
+      role: 0,
+      shows: 1,
+      crdorder: 100,
+    };
+  }
+
+  function fillForm(card = defaultCard()) {
+    state.selectedId = card.id ? Number(card.id) : null;
+    fields.id.value = card.id || '';
+    fields.type.value = String(card.type ?? 0);
+    fields.role.value = String(card.role ?? 0);
+    fields.title.value = card.title || '';
+    fields.content.value = card.cont || '';
+    fields.order.value = String(card.crdorder ?? 100);
+    fields.shows.checked = Number(card.shows ?? 1) === 1;
+    fields.pic.value = card.pic || '';
+    updatePreview();
+    renderList();
+  }
+
+  function collectForm() {
+    return {
+      type: Number(fields.type.value),
+      title: fields.title.value.trim(),
+      cont: fields.content.value.trim(),
+      pic: fields.pic.value.trim(),
+      role: Number(fields.role.value),
+      shows: fields.shows.checked ? 1 : 0,
+      crdorder: Number(fields.order.value),
+    };
+  }
+
+  function updatePreview() {
+    const pic = fields.pic.value.trim();
+    const imageSrc = cardImageSrc(pic);
+    const title = fields.title.value.trim() || 'Новая карточка';
+    const isMaterial = Number(fields.type.value) === 1;
+
+    fields.imagePreview.src = imageSrc;
+    fields.serviceImage.src = imageSrc;
+    fields.serviceTitle.textContent = title;
+    fields.previewKind.textContent = isMaterial ? 'Материал' : 'Сервис';
+    fields.servicePreview.classList.toggle('hidden', isMaterial);
+    fields.htmlPreview.classList.toggle('hidden', !isMaterial);
+    fields.toggle.innerHTML = fields.shows.checked
+      ? '<svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#eye-off"></use></svg>Скрыть'
+      : '<svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#eye"></use></svg>Восстановить';
+
+    if (isMaterial) {
+      fields.htmlPreview.srcdoc = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><style>body{font:14px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;margin:12px;color:#0f172a}a{color:#1d4ed8}</style></head><body><h3>${escapeHtml(title)}</h3>${fields.content.value}</body></html>`;
+    }
+  }
+
+  function upsertCard(card) {
+    const index = state.cards.findIndex((item) => Number(item.id) === Number(card.id));
+    if (index >= 0) state.cards[index] = card;
+    else state.cards.unshift(card);
+    state.cards.sort((a, b) => Number(a.type) - Number(b.type) || Number(a.crdorder) - Number(b.crdorder) || Number(a.id) - Number(b.id));
+  }
+
+  async function loadCards() {
+    const data = await api('/api/cards');
+    state.cards = data.cards || [];
+    state.roles = data.roles || [];
+    populateRoles();
+    renderList();
+    fillForm(state.cards[0] || defaultCard());
+  }
+
+  async function saveCard(event) {
+    event.preventDefault();
+    const payload = collectForm();
+    const id = Number(fields.id.value);
+    const data = await api(id ? `/api/cards/${id}` : '/api/cards', {
+      method: id ? 'PUT' : 'POST',
+      body: JSON.stringify(payload),
+    });
+    upsertCard(data.card);
+    fillForm(data.card);
+    toast('Карточка сохранена');
+  }
+
+  async function toggleVisibility() {
+    const id = Number(fields.id.value);
+    if (!id) {
+      fields.shows.checked = false;
+      updatePreview();
+      return;
+    }
+
+    const shows = fields.shows.checked ? 0 : 1;
+    const data = await api(`/api/cards/${id}/shows`, {
+      method: 'PATCH',
+      body: JSON.stringify({ shows }),
+    });
+    upsertCard(data.card);
+    fillForm(data.card);
+    toast(shows ? 'Карточка восстановлена' : 'Карточка скрыта');
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error || new Error('file read error'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function loadImage(dataUrl) {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error('image decode error'));
+      image.src = dataUrl;
+    });
+  }
+
+  async function fileToWebpDataUrl(file) {
+    const originalDataUrl = await readFileAsDataUrl(file);
+    const image = await loadImage(originalDataUrl);
+    const maxSide = 1024;
+    const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(image.width * scale));
+    canvas.height = Math.max(1, Math.round(image.height * scale));
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/webp', 0.9);
+  }
+
+  async function uploadImage(file) {
+    if (!file) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      toast('Допустимы PNG, JPG и WEBP', false);
+      return;
+    }
+
+    try {
+      const dataUrl = await fileToWebpDataUrl(file);
+      const data = await api('/api/cards/upload-image', {
+        method: 'POST',
+        body: JSON.stringify({
+          fileName: file.name,
+          contentType: 'image/webp',
+          contentBase64: dataUrl,
+        }),
+      });
+      fields.pic.value = data.pic;
+      updatePreview();
+      toast('Изображение загружено');
+    } catch (error) {
+      toast(error.message || 'Не удалось загрузить изображение', false);
+    } finally {
+      fields.file.value = '';
+    }
+  }
+
+  document.querySelectorAll('[data-card-admin-open]').forEach((button) => button.addEventListener('click', openDrawer));
+  qsa('[data-card-admin-close]').forEach((button) => button.addEventListener('click', closeDrawer));
+  backdrop.addEventListener('click', closeDrawer);
+
+  qsa('[data-card-filter]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.filter = button.dataset.cardFilter || 'all';
+      renderList();
+    });
+  });
+
+  qs('[data-card-search]').addEventListener('input', (event) => {
+    state.search = event.target.value.trim();
+    renderList();
+  });
+
+  list.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-card-select]');
+    if (!button) return;
+    const card = state.cards.find((item) => Number(item.id) === Number(button.dataset.cardSelect));
+    if (card) fillForm(card);
+  });
+
+  qs('[data-card-new]').addEventListener('click', () => fillForm(defaultCard()));
+  form.addEventListener('submit', (event) => saveCard(event).catch((error) => toast(error.message, false)));
+  fields.toggle.addEventListener('click', () => toggleVisibility().catch((error) => toast(error.message, false)));
+  fields.file.addEventListener('change', (event) => uploadImage(event.target.files?.[0]));
+  [fields.type, fields.title, fields.content, fields.pic, fields.shows].forEach((field) => {
+    field.addEventListener('input', updatePreview);
+    field.addEventListener('change', updatePreview);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !drawer.classList.contains('hidden')) closeDrawer();
+  });
+})();
+</script>
+{{/if}}
 
 <script>
 (() => {

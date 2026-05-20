@@ -431,8 +431,88 @@ export async function upsert_user_logins(userId, rows) {
   }
 }
 
-export async function get_cards(role=0){
-  const qer = `SELECT * FROM cards WHERE role <= ${role} AND shows = 1 order by crdorder`
-  const [rows, fields] = await portal.query(qer)
+function normalizeCardPayload(card = {}) {
+  const type = Number(card.type);
+  const role = Number(card.role);
+  const shows = Number(card.shows);
+  const crdorder = Number(card.crdorder);
+
+  return {
+    type: Number.isInteger(type) ? type : 0,
+    title: card.title ?? null,
+    cont: card.cont ?? null,
+    pic: card.pic ?? null,
+    role: Number.isInteger(role) ? role : 0,
+    shows: Number.isInteger(shows) ? shows : 1,
+    crdorder: Number.isInteger(crdorder) ? crdorder : 100,
+  };
+}
+
+export async function get_card_role_options() {
+  const [rows] = await usr.query(
+    `SELECT id, name FROM role_name WHERE id >= 0 ORDER BY id`
+  );
   return rows;
+}
+
+export async function get_cards(role = 0) {
+  const numericRole = Number(role);
+  const safeRole = Number.isFinite(numericRole) ? numericRole : 0;
+  const [rows] = await portal.query(
+    `SELECT * FROM cards WHERE role <= ? AND shows = 1 ORDER BY crdorder, id`,
+    [safeRole]
+  );
+  return rows;
+}
+
+export async function get_all_cards() {
+  const [rows] = await portal.query(
+    `SELECT * FROM cards ORDER BY type, crdorder, id`
+  );
+  return rows;
+}
+
+export async function get_card_by_id(id) {
+  const [rows] = await portal.query(
+    `SELECT * FROM cards WHERE id = ? LIMIT 1`,
+    [id]
+  );
+  return rows[0] ?? null;
+}
+
+export async function create_card(card) {
+  const data = normalizeCardPayload(card);
+  const [res] = await portal.query(
+    `INSERT INTO cards (type, title, cont, pic, role, shows, crdorder)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [data.type, data.title, data.cont, data.pic, data.role, data.shows, data.crdorder]
+  );
+  return res.insertId;
+}
+
+export async function update_card(id, card) {
+  const data = normalizeCardPayload(card);
+  const [res] = await portal.query(
+    `UPDATE cards
+        SET type = ?,
+            title = ?,
+            cont = ?,
+            pic = ?,
+            role = ?,
+            shows = ?,
+            crdorder = ?
+      WHERE id = ?`,
+    [data.type, data.title, data.cont, data.pic, data.role, data.shows, data.crdorder, id]
+  );
+  if (res.affectedRows > 0) return true;
+  return Boolean(await get_card_by_id(id));
+}
+
+export async function set_card_visibility(id, shows) {
+  const [res] = await portal.query(
+    `UPDATE cards SET shows = ? WHERE id = ?`,
+    [shows ? 1 : 0, id]
+  );
+  if (res.affectedRows > 0) return true;
+  return Boolean(await get_card_by_id(id));
 }
