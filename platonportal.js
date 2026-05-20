@@ -210,6 +210,73 @@ function stripHtml(value = '') {
     .trim();
 }
 
+function decodeHtmlEntities(value = '') {
+  const entities = {
+    nbsp: ' ',
+    amp: '&',
+    quot: '"',
+    apos: "'",
+    lt: '<',
+    gt: '>',
+    mdash: '—',
+    ndash: '–',
+  };
+  const decodeCodePoint = (code) => {
+    try {
+      return Number.isInteger(code) && code >= 0 && code <= 0x10ffff
+        ? String.fromCodePoint(code)
+        : null;
+    } catch {
+      return null;
+    }
+  };
+
+  return value.toString().replace(/&(#x[\da-f]+|#\d+|[a-z]+);/gi, (match, entity) => {
+    const key = entity.toLowerCase();
+
+    if (key.startsWith('#x')) {
+      const code = Number.parseInt(key.slice(2), 16);
+      return decodeCodePoint(code) ?? match;
+    }
+
+    if (key.startsWith('#')) {
+      const code = Number.parseInt(key.slice(1), 10);
+      return decodeCodePoint(code) ?? match;
+    }
+
+    return entities[key] ?? match;
+  });
+}
+
+function escapeHtml(value = '') {
+  return value
+    .toString()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeHtmlAttribute(value = '') {
+  return escapeHtml(value).replace(/`/g, '&#96;');
+}
+
+function getPlainInfoFragment(value = '') {
+  return decodeHtmlEntities(
+    value
+      .toString()
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]+>/g, ' ')
+  )
+    .replace(/\r\n?/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n\s+/g, '\n')
+    .replace(/\n{2,}/g, '\n');
+}
+
 function getExcerpt(value = '', limit = 140) {
   const plain = stripHtml(value);
   if (plain.length <= limit) return plain;
@@ -217,24 +284,99 @@ function getExcerpt(value = '', limit = 140) {
 }
 
 function getPlainInfoText(value = '') {
-  return value
-    .toString()
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/(p|div|li|tr|h[1-6])>/gi, '\n')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&mdash;/gi, '—')
-    .replace(/&ndash;/gi, '–')
-    .replace(/&quot;/gi, '"')
-    .replace(/&amp;/gi, '&')
-    .replace(/[ \t]+/g, ' ')
-    .replace(/\n\s+/g, '\n')
-    .replace(/\n{2,}/g, '\n')
-    .trim();
+  return getPlainInfoFragment(value).trim();
 }
 
-function getInfoLines(value = '') {
-  const prepared = getPlainInfoText(value)
+function normalizeInfoHref(href = '') {
+  const value = decodeHtmlEntities(href).trim();
+
+  if (/^https?:\/\//i.test(value) || /^mailto:/i.test(value) || /^tel:/i.test(value)) {
+    return value;
+  }
+
+  if (value.startsWith('/') && !value.startsWith('//')) {
+    return value;
+  }
+
+  return '';
+}
+
+function renderInfoLink(label = '', href = '') {
+  const safeHref = normalizeInfoHref(href);
+  const text = getPlainInfoText(label || href);
+
+  if (!safeHref) {
+    return escapeHtml(text);
+  }
+
+  const attrs = /^https?:\/\//i.test(safeHref)
+    ? ' target="_blank" rel="noopener noreferrer"'
+    : '';
+
+  return `<a href="${escapeHtmlAttribute(safeHref)}"${attrs} class="break-words font-medium text-blue-700 underline underline-offset-2 transition hover:text-blue-800">${escapeHtml(text || safeHref)}</a>`;
+}
+
+function linkifyPlainInfoText(value = '') {
+  const text = decodeHtmlEntities(value);
+  const tokenPattern = /https?:\/\/[^\s<>"']+|@[A-Za-z0-9_]{5,32}\b/g;
+  let html = '';
+  let lastIndex = 0;
+  let match;
+
+  while ((match = tokenPattern.exec(text)) !== null) {
+    const token = match[0];
+    const previous = match.index > 0 ? text[match.index - 1] : '';
+    const isHandle = token.startsWith('@');
+    const isEmbeddedHandle = isHandle && /[\w.-]/.test(previous);
+
+    html += escapeHtml(text.slice(lastIndex, match.index));
+
+    if (isEmbeddedHandle) {
+      html += escapeHtml(token);
+    } else if (isHandle) {
+      const username = token.slice(1);
+      html += renderInfoLink(token, `https://t.me/${username}`);
+    } else {
+      html += renderInfoLink(token, token);
+    }
+
+    lastIndex = match.index + token.length;
+  }
+
+  html += escapeHtml(text.slice(lastIndex));
+  return html;
+}
+
+function extractAnchorHref(attrs = '') {
+  const match = attrs.match(/\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+  return match?.[1] ?? match?.[2] ?? match?.[3] ?? '';
+}
+
+function renderInfoLineHtml(line = '') {
+  const value = line.toString();
+  const anchorPattern = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
+  let html = '';
+  let lastIndex = 0;
+  let match;
+
+  while ((match = anchorPattern.exec(value)) !== null) {
+    html += linkifyPlainInfoText(getPlainInfoFragment(value.slice(lastIndex, match.index)));
+    html += renderInfoLink(match[2], extractAnchorHref(match[1]));
+    lastIndex = match.index + match[0].length;
+  }
+
+  html += linkifyPlainInfoText(getPlainInfoFragment(value.slice(lastIndex)));
+  return html.trim();
+}
+
+function getInfoRawLines(value = '') {
+  const prepared = value
+    .toString()
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|li|tr|h[1-6])>/gi, '\n')
+    .replace(/<\/a>\s*(?=<(?:u\b[^>]*>\s*)?<a\b)/gi, '</a>\n')
     .replace(/\s+(?=\d\+?\s+\d{1,2}[:.]\d{2}\s*[-–—])/g, '\n')
     .replace(/\s+(?=\d\s*четверть\s*[-–—])/gi, '\n')
     .replace(/\s+(?=\d+\s*класс\s*[-–—])/gi, '\n')
@@ -246,11 +388,21 @@ function getInfoLines(value = '') {
     .map(line => line.trim().replace(/\s{2,}/g, ' '))
     .filter(Boolean);
 
-  if (lines.length <= 1 && prepared.length > 120) {
-    lines = prepared.match(/.{1,105}(?:\s+|$)/g)?.map(line => line.trim()).filter(Boolean) ?? lines;
+  const plain = getPlainInfoText(prepared);
+  if (lines.length <= 1 && !/<a\b/i.test(prepared) && plain.length > 120) {
+    lines = plain.match(/.{1,105}(?:\s+|$)/g)?.map(line => line.trim()).filter(Boolean) ?? lines;
   }
 
   return lines;
+}
+
+function getInfoLines(value = '') {
+  return getInfoRawLines(value)
+    .map(line => ({
+      text: getPlainInfoText(line),
+      html: renderInfoLineHtml(line),
+    }))
+    .filter(line => line.text || line.html);
 }
 
 function getInfoLineModel(value = '', limit = 5) {
