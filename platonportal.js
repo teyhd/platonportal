@@ -153,6 +153,9 @@ app.use("/sso", makeSsoRouter({
     "atten": { client_secret: process.env.ATTEN_SSO_CLIENT_SECRET, redirect_uri: "https://stud.platoniks.ru/api/cb",
       post_logout_redirect_uris: ['https://stud.platoniks.ru'], srv_name: 'atten' },
 
+    "vote": { client_secret: process.env.VOTE_SSO_CLIENT_SECRET, redirect_uri: "https://vote.platoniks.ru/api/cb",
+      post_logout_redirect_uris: ['https://vote.platoniks.ru'], srv_name: 'vote' },
+
   }
 }));
 app.use(platformsso)
