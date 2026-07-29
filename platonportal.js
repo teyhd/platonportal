@@ -122,7 +122,12 @@ const publicPath = path.join(appDir, 'public');
 
 app.set('views', viewsPath);
 mlog(publicPath);
-app.use(express.static(publicPath, { redirect: false }));
+app.use(express.static(publicPath, {
+  redirect: false,
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('.avif')) res.setHeader('Content-Type', 'image/avif');
+  }
+}));
 
 app.use(cookieParser());
 app.set('trust proxy', 1);
