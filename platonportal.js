@@ -1035,150 +1035,29 @@ app.get('/balalayka', (req, res) => {
   const openHref = 'https://msg.platoniks.ru/';
   const androidHref = 'https://www.rustore.ru/catalog/app/ru.platoniks.balalaika';
   const iosHref = 'https://testflight.apple.com/join/REkhmRaq';
-
-  const heroHighlights = [
-    { value: 'Задачи', label: 'Задачи не теряются в переписке и остаются в рабочем контексте.' },
-    { value: 'Файлы', label: 'Фото, видео и документы остаются рядом с перепиской.' },
-    { value: 'Live', label: 'Аудио- и видеозвонки доступны прямо из чатов.' }
-  ];
-
-  const proofPoints = [
-    { title: 'Меньше шума', text: 'Важные сообщения легче заметить, когда чаты, задачи и уведомления не смешиваются.' },
-    { title: 'Быстрый вход', text: 'Войти в аккаунт можно через Яндекс, Apple и другими удобными способами.' },
-    { title: 'Для ежедневной работы', text: 'Подходит для коротких сообщений, обсуждений и встреч.' },
-    { title: 'На разных устройствах', text: 'Открывается в браузере, на Android и на iPhone через TestFlight.' },
-    { title: 'Привычные действия', text: 'Реакции, файлы, статусы сообщений и звонки работают в интуитивном и хорошо знакомом формате.' }
-  ];
-
-  const showcaseItems = [
-    {
-      id: 'forums',
-      label: 'Задачи',
-      eyebrow: 'Организация',
-      title: 'Держите задачи команды в понятной структуре.',
-      description: 'Поручения, решения и договоренности проще вести, когда они не теряются в общей переписке.',
-      points: [
-        'видно, где появилась новая активность',
-        'важные задачи не теряются среди коротких сообщений',
-        'обсуждение и решение остаются рядом'
-      ]
-    },
-    {
-      id: 'reactions',
-      label: 'Реакции',
-      eyebrow: 'Быстрый ответ',
-      title: 'Отвечайте коротко, когда не нужен новый текст.',
-      description: 'Реакции помогают подтвердить, согласовать или отметить идею без лишних сообщений.',
-      points: [
-        'быстрая обратная связь в один жест',
-        'реакции работают привычно на телефоне и в браузере',
-        'меньше лишних “ок” и “принято” в чатах'
-      ]
-    },
-    {
-      id: 'media',
-      label: 'Медиа',
-      eyebrow: 'Файлы и материалы',
-      title: 'Делитесь фото, видео и документами без лишних переходов.',
-      description: 'Материалы остаются в контексте переписки, поэтому к ним проще вернуться позже.',
-      points: [
-        'прогресс загрузки виден сразу',
-        'фото и видео удобно смотреть в сообщениях',
-        'документы и вложения легко открыть повторно'
-      ]
-    },
-    {
-      id: 'notifications',
-      label: 'Уведомления',
-      eyebrow: 'Спокойный ритм',
-      title: 'Получайте уведомления без лишнего шума.',
-      description: 'Балалайка помогает заметить важное и не отвлекает повторно, когда вы уже в чате.',
-      points: [
-        'понятный текст уведомлений',
-        'меньше лишних уведомлений, когда чат уже открыт',
-        'понятные уведомления на разных устройствах'
-      ]
-    },
-    {
-      id: 'live',
-      label: 'Live',
-      eyebrow: 'Комнаты',
-      title: 'Подключайтесь к комнате прямо из обсуждения.',
-      description: 'Когда переписки недостаточно, можно быстро перейти к аудио- или видеозвонку.',
-      points: [
-        'не нужно искать отдельную ссылку',
-        'участникам понятно, куда подключаться',
-        'обсуждение и встреча остаются рядом'
-      ]
-    }
-  ];
-
-  const platformCards = [
-    {
-      id: 'web',
-      name: 'Браузер',
-      status: 'без установки',
-      description: 'Откройте Балалайку в браузере и продолжайте общение без установки приложения.',
-      note: 'Для компьютера и быстрого входа',
-      href: openHref,
-      cta: 'Открыть в браузере'
-    },
-    {
-      id: 'android',
-      name: 'Android',
-      status: 'RuStore',
-      description: 'Установите Android-версию из RuStore и получайте сообщения на телефоне.',
-      note: 'Официальная страница приложения',
-      href: androidHref,
-      cta: 'Скачать в RuStore'
-    },
-    {
-      id: 'ios',
-      name: 'iPhone',
-      status: 'TestFlight',
-      description: 'Подключитесь к iOS-версии через TestFlight, если пользуетесь iPhone.',
-      note: 'Установка через Apple TestFlight',
-      href: iosHref,
-      cta: 'Установить через TestFlight'
-    }
-  ];
-
-  const updateCards = [
-    {
-      eyebrow: 'Задачи',
-      title: 'Задачи легче держать в фокусе.',
-      text: 'Новые поручения, договоренности и активность видно сразу, без долгого поиска по переписке.'
-    },
-    {
-      eyebrow: 'Медиа',
-      title: 'Файлы и видео стали понятнее в работе.',
-      text: 'Загрузка показывает прогресс, а фото и видео меньше выбиваются из переписки.'
-    },
-    {
-      eyebrow: 'Стабильность',
-      title: 'Повышено удобство и корректность работы мессенджера',
-      text: 'Улучшены реакции, статусы сообщений, уведомления и запуск чатов на iPhone.'
-    }
-  ];
-
-  const footerLinks = [
-    { href: openHref, label: 'Открыть в браузере' },
-    { href: androidHref, label: 'Android' },
-    { href: iosHref, label: 'iPhone' }
-  ];
-
   res.render('balalayka', {
-    title: 'Балалайка',
-    pageTitle: 'Балалайка, мессенджер для команды',
+    layout: 'balalayka',
+    title: 'Балалайка - рабочее пространство для команды',
+    description: 'Балалайка объединяет командное общение, задачи и созвоны в одном рабочем пространстве - в браузере, на Android и iPhone.',
+    canonicalUrl: 'https://platoniks.ru/balalayka',
+    ogImageUrl: 'https://platoniks.ru/img/balalayka/og-balalayka-1200x630.jpg',
     openHref,
-    heroHighlights,
-    proofPoints,
-    showcaseItems,
-    platformCards,
-    updateCards,
-    footerLinks,
+    androidHref,
+    iosHref,
     auth: req.session?.rolen || 0
   });
+});
+
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain').send('User-agent: *\nAllow: /\nSitemap: https://platoniks.ru/sitemap.xml\n');
+});
+
+app.get('/sitemap.xml', (req, res) => {
+  res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://platoniks.ru/</loc></url>
+  <url><loc>https://platoniks.ru/balalayka</loc></url>
+</urlset>`);
 });
 
 app.get('/api/cards', async (req, res) => {
@@ -1910,4 +1789,3 @@ async function start(){
     }
 }
 start();
-
