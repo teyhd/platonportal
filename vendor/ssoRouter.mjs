@@ -6,6 +6,39 @@ import jwt from "jsonwebtoken";
 import * as db from './db.mjs';
 import {mlog,say} from './logs.js'
 
+export function getClientServiceName(client) {
+  if (typeof client?.srv_name !== 'string' || !client.srv_name) {
+    throw new Error('SSO client must have a service name');
+  }
+  return client.srv_name;
+}
+
+export function createScopedAccessToken({
+  issuer,
+  jwtSecret,
+  subject,
+  name,
+  roles,
+  logins,
+  audience,
+  now,
+}) {
+  return jwt.sign(
+    {
+      iss: issuer,
+      sub: subject,
+      aud: audience,
+      name,
+      right: roles,
+      logins,
+      iat: now,
+      exp: now + 600,
+    },
+    jwtSecret,
+    { algorithm: 'HS256' }
+  );
+}
+
 export function makeSsoRouter(config = {}) {
   const router = express.Router();
 
@@ -114,9 +147,9 @@ export function makeSsoRouter(config = {}) {
   });
 
   // --- /authorize ---
-  // Можно передавать audience=srv_name (число). Если нет — берём из конфигурации клиента.
+  // Audience всегда берётся из конфигурации OAuth-клиента.
   router.get("/authorize", (req, res) => {
-    const { client_id, redirect_uri, state, scope, audience } = req.query;
+    const { client_id, redirect_uri, state } = req.query;
     const cl = CLIENTS[client_id];
     if (!cl || cl.redirect_uri !== redirect_uri) return res.status(400).send("invalid client");
 
@@ -130,10 +163,9 @@ export function makeSsoRouter(config = {}) {
     CODES.set(code, {
       sub: req.session.uid,       // users.id
       name : req.session.name,
-      right: req.session.right,
       logins: req.session.logins, 
       client_id,
-      srv_name: audience,                   
+      srv_name: getClientServiceName(cl),
     });
 
     const url = new URL(redirect_uri);
@@ -144,23 +176,17 @@ export function makeSsoRouter(config = {}) {
 
   // --- /token ---
   router.post("/token", async (req, res) => {
-    console.log(req.body);
     const { grant_type, code, client_id, client_secret, redirect_uri } = req.body;
     const cl = CLIENTS[client_id];
-    console.log(cl,client_secret,redirect_uri);
     if (!cl || cl.client_secret !== client_secret || cl.redirect_uri !== redirect_uri) {
-      console.log("invalid_client")
       return res.status(400).json({ error: "invalid_client" });
     }
     if (grant_type !== "authorization_code") {
-      console.log("unsupported_grant_type")
       return res.status(400).json({ error: "unsupported_grant_type" });
     }
 
     const entry = CODES.get(code);
-    console.log(entry);
     if (!entry || entry.client_id !== client_id) {
-      console.log("invalid_code")
       return res.status(400).json({ error: "invalid_code" });
     }
     CODES.delete(code);
@@ -169,28 +195,27 @@ export function makeSsoRouter(config = {}) {
     const roles = await db.getUserRolesForsrvnam(entry.sub, entry.srv_name);
 
     const now = Math.floor(Date.now() / 1000);
-    const access_token = jwt.sign(
-      {
-        iss: ISS,
-        sub: entry.sub,
-        aud: entry.srv_name,      // <- аудитория = числовой srvs.id
-        name: entry.name,
-        right: entry.right,                  // роли из rights для данного srv_name
-        logins: entry.logins,                // логины из logins для данного srv_name
-        iat: now,
-        exp: now + 600
-      },
-      JWT_SECRET
-    );
+    const access_token = createScopedAccessToken({
+      issuer: ISS,
+      jwtSecret: JWT_SECRET,
+      subject: entry.sub,
+      name: entry.name,
+      roles,
+      logins: entry.logins,
+      audience: entry.srv_name,
+      now,
+    });
 
     const id_token = jwt.sign(
       { iss: ISS, sub: entry.sub, iat: now, exp: now + 600 },
-      JWT_SECRET
+      JWT_SECRET,
+      { algorithm: 'HS256' }
     );
 
     const refresh_token = jwt.sign(
       { sub: entry.sub, typ: "refresh", iat: now, exp: now + 7 * 24 * 3600 },
-      JWT_SECRET
+      JWT_SECRET,
+      { algorithm: 'HS256' }
     );
 
     res.json({

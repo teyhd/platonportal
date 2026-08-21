@@ -10,6 +10,7 @@ import * as hlp from './vendor/hlp.mjs';
 import * as vcall from './vendor/vcall.mjs';
 import { makeSsoRouter } from "./vendor/ssoRouter.mjs";
 import platformsso from "./vendor/platformsso.mjs";
+import { CALENDAR_SSO_CLIENT_ID, getCalendarSsoClient } from './vendor/calendarSso.mjs';
 
 import express from 'express'
 import exphbs from 'express-handlebars'
@@ -160,6 +161,8 @@ app.use("/sso", makeSsoRouter({
 
     "vote": { client_secret: process.env.VOTE_SSO_CLIENT_SECRET, redirect_uri: "https://vote.platoniks.ru/api/cb",
       post_logout_redirect_uris: ['https://vote.platoniks.ru'], srv_name: 'vote' },
+
+    [CALENDAR_SSO_CLIENT_ID]: getCalendarSsoClient(),
 
   }
 }));
@@ -1784,6 +1787,7 @@ app.get('*',async function(req, res){
 
 async function start(){
     try {
+        await db.migrateCalendarSso();
         app.listen(PORT,()=> {
             mlog('Сервер - запущен')
            // say('Распределительный портал - запущен \nПорт: '+PORT)

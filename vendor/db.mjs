@@ -30,6 +30,149 @@ let setss = {
 const usr = mysql.createPool(sets).promise()
 const portal = mysql.createPool(setss).promise()
 
+const CALENDAR_SSO_SERVICE_NAME = 'calendar';
+const CALENDAR_SSO_ROLE_IDS = [1, 2, 3, 4, 5, 6];
+const CALENDAR_SSO_LOCK_NAME = 'mainportal:sso:calendar';
+
+export async function migrateCalendarSso(pool = usr) {
+  const conn = await pool.getConnection();
+  let transactionStarted = false;
+  let lockAcquired = false;
+
+  try {
+    const [[lock]] = await conn.query(
+      'SELECT GET_LOCK(?, 10) AS acquired',
+      [CALENDAR_SSO_LOCK_NAME]
+    );
+    if (Number(lock?.acquired) !== 1) {
+      throw new Error('Calendar SSO migration lock was not acquired');
+    }
+    lockAcquired = true;
+
+    await conn.beginTransaction();
+    transactionStarted = true;
+
+    const [roles] = await conn.query(
+      `SELECT id
+         FROM role_name
+        WHERE id IN (${CALENDAR_SSO_ROLE_IDS.map(() => '?').join(', ')})
+        ORDER BY id
+        FOR UPDATE`,
+      CALENDAR_SSO_ROLE_IDS
+    );
+    const foundRoleIds = roles.map(role => Number(role.id));
+    if (foundRoleIds.length !== CALENDAR_SSO_ROLE_IDS.length ||
+        foundRoleIds.some((id, index) => id !== CALENDAR_SSO_ROLE_IDS[index])) {
+      throw new Error('Calendar SSO migration requires role IDs 1 through 6');
+    }
+
+    const [services] = await conn.query(
+      'SELECT id, types FROM srvs WHERE name = ? ORDER BY id FOR UPDATE',
+      [CALENDAR_SSO_SERVICE_NAME]
+    );
+    if (services.length > 1) {
+      throw new Error('Calendar SSO migration found duplicate service records');
+    }
+
+    let serviceId;
+    let serviceCreated = false;
+    if (!services.length) {
+      const [created] = await conn.query(
+        'INSERT INTO srvs (types, name) VALUES (?, ?)',
+        [0, CALENDAR_SSO_SERVICE_NAME]
+      );
+      serviceId = created.insertId;
+      serviceCreated = true;
+    } else {
+      serviceId = services[0].id;
+      if (Number(services[0].types) !== 0) {
+        await conn.query('UPDATE srvs SET types = 0 WHERE id = ?', [serviceId]);
+      }
+    }
+
+    const [serviceRoles] = await conn.query(
+      `INSERT INTO srvs_roles (srvs_id, role_id)
+       SELECT ?, rn.id
+         FROM role_name rn
+        WHERE rn.id IN (${CALENDAR_SSO_ROLE_IDS.map(() => '?').join(', ')})
+          AND NOT EXISTS (
+            SELECT 1
+              FROM srvs_roles existing
+             WHERE existing.srvs_id = ?
+               AND existing.role_id = rn.id
+          )`,
+      [serviceId, ...CALENDAR_SSO_ROLE_IDS, serviceId]
+    );
+
+    const [rights] = await conn.query(
+      `INSERT INTO rights (usr_id, srv_id, role_id)
+       SELECT u.id, ?, u.type
+         FROM users u
+        WHERE u.lifecycle_state = 'active'
+          AND u.type IN (${CALENDAR_SSO_ROLE_IDS.map(() => '?').join(', ')})
+          AND NOT EXISTS (
+            SELECT 1
+              FROM rights existing
+             WHERE existing.usr_id = u.id
+               AND existing.srv_id = ?
+          )`,
+      [serviceId, ...CALENDAR_SSO_ROLE_IDS, serviceId]
+    );
+
+    const [configuredRoles] = await conn.query(
+      `SELECT role_id
+         FROM srvs_roles
+        WHERE srvs_id = ?
+          AND role_id IN (${CALENDAR_SSO_ROLE_IDS.map(() => '?').join(', ')})
+        ORDER BY role_id`,
+      [serviceId, ...CALENDAR_SSO_ROLE_IDS]
+    );
+    const configuredRoleIds = configuredRoles.map(role => Number(role.role_id));
+    if (configuredRoleIds.length !== CALENDAR_SSO_ROLE_IDS.length ||
+        configuredRoleIds.some((id, index) => id !== CALENDAR_SSO_ROLE_IDS[index])) {
+      throw new Error('Calendar SSO migration could not verify service roles');
+    }
+
+    const [[missingRights]] = await conn.query(
+      `SELECT COUNT(*) AS count
+         FROM users u
+        WHERE u.lifecycle_state = 'active'
+          AND u.type IN (${CALENDAR_SSO_ROLE_IDS.map(() => '?').join(', ')})
+          AND NOT EXISTS (
+            SELECT 1
+              FROM rights existing
+             WHERE existing.usr_id = u.id
+               AND existing.srv_id = ?
+          )`,
+      [...CALENDAR_SSO_ROLE_IDS, serviceId]
+    );
+    if (Number(missingRights?.count) !== 0) {
+      throw new Error('Calendar SSO migration could not verify user rights');
+    }
+
+    await conn.commit();
+    transactionStarted = false;
+
+    return {
+      serviceId: Number(serviceId),
+      serviceCreated,
+      serviceRolesAdded: Number(serviceRoles.affectedRows || 0),
+      rightsAdded: Number(rights.affectedRows || 0),
+    };
+  } catch (error) {
+    if (transactionStarted) await conn.rollback();
+    throw error;
+  } finally {
+    try {
+      if (lockAcquired) {
+        await conn.query('SELECT RELEASE_LOCK(?) AS released', [CALENDAR_SSO_LOCK_NAME]);
+      }
+    } finally {
+      conn.release();
+    }
+  }
+}
+
 export async function auth_user(pin){
     const [rows] = await usr.query(
       `SELECT id,name,type as role FROM users WHERE pin = ? LIMIT 1`,
