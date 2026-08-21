@@ -115,6 +115,7 @@ export async function migrateCalendarSso(pool = usr) {
               FROM rights existing
              WHERE existing.usr_id = u.id
                AND existing.srv_id = ?
+               AND existing.role_id = u.type
           )`,
       [serviceId, ...CALENDAR_SSO_ROLE_IDS, serviceId]
     );
@@ -143,6 +144,7 @@ export async function migrateCalendarSso(pool = usr) {
               FROM rights existing
              WHERE existing.usr_id = u.id
                AND existing.srv_id = ?
+               AND existing.role_id = u.type
           )`,
       [...CALENDAR_SSO_ROLE_IDS, serviceId]
     );
@@ -171,6 +173,34 @@ export async function migrateCalendarSso(pool = usr) {
       conn.release();
     }
   }
+}
+
+export async function ensureCalendarSsoRightForUser(userId, pool = usr) {
+  const [right] = await pool.query(
+    `INSERT INTO rights (usr_id, srv_id, role_id)
+     SELECT u.id, calendar.id, u.type
+       FROM users u
+       CROSS JOIN (
+         SELECT id
+           FROM srvs
+          WHERE name = ?
+          ORDER BY id
+          LIMIT 1
+       ) calendar
+      WHERE u.id = ?
+        AND u.lifecycle_state = 'active'
+        AND u.type IN (${CALENDAR_SSO_ROLE_IDS.map(() => '?').join(', ')})
+        AND NOT EXISTS (
+          SELECT 1
+            FROM rights existing
+           WHERE existing.usr_id = u.id
+             AND existing.srv_id = calendar.id
+             AND existing.role_id = u.type
+        )`,
+    [CALENDAR_SSO_SERVICE_NAME, userId, ...CALENDAR_SSO_ROLE_IDS]
+  );
+
+  return Number(right.affectedRows || 0);
 }
 
 export async function auth_user(pin){
@@ -341,6 +371,7 @@ export async function create_user({
   );
 
   await upsert_user_email(res.insertId, email);
+  await ensureCalendarSsoRightForUser(res.insertId);
 
   return res.insertId;
 }
@@ -399,7 +430,10 @@ export async function update_user(id, {
     [email ? String(email).trim() : null, id]
   );
 
-  return res.affectedRows > 0;
+  if (!res.affectedRows) return false;
+
+  await ensureCalendarSsoRightForUser(id);
+  return true;
 }
 
 export async function delete_user(id) {
@@ -506,16 +540,16 @@ export async function replace_user_rights(userId, pairs) {
   // Проще/надежнее — заменить весь набор:
   await usr.query(`DELETE FROM rights WHERE usr_id = ?`, [userId]);
 
-  if (!pairs?.length) return;
-
   // Вставка батчем
-  const values = pairs
+  const values = (pairs || [])
     .filter(p => Number.isInteger(p.srv_id) && Number.isInteger(p.role_id))
     .map(p => [userId, p.srv_id, p.role_id]);
 
   if (values.length) {
     await usr.query(`INSERT INTO rights (usr_id, srv_id, role_id) VALUES ?`, [values]);
   }
+
+  await ensureCalendarSsoRightForUser(userId);
 }
 
 // ==== LOGINS ====

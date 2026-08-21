@@ -8,7 +8,7 @@ import {
   CALENDAR_SSO_REDIRECT_URI,
   getCalendarSsoClient,
 } from '../vendor/calendarSso.mjs';
-import { migrateCalendarSso } from '../vendor/db.mjs';
+import { ensureCalendarSsoRightForUser, migrateCalendarSso } from '../vendor/db.mjs';
 import { createScopedAccessToken, getClientServiceName } from '../vendor/ssoRouter.mjs';
 
 function makePool({ existingService = false, roleIds = [1, 2, 3, 4, 5, 6] } = {}) {
@@ -80,7 +80,13 @@ test('Calendar migration creates and verifies the service, roles, and rights', a
   assert.equal(fixture.committed, true);
   assert.equal(fixture.rolledBack, false);
   assert.equal(fixture.released, true);
-  assert.ok(fixture.calls.some(call => call.sql.startsWith('INSERT INTO rights')));
+  const rightsInsert = fixture.calls.find(call => call.sql.startsWith('INSERT INTO rights'));
+  assert.ok(rightsInsert);
+  assert.match(rightsInsert.sql, /existing\.role_id = u\.type/);
+
+  const rightsVerification = fixture.calls.find(call => call.sql.startsWith('SELECT COUNT\(\*\) AS count'));
+  assert.ok(rightsVerification);
+  assert.match(rightsVerification.sql, /existing\.role_id = u\.type/);
 });
 
 test('Calendar migration is idempotent and rolls back if role prerequisites are missing', async () => {
@@ -96,6 +102,25 @@ test('Calendar migration is idempotent and rolls back if role prerequisites are 
   await assert.rejects(() => migrateCalendarSso(invalidFixture.pool), /role IDs 1 through 6/);
   assert.equal(invalidFixture.rolledBack, true);
   assert.equal(invalidFixture.released, true);
+});
+
+test('Calendar user-right reconciliation adds only the matching active primary role', async () => {
+  const calls = [];
+  const pool = {
+    async query(sql, params = []) {
+      calls.push({ sql, params });
+      return [{ affectedRows: 1 }];
+    },
+  };
+
+  const added = await ensureCalendarSsoRightForUser(42, pool);
+
+  assert.equal(added, 1);
+  assert.equal(calls.length, 1);
+  assert.match(calls[0].sql, /u\.lifecycle_state = 'active'/);
+  assert.match(calls[0].sql, /u\.type IN \(\?, \?, \?, \?, \?, \?\)/);
+  assert.match(calls[0].sql, /existing\.role_id = u\.type/);
+  assert.deepEqual(calls[0].params, ['calendar', 42, 1, 2, 3, 4, 5, 6]);
 });
 
 test('scoped access tokens use HS256, configured audience, and service-only roles', () => {
