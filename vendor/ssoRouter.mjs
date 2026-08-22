@@ -59,7 +59,6 @@ export function makeSsoRouter(config = {}) {
 
   // --- Демо-логин (замени на свою авторизацию) ---
   router.get('/auth',async (req,res)=>{
-      console.log(req.query);
       if (req.query.pin!=undefined){
           let ans = await db.auth_user(req.query.pin);
           if (ans!=undefined){
@@ -73,7 +72,6 @@ export function makeSsoRouter(config = {}) {
           } else {
               res.send('nok')
           }
-          console.dir(ans);
       } else{
           res.render('auth',{
               title: 'Авторизация'
@@ -82,7 +80,6 @@ export function makeSsoRouter(config = {}) {
   }) 
 
   router.get('/bauth',async (req,res)=>{
-      console.log(req.query);
       if (req.query.pin!=undefined){
           let ans = await db.auth_user(req.query.pin);
           if (ans!=undefined){
@@ -106,7 +103,6 @@ export function makeSsoRouter(config = {}) {
           } else {
               res.send('Ошибка, неверная ссылка!')
           }
-          console.dir(ans);
       } else{
           res.render('auth',{
               title: 'Авторизация'
@@ -115,7 +111,6 @@ export function makeSsoRouter(config = {}) {
   }) 
 
   router.post('/auth',async (req,res)=>{
-    console.log("dddd",req.body);
     if (req.body.pin!=undefined){
         let ans = await db.auth_user(req.body.pin);
         if (ans!=undefined){
@@ -129,7 +124,6 @@ export function makeSsoRouter(config = {}) {
         } else {
             res.send('Ошибка авторизации')
         }
-        console.dir(ans);
     } else{
         res.render('auth',{
             title: 'Авторизация'
