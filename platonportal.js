@@ -155,9 +155,9 @@ app.use("/sso", makeSsoRouter({
       post_logout_redirect_uris: ['https://rep.platoniks.ru'], srv_name: 'report', legacy_audience: 3 },
 
       "diary": { client_secret: process.env.DIARY_SSO_CLIENT_SECRET, redirect_uri: "https://diary.platoniks.ru/api/cb",
-      post_logout_redirect_uris: ['https://diary.platoniks.ru'], srv_name: 'diary', legacy_audience: 4 },
+      post_logout_redirect_uris: ['https://diary.platoniks.ru'], srv_name: 'diary', legacy_audience: 11 },
     "atten": { client_secret: process.env.ATTEN_SSO_CLIENT_SECRET, redirect_uri: "https://stud.platoniks.ru/api/cb",
-      post_logout_redirect_uris: ['https://stud.platoniks.ru'], srv_name: 'atten', legacy_audience: 13 },
+      post_logout_redirect_uris: ['https://stud.platoniks.ru'], srv_name: 'atten', legacy_audience: 'atten' },
 
     "vote": { client_secret: process.env.VOTE_SSO_CLIENT_SECRET, redirect_uri: "https://vote.platoniks.ru/api/cb",
       post_logout_redirect_uris: ['https://vote.platoniks.ru'], srv_name: 'vote', legacy_audience: 14 },

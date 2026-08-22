@@ -160,6 +160,14 @@ test('configured legacy audience cannot be changed by the authorize request', ()
     getAuthorizationAudience({ srv_name: 'bookpc', legacy_audience: 2 }, '999'),
     '2'
   );
+  assert.equal(
+    getAuthorizationAudience({ srv_name: 'atten', legacy_audience: 'atten' }, '13'),
+    'atten'
+  );
+  assert.equal(
+    getAuthorizationAudience({ srv_name: 'diary', legacy_audience: 11 }, '4'),
+    '11'
+  );
 });
 
 test('legacy OAuth flow retains audience and rights required by existing clients', async () => {
