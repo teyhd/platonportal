@@ -155,6 +155,13 @@ test('legacy clients preserve the requested audience and rights object contract'
   assert.deepEqual(decoded.right, legacyRights);
 });
 
+test('configured legacy audience cannot be changed by the authorize request', () => {
+  assert.equal(
+    getAuthorizationAudience({ srv_name: 'bookpc', legacy_audience: 2 }, '999'),
+    '2'
+  );
+});
+
 test('legacy OAuth flow retains audience and rights required by existing clients', async () => {
   const jwtSecret = 'legacy-test-signing-key';
   const legacyRights = [{ srv_id: 2, role_id: 4 }];
@@ -180,6 +187,7 @@ test('legacy OAuth flow retains audience and rights required by existing clients
         client_secret: 'legacy-test-client-secret',
         redirect_uri: 'https://legacy.example.test/cb',
         srv_name: 'bookpc',
+        legacy_audience: 2,
       },
     },
   }));
@@ -196,7 +204,7 @@ test('legacy OAuth flow retains audience and rights required by existing clients
     assert.ok(cookie);
 
     const authorize = await fetch(
-      `${baseUrl}/sso/authorize?client_id=bookpc&redirect_uri=${encodeURIComponent('https://legacy.example.test/cb')}&audience=2`,
+      `${baseUrl}/sso/authorize?client_id=bookpc&redirect_uri=${encodeURIComponent('https://legacy.example.test/cb')}&audience=999`,
       { headers: { cookie }, redirect: 'manual' }
     );
     assert.equal(authorize.status, 302);
@@ -220,6 +228,81 @@ test('legacy OAuth flow retains audience and rights required by existing clients
 
     assert.equal(decoded.aud, '2');
     assert.deepEqual(decoded.right, legacyRights);
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+  }
+});
+
+test('Calendar OAuth flow fixes its audience and emits only Calendar roles', async () => {
+  const jwtSecret = 'calendar-test-signing-key';
+  const app = express();
+
+  app.use(session({
+    secret: 'calendar-test-session-key',
+    resave: false,
+    saveUninitialized: false,
+  }));
+  app.get('/seed', (req, res) => {
+    req.session.uid = 42;
+    req.session.name = 'Test User';
+    req.session.right = [{ srv_id: 2, role_id: 4 }];
+    req.session.logins = [];
+    res.sendStatus(204);
+  });
+  app.use('/sso', makeSsoRouter({
+    issuer: 'https://sso.example.test',
+    jwtSecret,
+    clients: {
+      calendar: {
+        client_secret: 'calendar-test-client-secret',
+        redirect_uri: 'https://calendar.example.test/cb',
+        srv_name: 'calendar',
+        service_scoped_access_token: true,
+      },
+    },
+    getServiceRoles: async (userId, serviceName) => {
+      assert.equal(userId, 42);
+      assert.equal(serviceName, 'calendar');
+      return [3];
+    },
+  }));
+
+  const server = await new Promise(resolve => {
+    const listener = app.listen(0, '127.0.0.1', () => resolve(listener));
+  });
+  const { port } = server.address();
+  const baseUrl = `http://127.0.0.1:${port}`;
+
+  try {
+    const seed = await fetch(`${baseUrl}/seed`);
+    const cookie = seed.headers.get('set-cookie')?.split(';', 1)[0];
+    assert.ok(cookie);
+
+    const authorize = await fetch(
+      `${baseUrl}/sso/authorize?client_id=calendar&redirect_uri=${encodeURIComponent('https://calendar.example.test/cb')}&audience=2`,
+      { headers: { cookie }, redirect: 'manual' }
+    );
+    assert.equal(authorize.status, 302);
+    const code = new URL(authorize.headers.get('location')).searchParams.get('code');
+    assert.ok(code);
+
+    const token = await fetch(`${baseUrl}/sso/token`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        client_id: 'calendar',
+        client_secret: 'calendar-test-client-secret',
+        redirect_uri: 'https://calendar.example.test/cb',
+      }),
+    });
+    assert.equal(token.status, 200);
+    const { access_token } = await token.json();
+    const decoded = jwt.verify(access_token, jwtSecret, { algorithms: ['HS256'] });
+
+    assert.equal(decoded.aud, 'calendar');
+    assert.deepEqual(decoded.right, [3]);
   } finally {
     await new Promise(resolve => server.close(resolve));
   }

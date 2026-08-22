@@ -143,24 +143,24 @@ app.use("/sso", makeSsoRouter({
   jwtSecret: process.env.JWTSECRET,
   clients: {
     "bookpc": { client_secret: "pcbigsectet", redirect_uri: "https://pc.platoniks.ru/cb",
-      post_logout_redirect_uris: ['https://pc.platoniks.ru'], srv_name: 'bookpc' },
+      post_logout_redirect_uris: ['https://pc.platoniks.ru'], srv_name: 'bookpc', legacy_audience: 2 },
 
     "rasp": { client_secret: "Mydirtybigsectetb", redirect_uri: "https://rasp.platoniks.ru/api/cb",
-    post_logout_redirect_uris: ['https://rasp.platoniks.ru'], srv_name: 'rasp' },
+    post_logout_redirect_uris: ['https://rasp.platoniks.ru'], srv_name: 'rasp', legacy_audience: 8 },
     
     "buy": { client_secret: process.env.BUY_SSO_CLIENT_SECRET, redirect_uri: "https://buy.platoniks.ru/api/cb",
-      post_logout_redirect_uris: ['https://buy.platoniks.ru'], srv_name: 'buy' },
+      post_logout_redirect_uris: ['https://buy.platoniks.ru'], srv_name: 'buy', legacy_audience: 12 },
 
     "report": { client_secret: "ReportDirtySecurFuckTheMind", redirect_uri: "https://rep.platoniks.ru/cb",
-      post_logout_redirect_uris: ['https://rep.platoniks.ru'], srv_name: 'report' },
+      post_logout_redirect_uris: ['https://rep.platoniks.ru'], srv_name: 'report', legacy_audience: 3 },
 
       "diary": { client_secret: process.env.DIARY_SSO_CLIENT_SECRET, redirect_uri: "https://diary.platoniks.ru/api/cb",
-      post_logout_redirect_uris: ['https://diary.platoniks.ru'], srv_name: 'diary' },
+      post_logout_redirect_uris: ['https://diary.platoniks.ru'], srv_name: 'diary', legacy_audience: 4 },
     "atten": { client_secret: process.env.ATTEN_SSO_CLIENT_SECRET, redirect_uri: "https://stud.platoniks.ru/api/cb",
-      post_logout_redirect_uris: ['https://stud.platoniks.ru'], srv_name: 'atten' },
+      post_logout_redirect_uris: ['https://stud.platoniks.ru'], srv_name: 'atten', legacy_audience: 13 },
 
     "vote": { client_secret: process.env.VOTE_SSO_CLIENT_SECRET, redirect_uri: "https://vote.platoniks.ru/api/cb",
-      post_logout_redirect_uris: ['https://vote.platoniks.ru'], srv_name: 'vote' },
+      post_logout_redirect_uris: ['https://vote.platoniks.ru'], srv_name: 'vote', legacy_audience: 14 },
 
     [CALENDAR_SSO_CLIENT_ID]: getCalendarSsoClient(),
 

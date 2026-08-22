@@ -14,9 +14,17 @@ export function getClientServiceName(client) {
 }
 
 export function getAuthorizationAudience(client, requestedAudience) {
-  return client?.service_scoped_access_token
-    ? getClientServiceName(client)
-    : requestedAudience;
+  if (client?.service_scoped_access_token) {
+    return getClientServiceName(client);
+  }
+
+  // Legacy services validate a numeric aud value. Keep it in their client
+  // configuration instead of letting a browser request choose another service.
+  if (client?.legacy_audience !== undefined && client?.legacy_audience !== null) {
+    return String(client.legacy_audience);
+  }
+
+  return requestedAudience;
 }
 
 export function createScopedAccessToken({
@@ -51,6 +59,7 @@ export function makeSsoRouter(config = {}) {
   const ISS        = config.issuer    || process.env.SSOADR;
   const JWT_SECRET = config.jwtSecret || process.env.JWTSECRET;
   const CLIENTS    = config.clients   || {};
+  const getServiceRoles = config.getServiceRoles || db.getUserRolesForsrvnam;
 
   // code -> { sub, client_id, srv_name, scope }
   const CODES = new Map();
@@ -147,7 +156,7 @@ export function makeSsoRouter(config = {}) {
   });
 
   // --- /authorize ---
-  // Legacy-клиенты передают audience сами. Service-scoped клиенты фиксируют его в конфигурации.
+  // Calendar uses its service name. Legacy clients use their configured numeric audience.
   router.get("/authorize", (req, res) => {
     const { client_id, redirect_uri, state, audience } = req.query;
     const cl = CLIENTS[client_id];
@@ -195,7 +204,7 @@ export function makeSsoRouter(config = {}) {
     CODES.delete(code);
 
     const rights = entry.service_scoped_access_token
-      ? await db.getUserRolesForsrvnam(entry.sub, entry.srv_name)
+      ? await getServiceRoles(entry.sub, entry.srv_name)
       : entry.right;
 
     const now = Math.floor(Date.now() / 1000);
