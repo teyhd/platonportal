@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import express from 'express';
+import session from 'express-session';
 import jwt from 'jsonwebtoken';
 
 import {
@@ -9,7 +11,11 @@ import {
   getCalendarSsoClient,
 } from '../vendor/calendarSso.mjs';
 import { ensureCalendarSsoRightForUser, migrateCalendarSso } from '../vendor/db.mjs';
-import { createScopedAccessToken, getClientServiceName } from '../vendor/ssoRouter.mjs';
+import {
+  createScopedAccessToken,
+  getAuthorizationAudience,
+  makeSsoRouter,
+} from '../vendor/ssoRouter.mjs';
 
 function makePool({ existingService = false, roleIds = [1, 2, 3, 4, 5, 6] } = {}) {
   const calls = [];
@@ -63,6 +69,7 @@ test('Calendar client uses the required endpoints and environment-only secret', 
   assert.equal(client.redirect_uri, CALENDAR_SSO_REDIRECT_URI);
   assert.deepEqual(client.post_logout_redirect_uris, [CALENDAR_SSO_POST_LOGOUT_REDIRECT_URI]);
   assert.equal(client.srv_name, 'calendar');
+  assert.equal(client.service_scoped_access_token, true);
   assert.throws(() => getCalendarSsoClient({}), /CALENDAR_SSO_CLIENT_SECRET/);
 });
 
@@ -123,15 +130,113 @@ test('Calendar user-right reconciliation adds only the matching active primary r
   assert.deepEqual(calls[0].params, ['calendar', 42, 1, 2, 3, 4, 5, 6]);
 });
 
-test('scoped access tokens use HS256, configured audience, and service-only roles', () => {
+test('legacy clients preserve the requested audience and rights object contract', () => {
+  const legacyRights = [
+    { srv_id: 2, role_id: 4 },
+    { srv_id: 11, role_id: 2 },
+  ];
+  const audience = getAuthorizationAudience({ srv_name: 'bookpc' }, '2');
   const token = createScopedAccessToken({
     issuer: 'https://sso.example.test',
     jwtSecret: 'test-signing-key',
     subject: 42,
     name: 'Test User',
-    roles: [3],
+    rights: legacyRights,
     logins: [],
-    audience: getClientServiceName({ srv_name: 'calendar' }),
+    audience,
+    now: 1_700_000_000,
+  });
+  const decoded = jwt.verify(token, 'test-signing-key', {
+    algorithms: ['HS256'],
+    ignoreExpiration: true,
+  });
+
+  assert.equal(decoded.aud, '2');
+  assert.deepEqual(decoded.right, legacyRights);
+});
+
+test('legacy OAuth flow retains audience and rights required by existing clients', async () => {
+  const jwtSecret = 'legacy-test-signing-key';
+  const legacyRights = [{ srv_id: 2, role_id: 4 }];
+  const app = express();
+
+  app.use(session({
+    secret: 'legacy-test-session-key',
+    resave: false,
+    saveUninitialized: false,
+  }));
+  app.get('/seed', (req, res) => {
+    req.session.uid = 42;
+    req.session.name = 'Test User';
+    req.session.right = legacyRights;
+    req.session.logins = [];
+    res.sendStatus(204);
+  });
+  app.use('/sso', makeSsoRouter({
+    issuer: 'https://sso.example.test',
+    jwtSecret,
+    clients: {
+      bookpc: {
+        client_secret: 'legacy-test-client-secret',
+        redirect_uri: 'https://legacy.example.test/cb',
+        srv_name: 'bookpc',
+      },
+    },
+  }));
+
+  const server = await new Promise(resolve => {
+    const listener = app.listen(0, '127.0.0.1', () => resolve(listener));
+  });
+  const { port } = server.address();
+  const baseUrl = `http://127.0.0.1:${port}`;
+
+  try {
+    const seed = await fetch(`${baseUrl}/seed`);
+    const cookie = seed.headers.get('set-cookie')?.split(';', 1)[0];
+    assert.ok(cookie);
+
+    const authorize = await fetch(
+      `${baseUrl}/sso/authorize?client_id=bookpc&redirect_uri=${encodeURIComponent('https://legacy.example.test/cb')}&audience=2`,
+      { headers: { cookie }, redirect: 'manual' }
+    );
+    assert.equal(authorize.status, 302);
+    const code = new URL(authorize.headers.get('location')).searchParams.get('code');
+    assert.ok(code);
+
+    const token = await fetch(`${baseUrl}/sso/token`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        client_id: 'bookpc',
+        client_secret: 'legacy-test-client-secret',
+        redirect_uri: 'https://legacy.example.test/cb',
+      }),
+    });
+    assert.equal(token.status, 200);
+    const { access_token } = await token.json();
+    const decoded = jwt.verify(access_token, jwtSecret, { algorithms: ['HS256'] });
+
+    assert.equal(decoded.aud, '2');
+    assert.deepEqual(decoded.right, legacyRights);
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+  }
+});
+
+test('Calendar access tokens use HS256, configured audience, and service-only roles', () => {
+  const token = createScopedAccessToken({
+    issuer: 'https://sso.example.test',
+    jwtSecret: 'test-signing-key',
+    subject: 42,
+    name: 'Test User',
+    rights: [3],
+    logins: [],
+    audience: getAuthorizationAudience({
+      srv_name: 'calendar',
+      service_scoped_access_token: true,
+    }, '15'),
     now: 1_700_000_000,
   });
   const decoded = jwt.verify(token, 'test-signing-key', {

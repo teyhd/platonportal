@@ -13,12 +13,18 @@ export function getClientServiceName(client) {
   return client.srv_name;
 }
 
+export function getAuthorizationAudience(client, requestedAudience) {
+  return client?.service_scoped_access_token
+    ? getClientServiceName(client)
+    : requestedAudience;
+}
+
 export function createScopedAccessToken({
   issuer,
   jwtSecret,
   subject,
   name,
-  roles,
+  rights,
   logins,
   audience,
   now,
@@ -29,7 +35,7 @@ export function createScopedAccessToken({
       sub: subject,
       aud: audience,
       name,
-      right: roles,
+      right: rights,
       logins,
       iat: now,
       exp: now + 600,
@@ -147,9 +153,9 @@ export function makeSsoRouter(config = {}) {
   });
 
   // --- /authorize ---
-  // Audience всегда берётся из конфигурации OAuth-клиента.
+  // Legacy-клиенты передают audience сами. Service-scoped клиенты фиксируют его в конфигурации.
   router.get("/authorize", (req, res) => {
-    const { client_id, redirect_uri, state } = req.query;
+    const { client_id, redirect_uri, state, audience } = req.query;
     const cl = CLIENTS[client_id];
     if (!cl || cl.redirect_uri !== redirect_uri) return res.status(400).send("invalid client");
 
@@ -160,12 +166,15 @@ export function makeSsoRouter(config = {}) {
 
 
     const code = crypto.randomBytes(16).toString("hex");
+    const serviceScopedAccessToken = cl.service_scoped_access_token === true;
     CODES.set(code, {
       sub: req.session.uid,       // users.id
       name : req.session.name,
+      right: serviceScopedAccessToken ? undefined : req.session.right,
       logins: req.session.logins, 
       client_id,
-      srv_name: getClientServiceName(cl),
+      srv_name: getAuthorizationAudience(cl, audience),
+      service_scoped_access_token: serviceScopedAccessToken,
     });
 
     const url = new URL(redirect_uri);
@@ -191,8 +200,9 @@ export function makeSsoRouter(config = {}) {
     }
     CODES.delete(code);
 
-    // Роли из БД по usr_id + srv_name
-    const roles = await db.getUserRolesForsrvnam(entry.sub, entry.srv_name);
+    const rights = entry.service_scoped_access_token
+      ? await db.getUserRolesForsrvnam(entry.sub, entry.srv_name)
+      : entry.right;
 
     const now = Math.floor(Date.now() / 1000);
     const access_token = createScopedAccessToken({
@@ -200,7 +210,7 @@ export function makeSsoRouter(config = {}) {
       jwtSecret: JWT_SECRET,
       subject: entry.sub,
       name: entry.name,
-      roles,
+      rights,
       logins: entry.logins,
       audience: entry.srv_name,
       now,
