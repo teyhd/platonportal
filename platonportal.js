@@ -11,6 +11,7 @@ import * as vcall from './vendor/vcall.mjs';
 import { makeSsoRouter } from "./vendor/ssoRouter.mjs";
 import platformsso from "./vendor/platformsso.mjs";
 import { CALENDAR_SSO_CLIENT_ID, getCalendarSsoClient } from './vendor/calendarSso.mjs';
+import { getRequiredEnvironmentValue, getSsoClientSecrets } from './vendor/ssoClientSecrets.mjs';
 
 import express from 'express'
 import exphbs from 'express-handlebars'
@@ -23,6 +24,8 @@ import { fileURLToPath } from 'url';
 //import { console } from 'inspector/promises';
 
 var PORT = process.env.PORT || 777;
+const SSO_CLIENT_SECRETS = getSsoClientSecrets();
+const SESSION_SECRET = getRequiredEnvironmentValue('SESSION_SECRET');
  //PORT = process.env.PORT || 80;
 const app = express();
 const hbs = exphbs.create({
@@ -133,7 +136,7 @@ app.use(express.static(publicPath, {
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
-app.use(session({name: 'sso.sid',resave:true,saveUninitialized:false, secret: 'hardcode_secret_teyhd', cookie: 
+app.use(session({name: 'sso.sid',resave:true,saveUninitialized:false, secret: SESSION_SECRET, cookie:
   {secure: false, // ⚠️ обязательно false на HTTP!
   httpOnly: true}
 }))
@@ -142,24 +145,24 @@ app.use("/sso", makeSsoRouter({
   issuer: process.env.SSOADR,
   jwtSecret: process.env.JWTSECRET,
   clients: {
-    "bookpc": { client_secret: "pcbigsectet", redirect_uri: "https://pc.platoniks.ru/cb",
+    "bookpc": { client_secret: SSO_CLIENT_SECRETS.bookpc, redirect_uri: "https://pc.platoniks.ru/cb",
       post_logout_redirect_uris: ['https://pc.platoniks.ru'], srv_name: 'bookpc', legacy_audience: 2 },
 
-    "rasp": { client_secret: "Mydirtybigsectetb", redirect_uri: "https://rasp.platoniks.ru/api/cb",
+    "rasp": { client_secret: SSO_CLIENT_SECRETS.rasp, redirect_uri: "https://rasp.platoniks.ru/api/cb",
     post_logout_redirect_uris: ['https://rasp.platoniks.ru'], srv_name: 'rasp', legacy_audience: 8 },
     
-    "buy": { client_secret: process.env.BUY_SSO_CLIENT_SECRET, redirect_uri: "https://buy.platoniks.ru/api/cb",
+    "buy": { client_secret: SSO_CLIENT_SECRETS.buy, redirect_uri: "https://buy.platoniks.ru/api/cb",
       post_logout_redirect_uris: ['https://buy.platoniks.ru'], srv_name: 'buy', legacy_audience: 12 },
 
-    "report": { client_secret: "ReportDirtySecurFuckTheMind", redirect_uri: "https://rep.platoniks.ru/cb",
+    "report": { client_secret: SSO_CLIENT_SECRETS.report, redirect_uri: "https://rep.platoniks.ru/cb",
       post_logout_redirect_uris: ['https://rep.platoniks.ru'], srv_name: 'report', legacy_audience: 3 },
 
-      "diary": { client_secret: process.env.DIARY_SSO_CLIENT_SECRET, redirect_uri: "https://diary.platoniks.ru/api/cb",
+      "diary": { client_secret: SSO_CLIENT_SECRETS.diary, redirect_uri: "https://diary.platoniks.ru/api/cb",
       post_logout_redirect_uris: ['https://diary.platoniks.ru'], srv_name: 'diary', legacy_audience: 11 },
-    "atten": { client_secret: process.env.ATTEN_SSO_CLIENT_SECRET, redirect_uri: "https://stud.platoniks.ru/api/cb",
+    "atten": { client_secret: SSO_CLIENT_SECRETS.atten, redirect_uri: "https://stud.platoniks.ru/api/cb",
       post_logout_redirect_uris: ['https://stud.platoniks.ru'], srv_name: 'atten', legacy_audience: 'atten' },
 
-    "vote": { client_secret: process.env.VOTE_SSO_CLIENT_SECRET, redirect_uri: "https://vote.platoniks.ru/api/cb",
+    "vote": { client_secret: SSO_CLIENT_SECRETS.vote, redirect_uri: "https://vote.platoniks.ru/api/cb",
       post_logout_redirect_uris: ['https://vote.platoniks.ru'], srv_name: 'vote', legacy_audience: 14 },
 
     [CALENDAR_SSO_CLIENT_ID]: getCalendarSsoClient(),

@@ -16,6 +16,11 @@ import {
   getAuthorizationAudience,
   makeSsoRouter,
 } from '../vendor/ssoRouter.mjs';
+import {
+  SSO_CLIENT_SECRET_ENV_NAMES,
+  getRequiredEnvironmentValue,
+  getSsoClientSecrets,
+} from '../vendor/ssoClientSecrets.mjs';
 
 function makePool({ existingService = false, roleIds = [1, 2, 3, 4, 5, 6] } = {}) {
   const calls = [];
@@ -71,6 +76,18 @@ test('Calendar client uses the required endpoints and environment-only secret', 
   assert.equal(client.srv_name, 'calendar');
   assert.equal(client.service_scoped_access_token, true);
   assert.throws(() => getCalendarSsoClient({}), /CALENDAR_SSO_CLIENT_SECRET/);
+});
+
+test('MainPortal SSO client and session secrets are environment-only', () => {
+  const env = Object.fromEntries(
+    Object.values(SSO_CLIENT_SECRET_ENV_NAMES).map((name, index) => [name, `test-${index}`])
+  );
+  const secrets = getSsoClientSecrets(env);
+
+  assert.deepEqual(Object.keys(secrets), Object.keys(SSO_CLIENT_SECRET_ENV_NAMES));
+  assert.equal(secrets.bookpc, 'test-0');
+  assert.throws(() => getRequiredEnvironmentValue('SESSION_SECRET', env), /SESSION_SECRET/);
+  assert.throws(() => getSsoClientSecrets({}), /BOOKPC_SSO_CLIENT_SECRET/);
 });
 
 test('Calendar migration creates and verifies the service, roles, and rights', async () => {
