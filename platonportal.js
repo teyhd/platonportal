@@ -1249,27 +1249,42 @@ app.get('/api/users/:id', async (req, res) => {
   res.json({ ok:true, user, rights, logins});
 });
 
-// Создать пользователя
-app.post('/api/users', async (req, res) => {
-  const forbidden = requirePortalAdminJson(req, res);
-  if (forbidden) return forbidden;
+function normalizeMessengerUsername(value) {
+  return String(value ?? '')
+    .normalize('NFKC')
+    .trim()
+    .replace(/^@+/, '');
+}
 
-  const body = req.body || {};
-  const data = {
+function getUserPayload(body = {}) {
+  const hasCanonicalUsername = Object.hasOwn(body, 'messenger_username');
+  const messengerUsername = normalizeMessengerUsername(body.messenger_username);
+
+  return {
     name: String(body.name ?? '').trim(),
-    nickname: String(body.nickname ?? '').trim(),
-    msgnickname: String(body.msgnickname ?? '').trim(),
-    msgnickname_normalized: String(body.msgnickname_normalized ?? '').trim(),
+    nickname: hasCanonicalUsername ? messengerUsername : String(body.nickname ?? '').trim(),
+    msgnickname: hasCanonicalUsername ? messengerUsername : String(body.msgnickname ?? '').trim(),
+    msgnickname_normalized: hasCanonicalUsername
+      ? messengerUsername.toLocaleLowerCase('ru-RU')
+      : String(body.msgnickname_normalized ?? '').trim(),
     email: String(body.email ?? '').trim(),
     kaf: (body.kaf === '' || body.kaf == null || Number.isNaN(Number(body.kaf))) ? null : Number(body.kaf),
     type: Number(body.type ?? 0),
     status: Number(body.status ?? 0),
-    pin:  String(body.pin ?? '').trim(),
+    pin: String(body.pin ?? '').trim(),
     tg_id: (body.tg_id === '' || body.tg_id == null || Number.isNaN(Number(body.tg_id))) ? null : Number(body.tg_id),
     allow_discovery_outside_harmony: Number(body.allow_discovery_outside_harmony ?? 0),
     avatar_url_custom: String(body.avatar_url_custom ?? '').trim(),
     display_name_custom: String(body.display_name_custom ?? '').trim(),
   };
+}
+
+// Создать пользователя
+app.post('/api/users', async (req, res) => {
+  const forbidden = requirePortalAdminJson(req, res);
+  if (forbidden) return forbidden;
+
+  const data = getUserPayload(req.body || {});
   if (!data.name) return res.status(400).json({ ok:false, message:'name required' });
   try {
     const id = await db.create_user(data);
@@ -1287,22 +1302,7 @@ app.put('/api/users/:id', async (req, res) => {
   if (forbidden) return forbidden;
 
   const id = Number(req.params.id);
-  const body = req.body || {};
-  const data = {
-    name: String(body.name ?? '').trim(),
-    nickname: String(body.nickname ?? '').trim(),
-    msgnickname: String(body.msgnickname ?? '').trim(),
-    msgnickname_normalized: String(body.msgnickname_normalized ?? '').trim(),
-    email: String(body.email ?? '').trim(),
-    kaf: (body.kaf === '' || body.kaf == null || Number.isNaN(Number(body.kaf))) ? null : Number(body.kaf),
-    type: Number(body.type ?? 0),
-    status: Number(body.status ?? 0),
-    pin:  String(body.pin ?? '').trim(),
-    tg_id: (body.tg_id === '' || body.tg_id == null || Number.isNaN(Number(body.tg_id))) ? null : Number(body.tg_id),
-    allow_discovery_outside_harmony: Number(body.allow_discovery_outside_harmony ?? 0),
-    avatar_url_custom: String(body.avatar_url_custom ?? '').trim(),
-    display_name_custom: String(body.display_name_custom ?? '').trim(),
-  };
+  const data = getUserPayload(req.body || {});
   if (!id) return res.status(400).json({ ok:false, message:'bad id' });
   if (!data.name) return res.status(400).json({ ok:false, message:'name required' });
 
