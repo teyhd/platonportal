@@ -288,7 +288,12 @@ async function upsert_user_email(userId, email) {
   if (!val) return;
 
   // Try update existing identities
-  const [upd] =  await upsert_user_email(id, email);
+  const [upd] = await usr.query(
+    `UPDATE oauth_identities
+        SET provider_email = ?, updated_at = NOW()
+      WHERE user_id = ?`,
+    [val, userId]
+  );
 
   if (upd.affectedRows > 0) return;
 
