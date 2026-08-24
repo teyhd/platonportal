@@ -221,6 +221,7 @@ if (typeof document !== 'undefined') {
       if (menu === except) return;
       menu.hidden = true;
       menu.previousElementSibling?.setAttribute('aria-expanded', 'false');
+      menu.closest('.user-row')?.classList.remove('user-row--menu-open');
     });
   }
 
@@ -376,7 +377,11 @@ if (typeof document !== 'undefined') {
     const status = qs('td:nth-child(4) .user-status', row);
     status.textContent = Number(user.status) ? 'Активен' : 'Заблокирован';
     status.className = `user-status ${Number(user.status) ? 'user-status--active' : 'user-status--blocked'}`;
-    qs('td:nth-child(5) .user-pin', row).textContent = user.pin || '';
+    const pin = qs('td:nth-child(5) .user-pin', row);
+    pin.textContent = '••••••';
+    pin.setAttribute('aria-pressed', 'false');
+    pin.setAttribute('aria-label', `Показать PIN пользователя ${user.name || ''}`.trim());
+    pin.title = 'Показать PIN';
     qs('.action-menu-toggle', row).setAttribute('aria-label', `Действия пользователя ${user.name || ''}`);
     applyListState();
   }
@@ -520,6 +525,7 @@ if (typeof document !== 'undefined') {
       closeActionMenus(willOpen ? menu : null);
       menu.hidden = !willOpen;
       toggle.setAttribute('aria-expanded', String(willOpen));
+      toggle.closest('.user-row')?.classList.toggle('user-row--menu-open', willOpen);
       return;
     }
     const action = event.target.closest('[data-open-tab], [data-action="delete"]');
