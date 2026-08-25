@@ -64,7 +64,7 @@ body.users-route>header .hover\:bg-slate-100:hover{background:rgba(20,35,56,.95)
 .users-table th:last-child{text-align:right}
 .users-sort-button{display:inline-flex;align-items:center;gap:.35rem;max-width:100%;border:0;background:transparent;color:inherit;padding:0;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit}
 .users-sort-button:hover{color:#fff}.users-sort-icon{width:.9rem;height:.9rem;opacity:.65}.users-sort-button[data-direction="asc"] .users-sort-icon,.users-sort-button[data-direction="desc"] .users-sort-icon{opacity:1;color:#a9b7ff}
-.user-row{transition:background .14s ease}.user-row:hover{background:rgba(42,61,84,.3)}
+.user-row{transition:background .14s ease}.user-row[hidden]{display:none!important}.user-row:hover{background:rgba(42,61,84,.3)}
 .users-table td{min-width:0;padding:.72rem .9rem;border-bottom:1px solid var(--users-border-soft);vertical-align:middle;color:#dce7f4;font-size:.875rem;overflow:hidden}
 .users-table tbody tr:last-child td{border-bottom:0}
 .user-identity{display:flex;align-items:center;gap:.7rem;min-width:0}.user-avatar{display:grid;place-items:center;flex:0 0 auto;width:2.2rem;height:2.2rem;border-radius:50%;background:#263e7a;color:#dce5ff;font-size:.75rem;font-weight:750}
