@@ -30,9 +30,16 @@ let setss = {
 const usr = mysql.createPool(sets).promise()
 const portal = mysql.createPool(setss).promise()
 
+export const EXTERNAL_ROLE_ID = -1;
+export const PORTAL_SERVICE_ID = 1;
+export const PORTAL_ADMIN_ROLE_ID = 5;
+export const PORTAL_MODERATOR_ROLE_ID = 7;
+export const PORTAL_ADMIN_USER_ID = 100;
+
 const CALENDAR_SSO_SERVICE_NAME = 'calendar';
-const CALENDAR_SSO_ROLE_IDS = [1, 2, 3, 4, 5, 6];
+const CALENDAR_SSO_ROLE_IDS = [1, 2, 3, 4, 5, 6, PORTAL_MODERATOR_ROLE_ID];
 const CALENDAR_SSO_LOCK_NAME = 'mainportal:sso:calendar';
+const PORTAL_MODERATOR_LOCK_NAME = 'mainportal:portal:moderator';
 
 export async function migrateCalendarSso(pool = usr) {
   const conn = await pool.getConnection();
@@ -63,7 +70,7 @@ export async function migrateCalendarSso(pool = usr) {
     const foundRoleIds = roles.map(role => Number(role.id));
     if (foundRoleIds.length !== CALENDAR_SSO_ROLE_IDS.length ||
         foundRoleIds.some((id, index) => id !== CALENDAR_SSO_ROLE_IDS[index])) {
-      throw new Error('Calendar SSO migration requires role IDs 1 through 6');
+      throw new Error('Calendar SSO migration requires role IDs 1 through 7');
     }
 
     const [services] = await conn.query(
@@ -175,6 +182,171 @@ export async function migrateCalendarSso(pool = usr) {
   }
 }
 
+export async function migratePortalModeratorRole(pool = usr) {
+  const conn = await pool.getConnection();
+  let transactionStarted = false;
+  let lockAcquired = false;
+
+  try {
+    const [[lock]] = await conn.query(
+      'SELECT GET_LOCK(?, 10) AS acquired',
+      [PORTAL_MODERATOR_LOCK_NAME]
+    );
+    if (Number(lock?.acquired) !== 1) {
+      throw new Error('Portal moderator migration lock was not acquired');
+    }
+    lockAcquired = true;
+
+    await conn.beginTransaction();
+    transactionStarted = true;
+
+    const [roles] = await conn.query(
+      'SELECT id, name FROM role_name WHERE id IN (?, ?) ORDER BY id FOR UPDATE',
+      [PORTAL_ADMIN_ROLE_ID, PORTAL_MODERATOR_ROLE_ID]
+    );
+    const adminRole = roles.find(role => Number(role.id) === PORTAL_ADMIN_ROLE_ID);
+    const moderatorRole = roles.find(role => Number(role.id) === PORTAL_MODERATOR_ROLE_ID);
+
+    if (!adminRole || String(adminRole.name).trim().toLocaleLowerCase('ru-RU') !== 'админ') {
+      throw new Error('Portal moderator migration requires the Admin role with ID 5');
+    }
+    if (moderatorRole && String(moderatorRole.name).trim().toLocaleLowerCase('ru-RU') !== 'модератор') {
+      throw new Error('Portal moderator role ID 7 is already assigned to another role');
+    }
+
+    let moderatorRoleCreated = false;
+    if (!moderatorRole) {
+      await conn.query(
+        'INSERT INTO role_name (id, name) VALUES (?, ?)',
+        [PORTAL_MODERATOR_ROLE_ID, 'Модератор']
+      );
+      moderatorRoleCreated = true;
+    }
+
+    const [adminServices] = await conn.query(
+      'SELECT srvs_id FROM srvs_roles WHERE role_id = ? FOR UPDATE',
+      [PORTAL_ADMIN_ROLE_ID]
+    );
+    if (!adminServices.some(service => Number(service.srvs_id) === PORTAL_SERVICE_ID)) {
+      throw new Error('Portal moderator migration requires the Admin role for the portal service');
+    }
+
+    const [user100] = await conn.query(
+      'SELECT id FROM users WHERE id = ? FOR UPDATE',
+      [PORTAL_ADMIN_USER_ID]
+    );
+    if (!user100.length) {
+      throw new Error('Portal moderator migration requires user 100');
+    }
+
+    const [serviceRoles] = await conn.query(
+      `INSERT INTO srvs_roles (srvs_id, role_id)
+       SELECT admin.srvs_id, ?
+         FROM srvs_roles admin
+        WHERE admin.role_id = ?
+          AND NOT EXISTS (
+            SELECT 1
+              FROM srvs_roles moderator
+             WHERE moderator.srvs_id = admin.srvs_id
+               AND moderator.role_id = ?
+          )`,
+      [PORTAL_MODERATOR_ROLE_ID, PORTAL_ADMIN_ROLE_ID, PORTAL_MODERATOR_ROLE_ID]
+    );
+
+    const [serviceRights] = await conn.query(
+      `UPDATE rights r
+         JOIN users u ON u.id = r.usr_id
+           SET r.role_id = ?
+       WHERE r.role_id = ?
+         AND u.type = ?
+         AND u.id <> ?`,
+      [PORTAL_MODERATOR_ROLE_ID, PORTAL_ADMIN_ROLE_ID, PORTAL_ADMIN_ROLE_ID, PORTAL_ADMIN_USER_ID]
+    );
+    const [userTypes] = await conn.query(
+      'UPDATE users SET type = ? WHERE type = ? AND id <> ?',
+      [PORTAL_MODERATOR_ROLE_ID, PORTAL_ADMIN_ROLE_ID, PORTAL_ADMIN_USER_ID]
+    );
+    await conn.query(
+      'UPDATE users SET type = ? WHERE id = ?',
+      [PORTAL_ADMIN_ROLE_ID, PORTAL_ADMIN_USER_ID]
+    );
+    await conn.query(
+      `INSERT INTO rights (usr_id, srv_id, role_id)
+       SELECT ?, ?, ?
+        WHERE NOT EXISTS (
+          SELECT 1
+            FROM rights
+           WHERE usr_id = ?
+             AND srv_id = ?
+             AND role_id = ?
+        )`,
+      [
+        PORTAL_ADMIN_USER_ID,
+        PORTAL_SERVICE_ID,
+        PORTAL_ADMIN_ROLE_ID,
+        PORTAL_ADMIN_USER_ID,
+        PORTAL_SERVICE_ID,
+        PORTAL_ADMIN_ROLE_ID,
+      ]
+    );
+
+    const [[missingServiceRoles]] = await conn.query(
+      `SELECT COUNT(*) AS count
+         FROM srvs_roles admin
+         LEFT JOIN srvs_roles moderator
+           ON moderator.srvs_id = admin.srvs_id
+          AND moderator.role_id = ?
+        WHERE admin.role_id = ?
+          AND moderator.srvs_id IS NULL`,
+      [PORTAL_MODERATOR_ROLE_ID, PORTAL_ADMIN_ROLE_ID]
+    );
+    const [[remainingAdmins]] = await conn.query(
+      'SELECT COUNT(*) AS count FROM users WHERE type = ? AND id <> ?',
+      [PORTAL_ADMIN_ROLE_ID, PORTAL_ADMIN_USER_ID]
+    );
+    const [[remainingAdminRights]] = await conn.query(
+      `SELECT COUNT(*) AS count
+         FROM rights r
+         JOIN users u ON u.id = r.usr_id
+        WHERE r.role_id = ?
+          AND u.type = ?`,
+      [PORTAL_ADMIN_ROLE_ID, PORTAL_MODERATOR_ROLE_ID]
+    );
+    const [[user100PortalAdminRight]] = await conn.query(
+      'SELECT COUNT(*) AS count FROM rights WHERE usr_id = ? AND srv_id = ? AND role_id = ?',
+      [PORTAL_ADMIN_USER_ID, PORTAL_SERVICE_ID, PORTAL_ADMIN_ROLE_ID]
+    );
+
+    if (Number(missingServiceRoles?.count) !== 0 ||
+        Number(remainingAdmins?.count) !== 0 ||
+        Number(remainingAdminRights?.count) !== 0 ||
+        Number(user100PortalAdminRight?.count) !== 1) {
+      throw new Error('Portal moderator migration could not verify role assignments');
+    }
+
+    await conn.commit();
+    transactionStarted = false;
+
+    return {
+      moderatorRoleCreated,
+      serviceRolesAdded: Number(serviceRoles.affectedRows || 0),
+      userTypesChanged: Number(userTypes.affectedRows || 0),
+      serviceRightsChanged: Number(serviceRights.affectedRows || 0),
+    };
+  } catch (error) {
+    if (transactionStarted) await conn.rollback();
+    throw error;
+  } finally {
+    try {
+      if (lockAcquired) {
+        await conn.query('SELECT RELEASE_LOCK(?) AS released', [PORTAL_MODERATOR_LOCK_NAME]);
+      }
+    } finally {
+      conn.release();
+    }
+  }
+}
+
 export async function ensureCalendarSsoRightForUser(userId, pool = usr) {
   const [right] = await pool.query(
     `INSERT INTO rights (usr_id, srv_id, role_id)
@@ -230,7 +402,8 @@ export async function getUserRolesForsrvnam(usrId, srvNmae) {
 }
 ///console.log(await getUserRolesForServiceById(147, 'portal'))
 // ==== USERS ====zz
-export async function get_err_roles_users() {
+export async function get_err_roles_users({ excludeExternal = false } = {}) {
+  const externalFilter = excludeExternal ? `AND u.type <> ${EXTERNAL_ROLE_ID}` : '';
   const sql = `
         SELECT
             u.id,
@@ -245,6 +418,7 @@ export async function get_err_roles_users() {
         WHERE s.id < 10
           AND s.types = 0
           AND r.id IS NULL
+          ${externalFilter}
         GROUP BY u.id, u.name
         ORDER BY u.id;
 
@@ -267,7 +441,8 @@ export async function get_kafs() {
   return rows;
 }
 
-export async function get_users() {
+export async function get_users({ excludeExternal = false } = {}) {
+  const externalFilter = excludeExternal ? `WHERE u.type <> ${EXTERNAL_ROLE_ID}` : '';
   const sql = `
     SELECT u.*, DATE_FORMAT(u.birth_date, '%Y-%m-%d') AS birth_date, oi.provider_email AS email
     FROM users u
@@ -281,6 +456,7 @@ export async function get_users() {
       FROM oauth_identities
       GROUP BY user_id
     ) oi ON oi.user_id = u.id
+    ${externalFilter}
     ORDER BY u.id DESC
   `;
   const [rows] = await usr.query(sql);

@@ -22,7 +22,7 @@ import {
   getSsoClientSecrets,
 } from '../vendor/ssoClientSecrets.mjs';
 
-function makePool({ existingService = false, roleIds = [1, 2, 3, 4, 5, 6] } = {}) {
+function makePool({ existingService = false, roleIds = [1, 2, 3, 4, 5, 6, 7] } = {}) {
   const calls = [];
   let committed = false;
   let rolledBack = false;
@@ -41,9 +41,9 @@ function makePool({ existingService = false, roleIds = [1, 2, 3, 4, 5, 6] } = {}
       if (sql.startsWith('INSERT INTO srvs (types, name)')) {
         return [{ insertId: 17, affectedRows: 1 }];
       }
-      if (sql.startsWith('INSERT INTO srvs_roles')) return [{ affectedRows: existingService ? 0 : 6 }];
+      if (sql.startsWith('INSERT INTO srvs_roles')) return [{ affectedRows: existingService ? 0 : roleIds.length }];
       if (sql.startsWith('INSERT INTO rights')) return [{ affectedRows: existingService ? 0 : 2 }];
-      if (sql.startsWith('SELECT role_id')) return [[1, 2, 3, 4, 5, 6].map(role_id => ({ role_id }))];
+      if (sql.startsWith('SELECT role_id')) return [roleIds.map(role_id => ({ role_id }))];
       if (sql.startsWith('SELECT COUNT(*) AS count')) return [[{ count: 0 }]];
       if (sql.startsWith('SELECT RELEASE_LOCK')) {
         released = true;
@@ -98,7 +98,7 @@ test('Calendar migration creates and verifies the service, roles, and rights', a
   assert.deepEqual(result, {
     serviceId: 17,
     serviceCreated: true,
-    serviceRolesAdded: 6,
+    serviceRolesAdded: 7,
     rightsAdded: 2,
   });
   assert.equal(fixture.committed, true);
@@ -122,8 +122,8 @@ test('Calendar migration is idempotent and rolls back if role prerequisites are 
   assert.equal(result.rightsAdded, 0);
   assert.equal(idempotentFixture.calls.some(call => call.sql.startsWith('INSERT INTO srvs (types, name)')), false);
 
-  const invalidFixture = makePool({ roleIds: [1, 2, 3, 4, 5] });
-  await assert.rejects(() => migrateCalendarSso(invalidFixture.pool), /role IDs 1 through 6/);
+  const invalidFixture = makePool({ roleIds: [1, 2, 3, 4, 5, 6] });
+  await assert.rejects(() => migrateCalendarSso(invalidFixture.pool), /role IDs 1 through 7/);
   assert.equal(invalidFixture.rolledBack, true);
   assert.equal(invalidFixture.released, true);
 });
@@ -142,9 +142,9 @@ test('Calendar user-right reconciliation adds only the matching active primary r
   assert.equal(added, 1);
   assert.equal(calls.length, 1);
   assert.match(calls[0].sql, /u\.lifecycle_state = 'active'/);
-  assert.match(calls[0].sql, /u\.type IN \(\?, \?, \?, \?, \?, \?\)/);
+  assert.match(calls[0].sql, /u\.type IN \(\?, \?, \?, \?, \?, \?, \?\)/);
   assert.match(calls[0].sql, /existing\.role_id = u\.type/);
-  assert.deepEqual(calls[0].params, ['calendar', 42, 1, 2, 3, 4, 5, 6]);
+  assert.deepEqual(calls[0].params, ['calendar', 42, 1, 2, 3, 4, 5, 6, 7]);
 });
 
 test('legacy clients preserve the requested audience and rights object contract', () => {

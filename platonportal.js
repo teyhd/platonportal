@@ -26,6 +26,10 @@ import { fileURLToPath } from 'url';
 var PORT = process.env.PORT || 777;
 const SSO_CLIENT_SECRETS = getSsoClientSecrets();
 const SESSION_SECRET = getRequiredEnvironmentValue('SESSION_SECRET');
+const {
+  PORTAL_ADMIN_ROLE_ID,
+  PORTAL_MODERATOR_ROLE_ID,
+} = db;
  //PORT = process.env.PORT || 80;
 const app = express();
 const hbs = exphbs.create({
@@ -768,7 +772,7 @@ function getAccessMeta(role = 0) {
     };
   }
 
-  if (role === 5) {
+  if (isPortalManagementRoleValue(role)) {
     return {
       accessLabel: 'Расширенный доступ',
       accessNote: 'Быстрый доступ к урокам, комнатам и сервисам.',
@@ -795,11 +799,10 @@ function normalizeRoleValue(role = 0) {
 }
 
 function getSessionPortalRole(sessionRight = 0) {
-  if (Array.isArray(sessionRight)) {
-    return normalizeRoleValue(hlp.getRolesBySrvId(sessionRight, 1));
-  }
-
-  return normalizeRoleValue(sessionRight);
+  const roles = getSessionPortalRoles(sessionRight);
+  if (roles.includes(PORTAL_ADMIN_ROLE_ID)) return PORTAL_ADMIN_ROLE_ID;
+  if (roles.includes(PORTAL_MODERATOR_ROLE_ID)) return PORTAL_MODERATOR_ROLE_ID;
+  return normalizeRoleValue(roles);
 }
 
 function getSessionPortalRoles(sessionRight = 0) {
@@ -815,18 +818,37 @@ function getSessionPortalRoles(sessionRight = 0) {
   return Number.isFinite(role) ? [role] : [];
 }
 
-function hasPortalAdminRole(session = {}) {
-  const sessionRight = session?.right ?? session?.role ?? 0;
-  return getSessionPortalRoles(sessionRight).includes(5);
+function isPortalManagementRoleValue(role = 0) {
+  const normalizedRole = normalizeRoleValue(role);
+  return normalizedRole === PORTAL_ADMIN_ROLE_ID || normalizedRole === PORTAL_MODERATOR_ROLE_ID;
 }
 
-function requirePortalAdminJson(req, res) {
-  if (!hasPortalAdminRole(req.session)) {
+function getPortalCatalogRole(role = 0) {
+  const normalizedRole = normalizeRoleValue(role);
+  return isPortalManagementRoleValue(normalizedRole) ? PORTAL_ADMIN_ROLE_ID : normalizedRole;
+}
+
+function hasPortalManagementRole(session = {}) {
+  const sessionRight = session?.right ?? session?.role ?? 0;
+  return getSessionPortalRoles(sessionRight).some(role => isPortalManagementRoleValue(role));
+}
+
+function hasPortalAdminRole(session = {}) {
+  const sessionRight = session?.right ?? session?.role ?? 0;
+  return getSessionPortalRoles(sessionRight).includes(PORTAL_ADMIN_ROLE_ID);
+}
+
+function requirePortalManagementJson(req, res) {
+  if (!hasPortalManagementRole(req.session)) {
     return res.status(403).json({ ok: false, message: 'forbidden' });
   }
 
-  req.session.rolen = 5;
+  req.session.rolen = getSessionPortalRole(req.session?.right ?? req.session?.role ?? 0);
   return null;
+}
+
+function requirePortalAdminJson(req, res) {
+  return requirePortalManagementJson(req, res);
 }
 
 function getHomeRoleMeta(role = 0) {
@@ -842,7 +864,7 @@ function getHomeRoleMeta(role = 0) {
     };
   }
 
-  if (normalizedRole === 5) {
+  if (isPortalManagementRoleValue(normalizedRole)) {
     return {
       homeRoleMode: 'admin',
       roleLabel: 'Расширенный доступ',
@@ -1008,11 +1030,12 @@ app.get('/',async (req,res)=>{
         mlog(error);
         req.session.rolen = 0
     }
-    let cards = await db.get_cards(rolen)
-    const canManageCards = hasPortalAdminRole(req.session)
+    const catalogRole = getPortalCatalogRole(rolen)
+    let cards = await db.get_cards(catalogRole)
+    const canManageCards = hasPortalManagementRole(req.session)
     const menuCards = cards.filter(c => c.type === 0).map((card, index) => normalizeMenuCard(card, index))
     const infoCards = cards.filter(c => c.type === 1).map(normalizeInfoCard)
-    const homeCatalog = buildHomeCatalog(menuCards, rolen)
+    const homeCatalog = buildHomeCatalog(menuCards, catalogRole)
     const serviceCount = homeCatalog.catalogServices.length
     const operationMenu = [...menuCards]
       .filter(isOperationService)
@@ -1032,7 +1055,7 @@ app.get('/',async (req,res)=>{
       hasPrimaryItems: primaryInfo.length > 0,
       hasSecondaryItems: secondaryInfo.length > 0,
     }
-    const accessMeta = getAccessMeta(rolen)
+    const accessMeta = getAccessMeta(catalogRole)
 
     res.render('new',{
       title: 'Гармония Образования',
@@ -1186,16 +1209,17 @@ app.post('/api/cards/upload-image', async (req, res) => {
 });
 
 app.get('/users', async (req, res) => {
-  if (!hasPortalAdminRole(req.session)) return res.redirect('/');
-  req.session.rolen = 5;
+  if (!hasPortalManagementRole(req.session)) return res.redirect('/');
+  const canViewExternalUsers = hasPortalAdminRole(req.session);
+  req.session.rolen = getSessionPortalRole(req.session?.right ?? req.session?.role ?? 0);
 
   try {
-    const users    = await db.get_users();
+    const users    = await db.get_users({ excludeExternal: !canViewExternalUsers });
     const types    = await db.get_types();
     const kafs     = await db.get_kafs();
     const services = await db.get_services_with_allowed_roles(); // для вкладок/панели
     const allRoles = await db.get_all_roles();
-    const errrules = await db.get_err_roles_users();
+    const errrules = await db.get_err_roles_users({ excludeExternal: !canViewExternalUsers });
 
     res.render('users', {
       title: 'Пользователи',
@@ -1488,7 +1512,7 @@ app.get('/rooms',async (req,res)=>{
 
 app.get('/getanalyt',async (req,res)=>{
     mlog(req.session.rolen)
-    if (req.session.rolen==5){
+    if (hasPortalManagementRole(req.session)){
         const query = req.query.roomid || {};
         let ans = await vcall.get_analytic(query)
         res.send(ans)
@@ -1503,7 +1527,7 @@ app.get('/getanalyt',async (req,res)=>{
 */
 app.get('/closeroom',async (req,res)=>{
     mlog(req.session.rolen)
-    if (req.session.rolen==5){
+    if (hasPortalManagementRole(req.session)){
         const query = req.query.roomid || {};
         let ans = await vcall.close_room(query)
         res.send(ans)
@@ -1588,7 +1612,8 @@ app.get("/cloud", (req, res) => {
       login = process.env.TEACH_CLOUD
       pass = process.env.TEACH_CLOUD
     break;
-    case 5:
+    case PORTAL_ADMIN_ROLE_ID:
+    case PORTAL_MODERATOR_ROLE_ID:
       login = process.env.DEV_KOD_USER
       pass = process.env.DEV_KOD_PASS
     break;
@@ -1827,6 +1852,7 @@ app.get('*',async function(req, res){
 
 async function start(){
     try {
+        await db.migratePortalModeratorRole();
         await db.migrateCalendarSso();
         app.listen(PORT,()=> {
             mlog('Сервер - запущен')
