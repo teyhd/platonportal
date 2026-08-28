@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { migratePortalModeratorRole } from '../vendor/db.mjs';
+import { getNonExternalUserClause, migratePortalModeratorRole } from '../vendor/db.mjs';
+
+test('moderator filtering hides only the External role', () => {
+  assert.equal(getNonExternalUserClause(), 'WHERE (u.type <> -1 OR u.type IS NULL)');
+  assert.equal(getNonExternalUserClause('AND'), 'AND (u.type <> -1 OR u.type IS NULL)');
+});
 
 function makePool({ moderatorExists = false } = {}) {
   const calls = [];

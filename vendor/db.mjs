@@ -36,6 +36,10 @@ export const PORTAL_ADMIN_ROLE_ID = 5;
 export const PORTAL_MODERATOR_ROLE_ID = 7;
 export const PORTAL_ADMIN_USER_ID = 100;
 
+export function getNonExternalUserClause(prefix = 'WHERE') {
+  return `${prefix} (u.type <> ${EXTERNAL_ROLE_ID} OR u.type IS NULL)`;
+}
+
 const CALENDAR_SSO_SERVICE_NAME = 'calendar';
 const CALENDAR_SSO_ROLE_IDS = [1, 2, 3, 4, 5, 6, PORTAL_MODERATOR_ROLE_ID];
 const CALENDAR_SSO_LOCK_NAME = 'mainportal:sso:calendar';
@@ -403,7 +407,7 @@ export async function getUserRolesForsrvnam(usrId, srvNmae) {
 ///console.log(await getUserRolesForServiceById(147, 'portal'))
 // ==== USERS ====zz
 export async function get_err_roles_users({ excludeExternal = false } = {}) {
-  const externalFilter = excludeExternal ? `AND u.type <> ${EXTERNAL_ROLE_ID}` : '';
+  const externalFilter = excludeExternal ? getNonExternalUserClause('AND') : '';
   const sql = `
         SELECT
             u.id,
@@ -442,7 +446,7 @@ export async function get_kafs() {
 }
 
 export async function get_users({ excludeExternal = false } = {}) {
-  const externalFilter = excludeExternal ? `WHERE u.type <> ${EXTERNAL_ROLE_ID}` : '';
+  const externalFilter = excludeExternal ? getNonExternalUserClause() : '';
   const sql = `
     SELECT u.*, DATE_FORMAT(u.birth_date, '%Y-%m-%d') AS birth_date, oi.provider_email AS email
     FROM users u
