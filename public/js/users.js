@@ -31,6 +31,17 @@ export function formatBirthDate(value) {
   }).format(date);
 }
 
+export function normalizeUserDetailsPayload(data) {
+  const user = data?.user;
+  if (data?.ok !== true || !user || user.id == null || user.id === '') return null;
+
+  return {
+    user,
+    rights: Array.isArray(data.rights) ? data.rights : [],
+    logins: Array.isArray(data.logins) ? data.logins : [],
+  };
+}
+
 if (typeof document !== 'undefined') {
   const qs = (selector, root = document) => root.querySelector(selector);
   const qsa = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -70,6 +81,9 @@ if (typeof document !== 'undefined') {
     sortDirection: 'desc',
     originalRows: new WeakMap(),
     messageTimer: null,
+    currentUserId: null,
+    userDetailsState: 'idle',
+    userLoadSequence: 0,
   };
 
   const TYPE_LABELS = Object.fromEntries(qsa('#f-type option').map(option => [option.value, option.textContent.trim()]));
@@ -264,6 +278,11 @@ if (typeof document !== 'undefined') {
 
   function closeDrawer(drawer = state.activeDrawer, { restoreFocus = true } = {}) {
     if (!drawer) return;
+    if (drawer === elements.userDrawer) {
+      state.userLoadSequence += 1;
+      state.currentUserId = null;
+      state.userDetailsState = 'idle';
+    }
     drawer.classList.remove('is-open');
     drawer.setAttribute('aria-hidden', 'true');
     if (state.activeDrawer === drawer) state.activeDrawer = null;
@@ -272,9 +291,13 @@ if (typeof document !== 'undefined') {
   }
 
   function setTab(name) {
-    const id = qs('#f-id')?.value;
+    const id = state.currentUserId || qs('#f-id')?.value;
     if (!id && name !== 'profile') {
       setMessage(elements.userMessage, 'Сначала сохраните профиль пользователя.', 'error');
+      return;
+    }
+    if (name !== 'profile' && state.userDetailsState === 'error') {
+      setMessage(elements.userMessage, 'Не удалось загрузить доступы и учётные записи. Повторите открытие пользователя.', 'error');
       return;
     }
     qsa('.users-tab', elements.userDrawer).forEach(button => button.setAttribute('aria-selected', String(button.dataset.tab === name)));
@@ -340,27 +363,59 @@ if (typeof document !== 'undefined') {
 
   async function loadUser(id) {
     const response = await api(`/api/users/${id}`);
-    if (!response.ok) throw new Error(await readApiError(response, 'Не удалось загрузить пользователя'));
-    return response.json();
+    let body = null;
+    try {
+      body = await response.json();
+    } catch (_) {
+      // Обрабатываем это ниже единым сообщением, чтобы форма не оставалась пустой.
+    }
+    if (!response.ok) throw new Error(body?.message || 'Не удалось загрузить пользователя');
+    const details = normalizeUserDetailsPayload(body);
+    if (!details) throw new Error(body?.message || 'Сервер вернул неполные данные пользователя');
+    return details;
   }
 
-  async function openUser(id, tab = 'profile') {
+  async function openUser(row, tab = 'profile') {
+    const fallbackUser = userFromRow(row);
+    const id = String(fallbackUser.id || '').trim();
+    if (!id) {
+      setMessage(elements.userMessage, 'Не удалось определить пользователя для редактирования.', 'error');
+      return;
+    }
+
+    const request = ++state.userLoadSequence;
+    state.currentUserId = id;
+    state.userDetailsState = 'loading';
+    fillProfile(fallbackUser);
+    clearRoles();
+    clearLogins();
+    setTab(tab);
     openDrawer(elements.userDrawer);
     setMessage(elements.userMessage, 'Загрузка…');
     try {
       const data = await loadUser(id);
-      fillProfile(data.user || {});
-      clearRoles();
-      fillRoles(data.rights || []);
-      clearLogins();
-      fillLogins(data.logins || []);
+      if (request !== state.userLoadSequence) return;
+
+      state.currentUserId = String(data.user.id);
+      state.userDetailsState = 'ready';
+      fillProfile(data.user);
+      fillRoles(data.rights);
+      fillLogins(data.logins);
       setTab(tab);
+      setMessage(elements.userMessage);
     } catch (error) {
-      setMessage(elements.userMessage, error.message, 'error');
+      if (request !== state.userLoadSequence) return;
+
+      state.userDetailsState = 'error';
+      setTab('profile');
+      setMessage(elements.userMessage, `Профиль открыт по данным списка. ${error.message}`, 'error');
     }
   }
 
   function openCreate() {
+    state.userLoadSequence += 1;
+    state.currentUserId = null;
+    state.userDetailsState = 'new';
     clearRoles();
     clearLogins();
     fillProfile({ status: 1, allow_discovery_outside_harmony: 0 });
@@ -411,11 +466,12 @@ if (typeof document !== 'undefined') {
 
   async function saveCurrent() {
     const activeTab = qs('.users-tab[aria-selected="true"]', elements.userDrawer)?.dataset.tab || 'profile';
-    const currentId = qs('#f-id').value;
+    const currentId = state.currentUserId || qs('#f-id').value;
     elements.userSave.disabled = true;
     elements.userSave.setAttribute('aria-busy', 'true');
     try {
       if (activeTab === 'profile') {
+        if (state.userDetailsState === 'loading') throw new Error('Дождитесь завершения загрузки пользователя');
         const payload = {
           name: qs('#f-name').value.trim(),
           kaf: qs('#f-kaf').value,
@@ -438,9 +494,29 @@ if (typeof document !== 'undefined') {
         const result = await response.json();
         const id = currentId || result.id;
         if (!id) throw new Error('Сервер не вернул ID пользователя');
-        const fresh = await loadUser(id);
-        fillProfile(fresh.user || { id, ...payload });
-        updateRow(fresh.user || { id, ...payload });
+        state.currentUserId = String(id);
+        state.userDetailsState = 'ready';
+        const row = qs(`.user-row[data-user-id="${CSS.escape(String(id))}"]`, elements.tbody);
+        const messengerUsername = normalizeSearchText(payload.messenger_username);
+        const localUser = {
+          ...(row ? userFromRow(row) : {}),
+          id,
+          ...payload,
+          nickname: messengerUsername,
+          msgnickname: messengerUsername,
+          msgnickname_normalized: messengerUsername,
+        };
+        fillProfile(localUser);
+        updateRow(localUser);
+        try {
+          const fresh = await loadUser(id);
+          fillProfile(fresh.user);
+          fillRoles(fresh.rights);
+          fillLogins(fresh.logins);
+          updateRow(fresh.user);
+        } catch (_) {
+          // Профиль уже сохранён; оставляем локально подтверждённые данные в форме и таблице.
+        }
         setMessage(elements.userMessage, 'Профиль сохранён', 'success');
       }
       if (activeTab === 'roles') {
@@ -556,7 +632,7 @@ if (typeof document !== 'undefined') {
     const row = action.closest('.user-row');
     closeActionMenus();
     if (action.dataset.action === 'delete') deleteUser(row);
-    else openUser(row.dataset.userId, action.dataset.openTab);
+    else openUser(row, action.dataset.openTab);
   });
   qsa('.users-tab', elements.userDrawer).forEach(button => button.addEventListener('click', () => setTab(button.dataset.tab)));
   qsa('.user-pin-reveal').forEach(button => button.addEventListener('click', () => {
@@ -585,7 +661,8 @@ if (typeof document !== 'undefined') {
     const item = event.target.closest('.users-issue-item');
     if (!item) return;
     closeDrawer(elements.issuesDrawer, { restoreFocus: false });
-    openUser(item.dataset.userId, 'roles');
+    const row = qs(`.user-row[data-user-id="${CSS.escape(String(item.dataset.userId))}"]`, elements.tbody);
+    if (row) openUser(row, 'roles');
   });
   qs('#service-roles-search')?.addEventListener('input', event => {
     const query = normalizeSearchText(event.target.value);

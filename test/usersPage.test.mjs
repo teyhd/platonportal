@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
-import { compareUserValues, formatBirthDate, normalizeSearchText } from '../public/js/users.js';
+import { compareUserValues, formatBirthDate, normalizeSearchText, normalizeUserDetailsPayload } from '../public/js/users.js';
 
 test('users search normalizes whitespace, case and a leading messenger @', () => {
   assert.equal(normalizeSearchText('  @Иванов\tИВАН  '), 'иванов иван');
@@ -23,6 +23,23 @@ test('users display ISO birth dates in a stable Russian format', () => {
   assert.equal(formatBirthDate('2010-09-02'), '2 сентября 2010 г.');
   assert.equal(formatBirthDate('2010-02-30'), '');
   assert.equal(formatBirthDate('not-a-date'), '');
+});
+
+test('user drawer accepts only complete user-detail responses', () => {
+  const data = normalizeUserDetailsPayload({
+    ok: true,
+    user: { id: 42, name: 'Тестовый пользователь' },
+    rights: [{ srv_id: 1, role_id: 1 }],
+    logins: [{ srv_id: 2, login: 'user' }],
+  });
+
+  assert.deepEqual(data, {
+    user: { id: 42, name: 'Тестовый пользователь' },
+    rights: [{ srv_id: 1, role_id: 1 }],
+    logins: [{ srv_id: 2, login: 'user' }],
+  });
+  assert.equal(normalizeUserDetailsPayload({ ok: true, user: {} }), null);
+  assert.equal(normalizeUserDetailsPayload({ ok: false, user: { id: 42 } }), null);
 });
 
 test('users profile keeps primary and optional fields in their intended sections', async () => {

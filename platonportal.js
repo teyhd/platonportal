@@ -1252,12 +1252,21 @@ app.get('/api/users/:id', async (req, res) => {
   if (forbidden) return forbidden;
 
   const id = Number(req.params.id);
-  const user = await db.get_user_by_id(id);
-  if (!user) return res.status(404).json({ ok:false, message: 'Not found' });
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ ok: false, message: 'bad id' });
 
-  const rights = await db.get_user_rights(id);
-  const logins = await db.get_user_logins(id);
-  res.json({ ok:true, user, rights, logins});
+  try {
+    const user = await db.get_user_by_id(id);
+    if (!user) return res.status(404).json({ ok:false, message: 'Not found' });
+
+    const [rights, logins] = await Promise.all([
+      db.get_user_rights(id),
+      db.get_user_logins(id),
+    ]);
+    return res.json({ ok:true, user, rights, logins });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ ok: false, message: 'db error' });
+  }
 });
 
 function normalizeMessengerUsername(value) {
