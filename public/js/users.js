@@ -90,7 +90,6 @@ if (typeof document !== 'undefined') {
       nickname: d.userNickname,
       msgnickname: d.userMsgnickname,
       msgnickname_normalized: d.userMsgnicknameNormalized,
-      email: d.userEmail,
       tg_id: d.userTgId,
       avatar_url_custom: d.userAvatarUrlCustom,
       display_name_custom: d.userDisplayNameCustom,
@@ -107,7 +106,6 @@ if (typeof document !== 'undefined') {
       user.nickname,
       user.msgnickname,
       user.msgnickname_normalized,
-      user.email,
       user.tg_id,
       user.avatar_url_custom,
       user.display_name_custom,
@@ -129,7 +127,7 @@ if (typeof document !== 'undefined') {
 
   function readUrlState() {
     const params = new URLSearchParams(window.location.search);
-    const allowedKeys = new Set(['id', 'name', 'kaf', 'type', 'status', 'pin', 'email', 'nick']);
+    const allowedKeys = new Set(['id', 'name', 'kaf', 'type', 'status', 'pin', 'nick']);
     const sort = params.get('sort');
     const direction = params.get('dir');
     if (allowedKeys.has(sort)) state.sortKey = sort;
@@ -286,7 +284,6 @@ if (typeof document !== 'undefined') {
     qs('#f-type').value = user.type ?? qsa('#f-type option')[0]?.value ?? '';
     qs('#f-status').checked = Number(user.status ?? 1) === 1;
     qs('#f-pin').value = user.pin ?? '';
-    qs('#f-email').value = user.email ?? '';
     qs('#f-messenger-username').value = canonicalNick(user);
     qs('#f-tg-id').value = user.tg_id ?? '';
     qs('#f-allow-discovery').checked = Number(user.allow_discovery_outside_harmony ?? 0) === 1;
@@ -356,7 +353,7 @@ if (typeof document !== 'undefined') {
       userId: user.id ?? '', userName: user.name ?? '', userKaf: user.kaf ?? '', userType: user.type ?? '',
       userStatus: user.status ?? 0, userPin: user.pin ?? '', userNickname: user.nickname ?? '',
       userMsgnickname: user.msgnickname ?? '', userMsgnicknameNormalized: user.msgnickname_normalized ?? '',
-      userEmail: user.email ?? '', userTgId: user.tg_id ?? '', userAvatarUrlCustom: user.avatar_url_custom ?? '',
+      userTgId: user.tg_id ?? '', userAvatarUrlCustom: user.avatar_url_custom ?? '',
       userDisplayNameCustom: user.display_name_custom ?? '', userAllowDiscoveryOutsideHarmony: user.allow_discovery_outside_harmony ?? 0,
     });
   }
@@ -370,7 +367,7 @@ if (typeof document !== 'undefined') {
     assignDataset(row, user);
     qs('.user-avatar', row).textContent = String(user.name || '?').trim().charAt(0) || '?';
     qs('.user-name', row).textContent = user.name || '';
-    const details = [user.email || 'Нет SSO email', canonicalNick(user) ? `@${canonicalNick(user)}` : ''].filter(Boolean).join(' · ');
+    const details = canonicalNick(user) ? `@${canonicalNick(user)}` : 'Ник не указан';
     qs('.user-secondary', row).textContent = details;
     qs('td:nth-child(2) .user-cell-text', row).textContent = labelFor(KAF_LABELS, user.kaf);
     qs('td:nth-child(3) .user-role', row).textContent = labelFor(TYPE_LABELS, user.type);
@@ -399,7 +396,6 @@ if (typeof document !== 'undefined') {
           type: Number(qs('#f-type').value || 0),
           status: qs('#f-status').checked ? 1 : 0,
           pin: qs('#f-pin').value.trim(),
-          email: qs('#f-email').value.trim(),
           messenger_username: qs('#f-messenger-username').value.trim(),
           tg_id: qs('#f-tg-id').value.trim(),
           allow_discovery_outside_harmony: qs('#f-allow-discovery').checked ? 1 : 0,

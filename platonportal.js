@@ -1267,7 +1267,7 @@ function getUserPayload(body = {}) {
     msgnickname_normalized: hasCanonicalUsername
       ? messengerUsername.toLocaleLowerCase('ru-RU')
       : String(body.msgnickname_normalized ?? '').trim(),
-    email: String(body.email ?? '').trim(),
+    email: Object.hasOwn(body, 'email') ? String(body.email ?? '').trim() : undefined,
     kaf: (body.kaf === '' || body.kaf == null || Number.isNaN(Number(body.kaf))) ? null : Number(body.kaf),
     type: Number(body.type ?? 0),
     status: Number(body.status ?? 0),

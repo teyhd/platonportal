@@ -428,12 +428,14 @@ export async function update_user(id, {
     ]
   );
 
-  await usr.query(
-    `UPDATE oauth_identities
-        SET provider_email = ?, updated_at = NOW()
-      WHERE user_id = ?`,
-    [email ? String(email).trim() : null, id]
-  );
+  if (email !== undefined) {
+    await usr.query(
+      `UPDATE oauth_identities
+          SET provider_email = ?, updated_at = NOW()
+        WHERE user_id = ?`,
+      [email ? String(email).trim() : null, id]
+    );
+  }
 
   if (!res.affectedRows) return false;
 
