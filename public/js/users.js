@@ -187,6 +187,12 @@ if (typeof document !== 'undefined') {
     window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
   }
 
+  function clearTransientSearch() {
+    if (!elements.search?.value) return;
+    elements.search.value = '';
+    applyListState();
+  }
+
   function updateSortControls() {
     qsa('.users-sort-button').forEach(button => {
       const active = button.dataset.sort === state.sortKey;
@@ -714,11 +720,8 @@ if (typeof document !== 'undefined') {
     }
     trapFocus(event);
   });
-  window.addEventListener('pageshow', event => {
-    if (!event.persisted || !elements.search) return;
-    elements.search.value = '';
-    applyListState();
-  });
+  window.addEventListener('pagehide', clearTransientSearch);
+  window.addEventListener('pageshow', clearTransientSearch);
 
   readUrlState();
   applyListState();

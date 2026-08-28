@@ -28,6 +28,9 @@ test('users search is transient and has no duplicate clear controls', async () =
   assert.doesNotMatch(script, /params\.get\('q'\)/);
   assert.doesNotMatch(script, /q:\s*elements\.search/);
   assert.match(script, /params\.delete\('q'\)/);
+  assert.match(template, /id="user-search"[^>]*data-1p-ignore="true"[^>]*data-lpignore="true"/);
+  assert.match(script, /window\.addEventListener\('pagehide', clearTransientSearch\)/);
+  assert.match(script, /window\.addEventListener\('pageshow', clearTransientSearch\)/);
 });
 
 test('users display ISO birth dates in a stable Russian format', () => {
