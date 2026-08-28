@@ -264,7 +264,7 @@ export async function get_kafs() {
 
 export async function get_users() {
   const sql = `
-    SELECT u.*, oi.provider_email AS email
+    SELECT u.*, DATE_FORMAT(u.birth_date, '%Y-%m-%d') AS birth_date, oi.provider_email AS email
     FROM users u
     LEFT JOIN (
       SELECT user_id,
@@ -319,7 +319,7 @@ async function upsert_user_email(userId, email) {
 
 export async function get_user_by_id(id) {
   const [rows] = await usr.query(
-    `SELECT u.*, oi.provider_email AS email
+    `SELECT u.*, DATE_FORMAT(u.birth_date, '%Y-%m-%d') AS birth_date, oi.provider_email AS email
        FROM users u
        LEFT JOIN (
          SELECT user_id,
@@ -351,14 +351,15 @@ export async function create_user({
   allow_discovery_outside_harmony,
   avatar_url_custom,
   display_name_custom,
+  birth_date,
   email
 }) {
   const [res] = await usr.query(
     `INSERT INTO users (
       name, nickname, msgnickname, msgnickname_normalized,
       kaf, type, status, pin, tg_id,
-      allow_discovery_outside_harmony, avatar_url_custom, display_name_custom
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      allow_discovery_outside_harmony, avatar_url_custom, display_name_custom, birth_date
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       name,
       nickname || null,
@@ -372,6 +373,7 @@ export async function create_user({
       Number(allow_discovery_outside_harmony || 0),
       avatar_url_custom || null,
       display_name_custom || null,
+      birth_date || null,
     ]
   );
 
@@ -394,6 +396,7 @@ export async function update_user(id, {
   allow_discovery_outside_harmony,
   avatar_url_custom,
   display_name_custom,
+  birth_date,
   email
 }) {
   const [res] = await usr.query(
@@ -409,7 +412,8 @@ export async function update_user(id, {
             tg_id = ?,
             allow_discovery_outside_harmony = ?,
             avatar_url_custom = ?,
-            display_name_custom = ?
+            display_name_custom = ?,
+            birth_date = CASE WHEN ? THEN ? ELSE birth_date END
       WHERE id = ?`,
     [
       name,
@@ -424,6 +428,8 @@ export async function update_user(id, {
       Number(allow_discovery_outside_harmony || 0),
       avatar_url_custom || null,
       display_name_custom || null,
+      Number(birth_date !== undefined),
+      birth_date ?? null,
       id
     ]
   );

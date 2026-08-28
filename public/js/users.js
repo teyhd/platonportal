@@ -20,6 +20,17 @@ export function compareUserValues(left, right, direction = 'asc') {
   return direction === 'desc' ? -result : result;
 }
 
+export function formatBirthDate(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value ?? ''));
+  if (!match) return '';
+  const [, year, month, day] = match;
+  const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  if (date.getUTCFullYear() !== Number(year) || date.getUTCMonth() !== Number(month) - 1 || date.getUTCDate() !== Number(day)) return '';
+  return new Intl.DateTimeFormat('ru-RU', {
+    day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC'
+  }).format(date);
+}
+
 if (typeof document !== 'undefined') {
   const qs = (selector, root = document) => root.querySelector(selector);
   const qsa = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -90,6 +101,7 @@ if (typeof document !== 'undefined') {
       nickname: d.userNickname,
       msgnickname: d.userMsgnickname,
       msgnickname_normalized: d.userMsgnicknameNormalized,
+      birth_date: d.userBirthDate,
       tg_id: d.userTgId,
       avatar_url_custom: d.userAvatarUrlCustom,
       display_name_custom: d.userDisplayNameCustom,
@@ -106,6 +118,8 @@ if (typeof document !== 'undefined') {
       user.nickname,
       user.msgnickname,
       user.msgnickname_normalized,
+      user.birth_date,
+      formatBirthDate(user.birth_date),
       user.tg_id,
       user.avatar_url_custom,
       user.display_name_custom,
@@ -127,7 +141,7 @@ if (typeof document !== 'undefined') {
 
   function readUrlState() {
     const params = new URLSearchParams(window.location.search);
-    const allowedKeys = new Set(['id', 'name', 'kaf', 'type', 'status', 'pin', 'nick']);
+    const allowedKeys = new Set(['id', 'name', 'kaf', 'type', 'status', 'pin', 'birth_date', 'nick']);
     const sort = params.get('sort');
     const direction = params.get('dir');
     if (allowedKeys.has(sort)) state.sortKey = sort;
@@ -189,7 +203,14 @@ if (typeof document !== 'undefined') {
       if (!state.originalRows.has(row)) state.originalRows.set(row, index);
     });
     rows.sort((left, right) => {
-      const result = compareUserValues(sortValue(left, state.sortKey), sortValue(right, state.sortKey), state.sortDirection);
+      const leftValue = sortValue(left, state.sortKey);
+      const rightValue = sortValue(right, state.sortKey);
+      if (state.sortKey === 'birth_date') {
+        const leftMissing = !leftValue;
+        const rightMissing = !rightValue;
+        if (leftMissing !== rightMissing) return leftMissing ? 1 : -1;
+      }
+      const result = compareUserValues(leftValue, rightValue, state.sortDirection);
       return result || ((state.originalRows.get(left) || 0) - (state.originalRows.get(right) || 0));
     });
     rows.forEach(row => elements.tbody.insertBefore(row, elements.noResults));
@@ -284,6 +305,7 @@ if (typeof document !== 'undefined') {
     qs('#f-type').value = user.type ?? qsa('#f-type option')[0]?.value ?? '';
     qs('#f-status').checked = Number(user.status ?? 1) === 1;
     qs('#f-pin').value = user.pin ?? '';
+    qs('#f-birth-date').value = user.birth_date ?? '';
     qs('#f-messenger-username').value = canonicalNick(user);
     qs('#f-tg-id').value = user.tg_id ?? '';
     qs('#f-allow-discovery').checked = Number(user.allow_discovery_outside_harmony ?? 0) === 1;
@@ -353,6 +375,7 @@ if (typeof document !== 'undefined') {
       userId: user.id ?? '', userName: user.name ?? '', userKaf: user.kaf ?? '', userType: user.type ?? '',
       userStatus: user.status ?? 0, userPin: user.pin ?? '', userNickname: user.nickname ?? '',
       userMsgnickname: user.msgnickname ?? '', userMsgnicknameNormalized: user.msgnickname_normalized ?? '',
+      userBirthDate: user.birth_date ?? '',
       userTgId: user.tg_id ?? '', userAvatarUrlCustom: user.avatar_url_custom ?? '',
       userDisplayNameCustom: user.display_name_custom ?? '', userAllowDiscoveryOutsideHarmony: user.allow_discovery_outside_harmony ?? 0,
     });
@@ -367,7 +390,10 @@ if (typeof document !== 'undefined') {
     assignDataset(row, user);
     qs('.user-avatar', row).textContent = String(user.name || '?').trim().charAt(0) || '?';
     qs('.user-name', row).textContent = user.name || '';
-    const details = canonicalNick(user) ? `@${canonicalNick(user)}` : 'Ник не указан';
+    const details = [
+      canonicalNick(user) ? `@${canonicalNick(user)}` : 'Ник не указан',
+      formatBirthDate(user.birth_date),
+    ].filter(Boolean).join(' · ');
     qs('.user-secondary', row).textContent = details;
     qs('td:nth-child(2) .user-cell-text', row).textContent = labelFor(KAF_LABELS, user.kaf);
     qs('td:nth-child(3) .user-role', row).textContent = labelFor(TYPE_LABELS, user.type);
@@ -396,6 +422,7 @@ if (typeof document !== 'undefined') {
           type: Number(qs('#f-type').value || 0),
           status: qs('#f-status').checked ? 1 : 0,
           pin: qs('#f-pin').value.trim(),
+          birth_date: qs('#f-birth-date').value,
           messenger_username: qs('#f-messenger-username').value.trim(),
           tg_id: qs('#f-tg-id').value.trim(),
           allow_discovery_outside_harmony: qs('#f-allow-discovery').checked ? 1 : 0,

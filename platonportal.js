@@ -52,6 +52,17 @@ helpers: {
         return str.substring(s, l ? s + l : undefined);
     },
 
+    formatBirthDate(value) {
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value ?? ''));
+        if (!match) return '';
+        const [, year, month, day] = match;
+        const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+        if (date.getUTCFullYear() !== Number(year) || date.getUTCMonth() !== Number(month) - 1 || date.getUTCDate() !== Number(day)) return '';
+        return new Intl.DateTimeFormat('ru-RU', {
+            day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC'
+        }).format(date);
+    },
+
     // поиск объекта по id в массиве: {{#with (findById types this.type)}}{{name}}{{/with}}
     findById(arr, id) {
         if (!Array.isArray(arr)) return null;
@@ -1256,8 +1267,22 @@ function normalizeMessengerUsername(value) {
     .replace(/^@+/, '');
 }
 
+function parseBirthDate(value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return null;
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+  if (!match) return undefined;
+  const [, year, month, day] = match;
+  const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  if (date.getUTCFullYear() !== Number(year) || date.getUTCMonth() !== Number(month) - 1 || date.getUTCDate() !== Number(day)) return undefined;
+  if (raw > new Date().toISOString().slice(0, 10)) return undefined;
+  return raw;
+}
+
 function getUserPayload(body = {}) {
   const hasCanonicalUsername = Object.hasOwn(body, 'messenger_username');
+  const hasBirthDate = Object.hasOwn(body, 'birth_date');
   const messengerUsername = normalizeMessengerUsername(body.messenger_username);
 
   return {
@@ -1276,6 +1301,7 @@ function getUserPayload(body = {}) {
     allow_discovery_outside_harmony: Number(body.allow_discovery_outside_harmony ?? 0),
     avatar_url_custom: String(body.avatar_url_custom ?? '').trim(),
     display_name_custom: String(body.display_name_custom ?? '').trim(),
+    birth_date: hasBirthDate ? parseBirthDate(body.birth_date) : undefined,
   };
 }
 
@@ -1286,6 +1312,7 @@ app.post('/api/users', async (req, res) => {
 
   const data = getUserPayload(req.body || {});
   if (!data.name) return res.status(400).json({ ok:false, message:'name required' });
+  if (Object.hasOwn(req.body || {}, 'birth_date') && data.birth_date === undefined) return res.status(400).json({ ok:false, message:'Укажите корректную дату рождения' });
   try {
     const id = await db.create_user(data);
     res.json({ ok:true, id });
@@ -1305,6 +1332,7 @@ app.put('/api/users/:id', async (req, res) => {
   const data = getUserPayload(req.body || {});
   if (!id) return res.status(400).json({ ok:false, message:'bad id' });
   if (!data.name) return res.status(400).json({ ok:false, message:'name required' });
+  if (Object.hasOwn(req.body || {}, 'birth_date') && data.birth_date === undefined) return res.status(400).json({ ok:false, message:'Укажите корректную дату рождения' });
 
   try {
     const ok = await db.update_user(id, data);
