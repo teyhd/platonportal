@@ -1219,7 +1219,7 @@ app.get('/users', async (req, res) => {
     const kafs     = await db.get_kafs();
     const services = await db.get_services_with_allowed_roles(); // для вкладок/панели
     const allRoles = await db.get_all_roles();
-    const errrules = await db.get_err_roles_users({ excludeExternal: !canViewExternalUsers });
+    const errrules = await db.get_err_roles_users();
 
     res.render('users', {
       title: 'Пользователи',

@@ -406,8 +406,9 @@ export async function getUserRolesForsrvnam(usrId, srvNmae) {
 }
 ///console.log(await getUserRolesForServiceById(147, 'portal'))
 // ==== USERS ====zz
-export async function get_err_roles_users({ excludeExternal = false } = {}) {
-  const externalFilter = excludeExternal ? getNonExternalUserClause('AND') : '';
+export async function get_err_roles_users(pool = usr) {
+  // External accounts do not receive service roles by design, so they are never access issues.
+  const externalFilter = getNonExternalUserClause('AND');
   const sql = `
         SELECT
             u.id,
@@ -427,7 +428,7 @@ export async function get_err_roles_users({ excludeExternal = false } = {}) {
         ORDER BY u.id;
 
   `;
-  const [rows] = await usr.query(sql);
+  const [rows] = await pool.query(sql);
   return rows;
 }
 export async function get_types() {

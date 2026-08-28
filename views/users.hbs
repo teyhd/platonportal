@@ -56,11 +56,11 @@
 
     {{#if errrules.length}}
       <button class="users-alert" id="btn-open-issues" type="button" aria-haspopup="dialog">
-        <span class="users-alert-main"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none"><path d="M12 3 2.8 20h18.4L12 3Zm0 6v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Проблемы доступа: {{errrules.length}}</strong><br><span>Для части пользователей не назначены роли сервисов</span></span></span>
+        <span class="users-alert-main"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none"><path d="M12 3 2.8 20h18.4L12 3Zm0 6v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Проблемы доступа: {{errrules.length}}</strong><br><span>Для части пользователей не назначены обязательные роли сервисов</span></span></span>
         <svg class="users-alert-chevron" viewBox="0 0 24 24" aria-hidden="true" fill="none"><path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     {{else}}
-      <div class="users-alert users-alert--ok" role="status">Все пользователи имеют назначенные роли сервисов.</div>
+      <div class="users-alert users-alert--ok" role="status">Нет проблем с доступом для пользователей портала.</div>
     {{/if}}
 
     <section class="users-list" aria-labelledby="users-list-title">
