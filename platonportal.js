@@ -12,6 +12,11 @@ import { makeSsoRouter } from "./vendor/ssoRouter.mjs";
 import platformsso from "./vendor/platformsso.mjs";
 import { CALENDAR_SSO_CLIENT_ID, getCalendarSsoClient } from './vendor/calendarSso.mjs';
 import { getRequiredEnvironmentValue, getSsoClientSecrets } from './vendor/ssoClientSecrets.mjs';
+import {
+  createBalalaikaNotifyClient,
+  runBirthdayNotifications,
+  startBirthdayNotificationScheduler,
+} from './vendor/birthdayNotifications.mjs';
 
 import express from 'express'
 import exphbs from 'express-handlebars'
@@ -1859,6 +1864,16 @@ async function start(){
             mlog('Сервер - запущен')
            // say('Распределительный портал - запущен \nПорт: '+PORT)
             mlog('Порт:',PORT);
+            const sendBirthdayNotification = createBalalaikaNotifyClient();
+            startBirthdayNotificationScheduler({
+                run: referenceDate => runBirthdayNotifications({
+                    getCandidates: db.get_active_users_with_birthdays,
+                    sendNotification: sendBirthdayNotification,
+                    referenceDate,
+                    logger: message => mlog(message),
+                }),
+                logger: message => mlog(message),
+            });
         })
     } catch (e) {
         mlog(e);

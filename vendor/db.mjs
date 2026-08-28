@@ -548,6 +548,41 @@ export async function get_users({ excludeExternal = false } = {}) {
   return rows;
 }
 
+export async function get_active_users_with_birthdays(pool = usr) {
+  const [rows] = await pool.query(
+    `SELECT u.id,
+            u.name,
+            DATE_FORMAT(u.birth_date, '%Y-%m-%d') AS birth_date,
+            k.name AS department
+       FROM users u
+       LEFT JOIN kaf_name k ON k.id = u.kaf
+      WHERE u.status = 1
+        AND u.lifecycle_state = 'active'
+        AND u.birth_date IS NOT NULL
+        AND YEAR(u.birth_date) >= 1900
+      ORDER BY u.id`
+  );
+  return rows;
+}
+
+export async function get_birthday_notification_user_by_id(userId, pool = usr) {
+  const id = Number(userId);
+  if (!Number.isSafeInteger(id) || id <= 0) return null;
+
+  const [rows] = await pool.query(
+    `SELECT u.id,
+            u.name,
+            DATE_FORMAT(u.birth_date, '%Y-%m-%d') AS birth_date,
+            k.name AS department
+       FROM users u
+       LEFT JOIN kaf_name k ON k.id = u.kaf
+      WHERE u.id = ?
+      LIMIT 1`,
+    [id]
+  );
+  return rows[0] ?? null;
+}
+
 function isIsoBirthDate(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
 
