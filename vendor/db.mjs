@@ -467,6 +467,90 @@ export async function get_users({ excludeExternal = false } = {}) {
   return rows;
 }
 
+function isIsoBirthDate(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day;
+}
+
+export async function fill_missing_user_birth_dates(updates, pool = usr) {
+  if (!Array.isArray(updates)) throw new TypeError('Birth date updates must be an array');
+
+  const datesByUserId = new Map();
+  for (const update of updates) {
+    const userId = Number(update?.id);
+    const birthDate = String(update?.birth_date ?? update?.birthDate ?? '');
+
+    if (!Number.isSafeInteger(userId) || userId <= 0 || !isIsoBirthDate(birthDate)) {
+      throw new TypeError('Each birth date update must contain a valid user id and ISO date');
+    }
+
+    const existingDate = datesByUserId.get(userId);
+    if (existingDate && existingDate !== birthDate) {
+      throw new TypeError(`User ${userId} has conflicting birth date updates`);
+    }
+    datesByUserId.set(userId, birthDate);
+  }
+
+  if (!datesByUserId.size) return { updated: 0, alreadyPresent: 0 };
+
+  const connection = await pool.getConnection();
+  let transactionStarted = false;
+
+  try {
+    await connection.beginTransaction();
+    transactionStarted = true;
+
+    const userIds = [...datesByUserId.keys()];
+    const [users] = await connection.query(
+      `SELECT id, DATE_FORMAT(birth_date, '%Y-%m-%d') AS birth_date
+         FROM users
+        WHERE id IN (${userIds.map(() => '?').join(', ')})
+        FOR UPDATE`,
+      userIds
+    );
+
+    if (users.length !== userIds.length) {
+      throw new Error('One or more users for the birth date update were not found');
+    }
+
+    const usersById = new Map(users.map(user => [Number(user.id), user]));
+    let updated = 0;
+    let alreadyPresent = 0;
+
+    for (const userId of userIds) {
+      const user = usersById.get(userId);
+      if (user.birth_date) {
+        alreadyPresent += 1;
+        continue;
+      }
+
+      const [result] = await connection.query(
+        'UPDATE users SET birth_date = ? WHERE id = ? AND birth_date IS NULL',
+        [datesByUserId.get(userId), userId]
+      );
+
+      if (result.affectedRows !== 1) {
+        throw new Error(`Birth date for user ${userId} could not be updated`);
+      }
+      updated += 1;
+    }
+
+    await connection.commit();
+    transactionStarted = false;
+    return { updated, alreadyPresent };
+  } catch (error) {
+    if (transactionStarted) await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
 
 async function upsert_user_email(userId, email) {
   const val = (email ?? '').toString().trim();
