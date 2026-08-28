@@ -203,9 +203,14 @@ export async function ensureCalendarSsoRightForUser(userId, pool = usr) {
   return Number(right.affectedRows || 0);
 }
 
-export async function auth_user(pin){
-    const [rows] = await usr.query(
-      `SELECT id,name,type as role FROM users WHERE pin = ? LIMIT 1`,
+export async function auth_user(pin, pool = usr){
+    const [rows] = await pool.query(
+      `SELECT id,name,type as role
+         FROM users
+        WHERE pin = ?
+          AND status = 1
+          AND lifecycle_state = 'active'
+        LIMIT 1`,
       [pin]
     );
     return rows[0];
