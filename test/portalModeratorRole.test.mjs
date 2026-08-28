@@ -20,6 +20,8 @@ test('access issues always exclude External accounts', async () => {
   await get_err_roles_users(pool);
 
   assert.match(calls[0], /AND \(u\.type <> -1 OR u\.type IS NULL\)/);
+  assert.match(calls[0], /allowed\.role_id = u\.type/);
+  assert.match(calls[0], /r\.role_id = u\.type/);
 });
 
 function makePool({ moderatorExists = false } = {}) {

@@ -42,6 +42,7 @@ export function getNonExternalUserClause(prefix = 'WHERE') {
 
 const CALENDAR_SSO_SERVICE_NAME = 'calendar';
 const CALENDAR_SSO_ROLE_IDS = [1, 2, 3, 4, 5, 6, PORTAL_MODERATOR_ROLE_ID];
+const REQUIRED_SERVICE_ID_LIMIT = 10;
 const CALENDAR_SSO_LOCK_NAME = 'mainportal:sso:calendar';
 const PORTAL_MODERATOR_LOCK_NAME = 'mainportal:portal:moderator';
 
@@ -379,6 +380,79 @@ export async function ensureCalendarSsoRightForUser(userId, pool = usr) {
   return Number(right.affectedRows || 0);
 }
 
+export async function ensurePrimaryServiceRightsForUser(userId, pool = usr) {
+  const [result] = await pool.query(
+    `INSERT INTO rights (usr_id, srv_id, role_id)
+     SELECT u.id, service.id, u.type
+       FROM users u
+       JOIN (
+         SELECT DISTINCT srvs_id, role_id
+           FROM srvs_roles
+       ) allowed ON allowed.role_id = u.type
+       JOIN srvs service ON service.id = allowed.srvs_id
+      WHERE u.id = ?
+        AND u.lifecycle_state = 'active'
+        AND u.type <> ?
+        AND service.id < ?
+        AND service.types = 0
+        AND NOT EXISTS (
+          SELECT 1
+            FROM rights existing
+           WHERE existing.usr_id = u.id
+             AND existing.srv_id = service.id
+             AND existing.role_id = u.type
+        )`,
+    [userId, EXTERNAL_ROLE_ID, REQUIRED_SERVICE_ID_LIMIT]
+  );
+  return Number(result.affectedRows || 0);
+}
+
+export async function repairPrimaryServiceRightsForRoles(roleIds, pool = usr) {
+  const normalizedRoleIds = [...new Set((roleIds || [])
+    .map(Number)
+    .filter(roleId => Number.isInteger(roleId) && roleId !== EXTERNAL_ROLE_ID))];
+  if (!normalizedRoleIds.length) return 0;
+
+  const conn = await pool.getConnection();
+  let transactionStarted = false;
+  try {
+    await conn.beginTransaction();
+    transactionStarted = true;
+
+    const [result] = await conn.query(
+      `INSERT INTO rights (usr_id, srv_id, role_id)
+       SELECT u.id, service.id, u.type
+         FROM users u
+         JOIN (
+           SELECT DISTINCT srvs_id, role_id
+             FROM srvs_roles
+         ) allowed ON allowed.role_id = u.type
+         JOIN srvs service ON service.id = allowed.srvs_id
+        WHERE u.lifecycle_state = 'active'
+          AND u.type IN (${normalizedRoleIds.map(() => '?').join(', ')})
+          AND service.id < ?
+          AND service.types = 0
+          AND NOT EXISTS (
+            SELECT 1
+              FROM rights existing
+             WHERE existing.usr_id = u.id
+               AND existing.srv_id = service.id
+               AND existing.role_id = u.type
+          )`,
+      [...normalizedRoleIds, REQUIRED_SERVICE_ID_LIMIT]
+    );
+
+    await conn.commit();
+    transactionStarted = false;
+    return Number(result.affectedRows || 0);
+  } catch (error) {
+    if (transactionStarted) await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
+}
+
 export async function auth_user(pin, pool = usr){
     const [rows] = await pool.query(
       `SELECT id,name,type as role
@@ -416,12 +490,18 @@ export async function get_err_roles_users(pool = usr) {
             GROUP_CONCAT(s.id ORDER BY s.id) AS missing_srv_ids,
             GROUP_CONCAT(s.name ORDER BY s.name SEPARATOR ', ') AS missing_srv_names
         FROM users u
-        CROSS JOIN srvs s
+        JOIN (
+          SELECT DISTINCT srvs_id, role_id
+            FROM srvs_roles
+        ) allowed ON allowed.role_id = u.type
+        JOIN srvs s ON s.id = allowed.srvs_id
         LEFT JOIN rights r
             ON r.usr_id = u.id
           AND r.srv_id = s.id
+          AND r.role_id = u.type
         WHERE s.id < 10
           AND s.types = 0
+          AND u.lifecycle_state = 'active'
           AND r.id IS NULL
           ${externalFilter}
         GROUP BY u.id, u.name
@@ -649,6 +729,7 @@ export async function create_user({
 
   await upsert_user_email(res.insertId, email);
   await ensureCalendarSsoRightForUser(res.insertId);
+  await ensurePrimaryServiceRightsForUser(res.insertId);
 
   return res.insertId;
 }
@@ -730,6 +811,7 @@ export async function update_user(id, {
       await conn.query('DELETE FROM rights WHERE usr_id = ?', [id]);
     } else {
       await ensureCalendarSsoRightForUser(id, conn);
+      await ensurePrimaryServiceRightsForUser(id, conn);
     }
 
     await conn.commit();
