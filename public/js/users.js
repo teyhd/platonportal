@@ -60,7 +60,6 @@ if (typeof document !== 'undefined') {
     total: qs('#users-total'),
     live: qs('#users-live'),
     search: qs('#user-search'),
-    clearSearch: qs('#user-search-clear'),
     status: qs('#filter-status'),
     type: qs('#filter-type'),
     kaf: qs('#filter-kaf'),
@@ -160,7 +159,9 @@ if (typeof document !== 'undefined') {
     const direction = params.get('dir');
     if (allowedKeys.has(sort)) state.sortKey = sort;
     if (direction === 'asc' || direction === 'desc') state.sortDirection = direction;
-    if (elements.search) elements.search.value = params.get('q') || '';
+    // Search is intentionally transient: it must not be restored from a shared URL
+    // or from the browser's back-forward cache.
+    if (elements.search) elements.search.value = '';
     if (elements.status) elements.status.value = params.get('status') || '';
     if (elements.type) elements.type.value = params.get('type') || '';
     if (elements.kaf) elements.kaf.value = params.get('kaf') || '';
@@ -169,7 +170,6 @@ if (typeof document !== 'undefined') {
   function writeUrlState() {
     const params = new URLSearchParams(window.location.search);
     const values = {
-      q: elements.search?.value.trim() || '',
       status: elements.status?.value || '',
       type: elements.type?.value || '',
       kaf: elements.kaf?.value || '',
@@ -180,6 +180,8 @@ if (typeof document !== 'undefined') {
       if (value) params.set(key, value);
       else params.delete(key);
     });
+    // Drop legacy search links as well, so a copied URL never reopens a search.
+    params.delete('q');
     const query = params.toString();
     window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
   }
@@ -207,7 +209,6 @@ if (typeof document !== 'undefined') {
       state.sortKey !== 'id' || state.sortDirection !== 'desc'
     );
     elements.reset.hidden = !active;
-    elements.clearSearch.hidden = !elements.search?.value.trim();
     elements.live.textContent = total ? `Показано ${visibleRows.length} из ${total} пользователей` : 'Пользователей пока нет';
   }
 
@@ -230,7 +231,7 @@ if (typeof document !== 'undefined') {
     rows.forEach(row => elements.tbody.insertBefore(row, elements.noResults));
   }
 
-  function applyListState({ updateUrl = true } = {}) {
+  function applyListState() {
     const query = normalizeSearchText(elements.search?.value || '');
     const status = elements.status?.value || '';
     const type = elements.type?.value || '';
@@ -246,7 +247,7 @@ if (typeof document !== 'undefined') {
     sortRows();
     updateSortControls();
     updateCollectionVisibility();
-    if (updateUrl) writeUrlState();
+    writeUrlState();
   }
 
   function closeActionMenus(except = null) {
@@ -601,7 +602,6 @@ if (typeof document !== 'undefined') {
   elements.status?.addEventListener('change', () => applyListState());
   elements.type?.addEventListener('change', () => applyListState());
   elements.kaf?.addEventListener('change', () => applyListState());
-  elements.clearSearch?.addEventListener('click', () => { elements.search.value = ''; elements.search.focus(); applyListState(); });
   elements.reset?.addEventListener('click', () => {
     elements.search.value = ''; elements.status.value = ''; elements.type.value = ''; elements.kaf.value = '';
     state.sortKey = 'id'; state.sortDirection = 'desc'; applyListState();
@@ -681,7 +681,12 @@ if (typeof document !== 'undefined') {
     }
     trapFocus(event);
   });
+  window.addEventListener('pageshow', event => {
+    if (!event.persisted || !elements.search) return;
+    elements.search.value = '';
+    applyListState();
+  });
 
   readUrlState();
-  applyListState({ updateUrl: false });
+  applyListState();
 }

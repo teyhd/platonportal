@@ -35,18 +35,16 @@ body.users-route>header .hover\:bg-slate-100:hover{background:rgba(20,35,56,.95)
 
 .users-toolbar{display:grid;grid-template-columns:minmax(15rem,1fr) auto;gap:1rem;align-items:end;margin-bottom:1rem}
 .users-search-wrap{position:relative;min-width:0}
-.users-search{box-sizing:border-box;width:100%;height:2.9rem;border:1px solid var(--users-border);border-radius:.75rem;background:var(--users-surface);color:var(--users-text);padding:0 2.8rem 0 2.75rem;font-size:.9375rem;outline:0;transition:border-color .15s ease,box-shadow .15s ease}
+.users-search{box-sizing:border-box;width:100%;height:2.9rem;border:1px solid var(--users-border);border-radius:.75rem;background:var(--users-surface);color:var(--users-text);padding:0 .9rem 0 2.75rem;font-size:.9375rem;outline:0;transition:border-color .15s ease,box-shadow .15s ease}
 .users-search::placeholder{color:#75889f}
 .users-search:focus{border-color:#7287ff;box-shadow:0 0 0 3px rgba(82,112,245,.2)}
 .users-search-icon{position:absolute;left:.9rem;top:50%;width:1.15rem;height:1.15rem;transform:translateY(-50%);color:var(--users-muted);pointer-events:none}
-.users-search-clear{position:absolute;right:.55rem;top:50%;display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;transform:translateY(-50%);border:0;border-radius:.5rem;background:transparent;color:var(--users-muted);cursor:pointer}
-.users-search-clear:hover{background:rgba(145,162,184,.13);color:#fff}
 .users-filters{display:flex;flex-wrap:wrap;gap:.65rem;align-items:center;margin-bottom:1rem}
 .users-filter,.users-select{box-sizing:border-box;min-height:2.5rem;border:1px solid var(--users-border);border-radius:.65rem;background:var(--users-surface);color:#e6edf6;padding:.45rem 2.1rem .45rem .75rem;font-size:.875rem;outline:0}
 .users-filter:focus,.users-select:focus{border-color:#7287ff;box-shadow:0 0 0 3px rgba(82,112,245,.2)}
 .users-reset{border:0;background:transparent;color:#8fa2ff;padding:.45rem .25rem;font-size:.875rem;font-weight:600;cursor:pointer}
 .users-reset:hover{text-decoration:underline;color:#bdc8ff}
-.users-reset[hidden],.users-search-clear[hidden]{display:none}
+.users-reset[hidden]{display:none}
 .users-toolbar-actions{display:flex;align-items:center;gap:.65rem}
 
 .users-alert{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;box-sizing:border-box;border:1px solid rgba(251,113,133,.38);border-radius:.75rem;background:rgba(127,29,29,.22);color:#ffd2da;padding:.7rem .85rem;margin-bottom:1rem;text-align:left;cursor:pointer}

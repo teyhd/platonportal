@@ -19,6 +19,17 @@ test('users sort follows Russian alphabetical order for labels', () => {
   assert.equal(compareUserValues('Учитель', 'Администратор', 'desc') < 0, true);
 });
 
+test('users search is transient and has no duplicate clear controls', async () => {
+  const template = await readFile(new URL('../views/users.hbs', import.meta.url), 'utf8');
+  const script = await readFile(new URL('../public/js/users.js', import.meta.url), 'utf8');
+
+  assert.match(template, /id="user-search" type="text" autocomplete="off"/);
+  assert.doesNotMatch(template, /id="user-search-clear"/);
+  assert.doesNotMatch(script, /params\.get\('q'\)/);
+  assert.doesNotMatch(script, /q:\s*elements\.search/);
+  assert.match(script, /params\.delete\('q'\)/);
+});
+
 test('users display ISO birth dates in a stable Russian format', () => {
   assert.equal(formatBirthDate('2010-09-02'), '2 сентября 2010 г.');
   assert.equal(formatBirthDate('2010-02-30'), '');
