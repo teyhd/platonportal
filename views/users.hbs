@@ -118,6 +118,7 @@
           <div class="users-field">
             <label for="f-type">Роль</label>
             <select class="users-select" id="f-type" name="type">{{#each types}}<option value="{{this.id}}">{{this.name}}</option>{{/each}}</select>
+            <p class="users-field-hint" id="external-role-hint" hidden>Внешним пользователям роли сервисов не назначаются.</p>
           </div>
           <div class="users-field">
             <span class="users-field-label">Статус</span>

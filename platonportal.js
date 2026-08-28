@@ -1389,8 +1389,9 @@ app.put('/api/users/:id/rights', async (req, res) => {
 
   if (!id) return res.status(400).json({ ok:false, message:'bad id' });
   try {
-    await db.replace_user_rights(id, pairs);
-    res.json({ ok:true });
+    const result = await db.replace_user_rights(id, pairs);
+    if (!result) return res.status(404).json({ ok:false, message:'Not found' });
+    res.json({ ok:true, external: result.isExternal });
   } catch (e) {
     console.error(e);
     res.status(500).json({ ok:false, message:'db error' });

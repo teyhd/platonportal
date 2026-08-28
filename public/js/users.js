@@ -87,6 +87,7 @@ if (typeof document !== 'undefined') {
 
   const TYPE_LABELS = Object.fromEntries(qsa('#f-type option').map(option => [option.value, option.textContent.trim()]));
   const KAF_LABELS = Object.fromEntries(qsa('#f-kaf option').filter(option => option.value).map(option => [option.value, option.textContent.trim()]));
+  const EXTERNAL_ROLE_ID = -1;
 
   function userRows() {
     return qsa('.user-row', elements.tbody);
@@ -301,6 +302,10 @@ if (typeof document !== 'undefined') {
       setMessage(elements.userMessage, 'Не удалось загрузить доступы и учётные записи. Повторите открытие пользователя.', 'error');
       return;
     }
+    if (name === 'roles' && isExternalUser()) {
+      setMessage(elements.userMessage, 'Внешним пользователям роли сервисов не назначаются.', 'error');
+      return;
+    }
     qsa('.users-tab', elements.userDrawer).forEach(button => button.setAttribute('aria-selected', String(button.dataset.tab === name)));
     qsa('.users-tab-panel', elements.userDrawer).forEach(panel => { panel.hidden = panel.id !== `tab-${name}`; });
     setMessage(elements.userMessage);
@@ -308,6 +313,23 @@ if (typeof document !== 'undefined') {
 
   function clearRoles() {
     qsa('.role-checkbox', elements.userDrawer).forEach(box => { box.checked = false; });
+  }
+
+  function isExternalUser() {
+    return Number(qs('#f-type')?.value) === EXTERNAL_ROLE_ID;
+  }
+
+  function syncExternalRoleState() {
+    const isExternal = isExternalUser();
+    const rolesTab = qs('#tab-roles-button');
+    rolesTab.disabled = isExternal;
+    rolesTab.setAttribute('aria-disabled', String(isExternal));
+    qs('#external-role-hint').hidden = !isExternal;
+
+    if (isExternal) {
+      clearRoles();
+      if (rolesTab.getAttribute('aria-selected') === 'true') setTab('profile');
+    }
   }
 
   function clearLogins() {
@@ -335,11 +357,16 @@ if (typeof document !== 'undefined') {
     qs('#f-allow-discovery').checked = Number(user.allow_discovery_outside_harmony ?? 0) === 1;
     qs('#f-avatar-url-custom').value = user.avatar_url_custom ?? '';
     qs('#f-display-name-custom').value = user.display_name_custom ?? '';
+    syncExternalRoleState();
     qs('#user-drawer-title').textContent = user.id ? 'Редактирование пользователя' : 'Новый пользователь';
     qs('#user-drawer-subtitle').textContent = `ID: ${user.id ?? '—'}`;
   }
 
   function fillRoles(rights = []) {
+    if (isExternalUser()) {
+      clearRoles();
+      return;
+    }
     const selected = new Set(rights.map(item => `${item.srv_id}:${item.role_id}`));
     qsa('.role-checkbox', elements.userDrawer).forEach(box => { box.checked = selected.has(`${box.dataset.srvId}:${box.dataset.roleId}`); });
   }
@@ -522,6 +549,11 @@ if (typeof document !== 'undefined') {
       }
       if (activeTab === 'roles') {
         if (!currentId) throw new Error('Сначала сохраните профиль пользователя');
+        if (isExternalUser()) {
+          clearRoles();
+          setMessage(elements.userMessage, 'Внешним пользователям роли сервисов не назначаются.', 'success');
+          return;
+        }
         const pairs = qsa('.role-checkbox:checked', elements.userDrawer).map(box => ({ srv_id: Number(box.dataset.srvId), role_id: Number(box.dataset.roleId) }));
         const response = await api(`/api/users/${currentId}/rights`, { method: 'PUT', body: JSON.stringify({ pairs }) });
         if (!response.ok) throw new Error(await readApiError(response, 'Не удалось сохранить доступы'));
@@ -635,6 +667,7 @@ if (typeof document !== 'undefined') {
     else openUser(row, action.dataset.openTab);
   });
   qsa('.users-tab', elements.userDrawer).forEach(button => button.addEventListener('click', () => setTab(button.dataset.tab)));
+  qs('#f-type')?.addEventListener('change', syncExternalRoleState);
   qsa('.user-pin-reveal').forEach(button => button.addEventListener('click', () => {
     const row = button.closest('.user-row');
     const shown = button.getAttribute('aria-pressed') === 'true';

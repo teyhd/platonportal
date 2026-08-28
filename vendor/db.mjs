@@ -668,8 +668,15 @@ export async function update_user(id, {
   display_name_custom,
   birth_date,
   email
-}) {
-  const [res] = await usr.query(
+}, pool = usr) {
+  const conn = await pool.getConnection();
+  let transactionStarted = false;
+
+  try {
+    await conn.beginTransaction();
+    transactionStarted = true;
+
+    const [res] = await conn.query(
     `UPDATE users
         SET name = ?,
             nickname = ?,
@@ -704,19 +711,36 @@ export async function update_user(id, {
     ]
   );
 
-  if (email !== undefined) {
-    await usr.query(
-      `UPDATE oauth_identities
-          SET provider_email = ?, updated_at = NOW()
-        WHERE user_id = ?`,
-      [email ? String(email).trim() : null, id]
-    );
+    if (!res.affectedRows) {
+      await conn.rollback();
+      transactionStarted = false;
+      return false;
+    }
+
+    if (email !== undefined) {
+      await conn.query(
+        `UPDATE oauth_identities
+            SET provider_email = ?, updated_at = NOW()
+          WHERE user_id = ?`,
+        [email ? String(email).trim() : null, id]
+      );
+    }
+
+    if (Number(type) === EXTERNAL_ROLE_ID) {
+      await conn.query('DELETE FROM rights WHERE usr_id = ?', [id]);
+    } else {
+      await ensureCalendarSsoRightForUser(id, conn);
+    }
+
+    await conn.commit();
+    transactionStarted = false;
+    return true;
+  } catch (error) {
+    if (transactionStarted) await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
   }
-
-  if (!res.affectedRows) return false;
-
-  await ensureCalendarSsoRightForUser(id);
-  return true;
 }
 
 export async function delete_user(id) {
@@ -818,21 +842,56 @@ export async function get_user_rights(userId) {
   return rows;
 }
 
-export async function replace_user_rights(userId, pairs) {
-  // pairs: [{srv_id, role_id}]
-  // Проще/надежнее — заменить весь набор:
-  await usr.query(`DELETE FROM rights WHERE usr_id = ?`, [userId]);
+export async function replace_user_rights(userId, pairs, pool = usr) {
+  const conn = await pool.getConnection();
+  let transactionStarted = false;
 
-  // Вставка батчем
+  // pairs: [{srv_id, role_id}]
   const values = (pairs || [])
     .filter(p => Number.isInteger(p.srv_id) && Number.isInteger(p.role_id))
     .map(p => [userId, p.srv_id, p.role_id]);
 
-  if (values.length) {
-    await usr.query(`INSERT INTO rights (usr_id, srv_id, role_id) VALUES ?`, [values]);
-  }
+  try {
+    await conn.beginTransaction();
+    transactionStarted = true;
 
-  await ensureCalendarSsoRightForUser(userId);
+    const [users] = await conn.query('SELECT type FROM users WHERE id = ? FOR UPDATE', [userId]);
+    if (!users.length) {
+      await conn.rollback();
+      transactionStarted = false;
+      return null;
+    }
+
+    const isExternal = Number(users[0].type) === EXTERNAL_ROLE_ID;
+    await conn.query('DELETE FROM rights WHERE usr_id = ?', [userId]);
+
+    if (!isExternal) {
+      if (values.length) {
+        await conn.query('INSERT INTO rights (usr_id, srv_id, role_id) VALUES ?', [values]);
+      }
+      await ensureCalendarSsoRightForUser(userId, conn);
+    }
+
+    await conn.commit();
+    transactionStarted = false;
+    return { isExternal };
+  } catch (error) {
+    if (transactionStarted) await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
+}
+
+export async function clear_external_user_rights(pool = usr) {
+  const [result] = await pool.query(
+    `DELETE r
+       FROM rights r
+       JOIN users u ON u.id = r.usr_id
+      WHERE u.type = ?`,
+    [EXTERNAL_ROLE_ID]
+  );
+  return Number(result.affectedRows || 0);
 }
 
 // ==== LOGINS ====
