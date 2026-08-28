@@ -33,6 +33,15 @@ test('users search is transient and has no duplicate clear controls', async () =
   assert.match(script, /window\.addEventListener\('pageshow', clearTransientSearch\)/);
 });
 
+test('user identity keeps a compact ID in the existing user cell', async () => {
+  const template = await readFile(new URL('../views/users.hbs', import.meta.url), 'utf8');
+  const styles = await readFile(new URL('../public/css/users.css', import.meta.url), 'utf8');
+
+  assert.match(template, /class="user-primary-line"><span class="user-name">{{this\.name}}<\/span><span class="user-id">ID {{this\.id}}<\/span>/);
+  assert.match(styles, /\.user-primary-line\{display:flex/);
+  assert.match(styles, /\.user-id\{flex:0 0 auto/);
+});
+
 test('users display ISO birth dates in a stable Russian format', () => {
   assert.equal(formatBirthDate('2010-09-02'), '2 сентября 2010 г.');
   assert.equal(formatBirthDate('2010-02-30'), '');
