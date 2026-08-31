@@ -137,6 +137,11 @@
             <label for="f-display-name-custom">Отображаемое имя</label>
             <input class="users-input" id="f-display-name-custom" name="display_name_custom" type="text" placeholder="Если нужно переопределить имя">
           </div>
+          <div class="users-field users-field--wide">
+            <label for="f-schedule-nickname">Ник для расписания</label>
+            <input class="users-input" id="f-schedule-nickname" name="nickname" type="text" autocomplete="off" placeholder="Например, ivan_ivanov">
+            <p class="users-field-hint">Отдельное значение для расписания. Сохраняется без изменения регистра.</p>
+          </div>
         </div>
       </div>
 
@@ -147,7 +152,7 @@
             <div class="users-field users-field--wide">
               <label for="f-messenger-username">Ник в Балалайке</label>
               <input class="users-input" id="f-messenger-username" name="messenger_username" type="text" autocomplete="off" placeholder="например, ivan_ivanov">
-              <p class="users-field-hint">Можно ввести с @ — система приведёт ник к единому формату.</p>
+              <p class="users-field-hint">Можно ввести с @ — система приведёт ник к единому формату. Ник для расписания не изменится.</p>
             </div>
             <div class="users-field">
               <label for="f-tg-id">Telegram ID</label>

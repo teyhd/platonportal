@@ -1305,6 +1305,10 @@ function normalizeMessengerUsername(value) {
     .replace(/^@+/, '');
 }
 
+function normalizeScheduleNickname(value) {
+  return String(value ?? '').trim();
+}
+
 function parseBirthDate(value) {
   const raw = String(value ?? '').trim();
   if (!raw) return null;
@@ -1320,12 +1324,17 @@ function parseBirthDate(value) {
 
 function getUserPayload(body = {}) {
   const hasCanonicalUsername = Object.hasOwn(body, 'messenger_username');
+  const hasScheduleNickname = Object.hasOwn(body, 'nickname');
   const hasBirthDate = Object.hasOwn(body, 'birth_date');
   const messengerUsername = normalizeMessengerUsername(body.messenger_username);
 
   return {
     name: String(body.name ?? '').trim(),
-    nickname: hasCanonicalUsername ? messengerUsername : String(body.nickname ?? '').trim(),
+    // The legacy schedule and Balalayka use separate nickname columns.
+    // Keep the schedule value exactly as supplied by the profile form.
+    nickname: hasScheduleNickname
+      ? normalizeScheduleNickname(body.nickname)
+      : hasCanonicalUsername ? messengerUsername : String(body.nickname ?? '').trim(),
     msgnickname: hasCanonicalUsername ? messengerUsername : String(body.msgnickname ?? '').trim(),
     msgnickname_normalized: hasCanonicalUsername
       ? messengerUsername.toLocaleLowerCase('ru-RU')

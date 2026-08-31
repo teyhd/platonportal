@@ -103,6 +103,12 @@ if (typeof document !== 'undefined') {
     return raw.replace(/^@+/, '');
   }
 
+  function messengerNick(user) {
+    const raw = String(user.msgnickname_normalized || user.msgnickname || '').trim();
+    if (!raw) return '';
+    return raw.replace(/^@+/, '');
+  }
+
   function userFromRow(row) {
     const d = row.dataset;
     return {
@@ -358,7 +364,8 @@ if (typeof document !== 'undefined') {
     qs('#f-status').checked = Number(user.status ?? 1) === 1;
     qs('#f-pin').value = user.pin ?? '';
     qs('#f-birth-date').value = user.birth_date ?? '';
-    qs('#f-messenger-username').value = canonicalNick(user);
+    qs('#f-schedule-nickname').value = user.nickname ?? '';
+    qs('#f-messenger-username').value = messengerNick(user);
     qs('#f-tg-id').value = user.tg_id ?? '';
     qs('#f-allow-discovery').checked = Number(user.allow_discovery_outside_harmony ?? 0) === 1;
     qs('#f-avatar-url-custom').value = user.avatar_url_custom ?? '';
@@ -513,6 +520,7 @@ if (typeof document !== 'undefined') {
           status: qs('#f-status').checked ? 1 : 0,
           pin: qs('#f-pin').value.trim(),
           birth_date: qs('#f-birth-date').value,
+          nickname: qs('#f-schedule-nickname').value.trim(),
           messenger_username: qs('#f-messenger-username').value.trim(),
           tg_id: qs('#f-tg-id').value.trim(),
           allow_discovery_outside_harmony: qs('#f-allow-discovery').checked ? 1 : 0,
@@ -536,7 +544,6 @@ if (typeof document !== 'undefined') {
           ...(row ? userFromRow(row) : {}),
           id,
           ...payload,
-          nickname: messengerUsername,
           msgnickname: messengerUsername,
           msgnickname_normalized: messengerUsername,
         };
