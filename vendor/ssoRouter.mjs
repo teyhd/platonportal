@@ -55,10 +55,14 @@ export function createScopedAccessToken({
   );
 }
 
+export function resolveSsoIssuer(config = {}) {
+  return config.issuer || process.env.SSO_ISSUER || process.env.SSOADR;
+}
+
 export function makeSsoRouter(config = {}) {
   const router = express.Router();
 
-  const ISS        = config.issuer    || process.env.SSO_ISSUER || process.env.SSOADR;
+  const ISS        = resolveSsoIssuer(config);
   const JWT_SECRET = config.jwtSecret || process.env.JWTSECRET;
   const CLIENTS    = config.clients   || {};
   const getServiceRoles = config.getServiceRoles || db.getUserRolesForsrvnam;
