@@ -5,8 +5,24 @@ import express from 'express';
 import session from 'express-session';
 import jwt from 'jsonwebtoken';
 
-import { makeSsoRouter } from '../vendor/ssoRouter.mjs';
+import { makeSsoRouter, resolveSsoIssuer } from '../vendor/ssoRouter.mjs';
 import { createSsoSessionLifecycle } from '../vendor/ssoRevocableSessions.mjs';
+
+test('public SSO issuer takes precedence over the internal portal address', () => {
+  const previousIssuer = process.env.SSO_ISSUER;
+  const previousAddress = process.env.SSOADR;
+  process.env.SSO_ISSUER = 'https://platoniks.ru/sso';
+  process.env.SSOADR = 'http://localhost:777';
+
+  try {
+    assert.equal(resolveSsoIssuer(), 'https://platoniks.ru/sso');
+  } finally {
+    if (previousIssuer === undefined) delete process.env.SSO_ISSUER;
+    else process.env.SSO_ISSUER = previousIssuer;
+    if (previousAddress === undefined) delete process.env.SSOADR;
+    else process.env.SSOADR = previousAddress;
+  }
+});
 
 class MemoryTokenStore {
   constructor() {
