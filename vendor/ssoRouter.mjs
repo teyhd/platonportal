@@ -58,7 +58,7 @@ export function createScopedAccessToken({
 export function makeSsoRouter(config = {}) {
   const router = express.Router();
 
-  const ISS        = config.issuer    || process.env.SSOADR;
+  const ISS        = config.issuer    || process.env.SSO_ISSUER || process.env.SSOADR;
   const JWT_SECRET = config.jwtSecret || process.env.JWTSECRET;
   const CLIENTS    = config.clients   || {};
   const getServiceRoles = config.getServiceRoles || db.getUserRolesForsrvnam;
