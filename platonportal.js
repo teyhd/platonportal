@@ -1899,8 +1899,12 @@ app.get('*',async function(req, res){
 async function start(){
     try {
         await ssoRedis.connect();
-        await db.migratePortalModeratorRole();
-        await db.migrateCalendarSso();
+        try {
+            await db.migratePortalModeratorRole();
+            await db.migrateCalendarSso();
+        } catch (migrationError) {
+            mlog(`Startup migration warning: ${migrationError?.stack || migrationError}`);
+        }
         app.listen(PORT,()=> {
             mlog('Сервер - запущен')
            // say('Распределительный портал - запущен \nПорт: '+PORT)
@@ -1917,7 +1921,9 @@ async function start(){
             });
         })
     } catch (e) {
-        mlog(e);
+        mlog(`Startup failed: ${e?.stack || e}`);
+        try { await ssoRedis.disconnect(); } catch {}
+        process.exit(1);
     }
 }
 start();
