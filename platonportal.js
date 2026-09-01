@@ -9,6 +9,7 @@ import * as db from './vendor/db.mjs';
 import * as hlp from './vendor/hlp.mjs';
 import * as vcall from './vendor/vcall.mjs';
 import { makeSsoRouter } from "./vendor/ssoRouter.mjs";
+import { RedisRevocableTokenStore, createSsoSessionLifecycle } from './vendor/ssoRevocableSessions.mjs';
 import platformsso from "./vendor/platformsso.mjs";
 import { CALENDAR_SSO_CLIENT_ID, getCalendarSsoClient } from './vendor/calendarSso.mjs';
 import { getRequiredEnvironmentValue, getSsoClientSecrets } from './vendor/ssoClientSecrets.mjs';
@@ -21,6 +22,8 @@ import {
 import express from 'express'
 import exphbs from 'express-handlebars'
 import session from 'express-session'
+import { RedisStore } from 'connect-redis'
+import { createClient } from 'redis'
 import cookieParser from 'cookie-parser'
 import path from 'path'
 import fs from 'fs-extra'
@@ -31,12 +34,31 @@ import { fileURLToPath } from 'url';
 var PORT = process.env.PORT || 777;
 const SSO_CLIENT_SECRETS = getSsoClientSecrets();
 const SESSION_SECRET = getRequiredEnvironmentValue('SESSION_SECRET');
+const SSO_REDIS_ADDR = getRequiredEnvironmentValue('SSO_REDIS_ADDR');
+const SSO_REDIS_PASSWORD = getRequiredEnvironmentValue('SSO_REDIS_PASSWORD');
+const SSO_SESSION_TTL_SECONDS = Number.parseInt(process.env.SSO_SESSION_TTL_SECONDS || '28800', 10);
 const {
   PORTAL_ADMIN_ROLE_ID,
   PORTAL_MODERATOR_ROLE_ID,
 } = db;
  //PORT = process.env.PORT || 80;
 const app = express();
+const [ssoRedisHost, ssoRedisPortRaw] = SSO_REDIS_ADDR.split(':');
+const ssoRedis = createClient({
+  socket: { host: ssoRedisHost, port: Number.parseInt(ssoRedisPortRaw || '6379', 10) },
+  password: SSO_REDIS_PASSWORD,
+  database: Number.parseInt(process.env.SSO_REDIS_DB || '0', 10),
+});
+ssoRedis.on('error', error => mlog(`SSO Redis error: ${error?.message || error}`));
+const ssoSessionStore = new RedisStore({
+  client: ssoRedis,
+  prefix: 'sso:session:',
+  ttl: SSO_SESSION_TTL_SECONDS,
+});
+const ssoTokenStore = new RedisRevocableTokenStore(ssoRedis, {
+  prefix: 'sso:oauth:',
+  ttlSeconds: SSO_SESSION_TTL_SECONDS,
+});
 const hbs = exphbs.create({
 defaultLayout: 'main',
 extname: 'hbs',
@@ -156,20 +178,29 @@ app.use(express.static(publicPath, {
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
-app.use(session({name: 'sso.sid',resave:true,saveUninitialized:false, secret: SESSION_SECRET, cookie:
-  {secure: false, // ⚠️ обязательно false на HTTP!
-  httpOnly: true}
+app.use(session({
+  name: 'sso.sid',
+  store: ssoSessionStore,
+  resave: false,
+  saveUninitialized: false,
+  secret: SESSION_SECRET,
+  cookie: {
+    secure: 'auto', // Secure behind the trusted HTTPS proxy, while keeping local HTTP development usable.
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: SSO_SESSION_TTL_SECONDS * 1000,
+  },
 }))
 
-app.use("/sso", makeSsoRouter({
-  issuer: process.env.SSOADR,
-  jwtSecret: process.env.JWTSECRET,
-  clients: {
+const SSO_CLIENTS = {
     "bookpc": { client_secret: SSO_CLIENT_SECRETS.bookpc, redirect_uri: "https://pc.platoniks.ru/cb",
       post_logout_redirect_uris: ['https://pc.platoniks.ru'], srv_name: 'bookpc', legacy_audience: 2 },
 
     "rasp": { client_secret: SSO_CLIENT_SECRETS.rasp, redirect_uri: "https://rasp.platoniks.ru/api/cb",
-    post_logout_redirect_uris: ['https://rasp.platoniks.ru'], srv_name: 'rasp', legacy_audience: 8 },
+      post_logout_redirect_uris: ['https://rasp.platoniks.ru'], srv_name: 'rasp', legacy_audience: 8,
+      revocable_sessions: true,
+      backchannel_logout_uri: 'https://rasp.platoniks.ru/api/auth/backchannel-logout',
+      backchannel_secret: SSO_CLIENT_SECRETS.rasp },
     
     "buy": { client_secret: SSO_CLIENT_SECRETS.buy, redirect_uri: "https://buy.platoniks.ru/api/cb",
       post_logout_redirect_uris: ['https://buy.platoniks.ru'], srv_name: 'buy', legacy_audience: 12 },
@@ -187,7 +218,21 @@ app.use("/sso", makeSsoRouter({
 
     [CALENDAR_SSO_CLIENT_ID]: getCalendarSsoClient(),
 
-  }
+};
+const ssoLifecycle = createSsoSessionLifecycle({
+  clients: SSO_CLIENTS,
+  issuer: process.env.SSOADR,
+  tokenStore: ssoTokenStore,
+  sessionStore: ssoSessionStore,
+  logger: message => mlog(message),
+});
+
+app.use("/sso", makeSsoRouter({
+  issuer: process.env.SSOADR,
+  jwtSecret: process.env.JWTSECRET,
+  clients: SSO_CLIENTS,
+  tokenStore: ssoTokenStore,
+  lifecycle: ssoLifecycle,
 }));
 app.use(platformsso)
 
@@ -1557,10 +1602,13 @@ app.get('/auth',async (req,res)=>{
         if (ans!=undefined){
             let right = await db.get_user_rights(ans.id)
             let logins = await db.get_user_logins(ans.id)
-            req.session.uid = ans.id
-            req.session.name = ans.name
-            req.session.role = ans.role//roles[0].role
-            req.session.right = ans.role
+            await ssoLifecycle.establish(req, {
+              id: ans.id,
+              name: ans.name,
+              role: ans.role,
+              right,
+              logins,
+            })
             res.send('ok')
         } else {
             res.send('nok')
@@ -1572,19 +1620,11 @@ app.get('/auth',async (req,res)=>{
     }
 })  
 
-app.get('/logout', function(req, res) {
+app.get('/logout', async function(req, res) {
     mlog( req.session.name,"вышел из системы");
-    req.session.uid = null;
-    req.session.name = null;
-    req.session.role = null;
-    req.session.roles = null;
-    req.session.right = null;
-    req.session.rolen = null;
-    req.session.logins = null;
-    req.session.destroy(() => {
-      res.clearCookie('sso.sid', { path: '/' });
-      res.redirect('/');
-    });
+    await ssoLifecycle.logout(req, 'logout');
+    res.clearCookie('sso.sid', { path: '/' });
+    res.redirect('/');
 })
 
 // server/tg-probe.js
@@ -1867,6 +1907,7 @@ app.get('*',async function(req, res){
 
 async function start(){
     try {
+        await ssoRedis.connect();
         await db.migratePortalModeratorRole();
         await db.migrateCalendarSso();
         app.listen(PORT,()=> {
