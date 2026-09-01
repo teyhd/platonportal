@@ -219,16 +219,17 @@ const SSO_CLIENTS = {
     [CALENDAR_SSO_CLIENT_ID]: getCalendarSsoClient(),
 
 };
+const SSO_ISSUER = process.env.SSO_ISSUER || process.env.SSOADR;
 const ssoLifecycle = createSsoSessionLifecycle({
   clients: SSO_CLIENTS,
-  issuer: process.env.SSOADR,
+  issuer: SSO_ISSUER,
   tokenStore: ssoTokenStore,
   sessionStore: ssoSessionStore,
   logger: message => mlog(message),
 });
 
 app.use("/sso", makeSsoRouter({
-  issuer: process.env.SSOADR,
+  issuer: SSO_ISSUER,
   jwtSecret: process.env.JWTSECRET,
   clients: SSO_CLIENTS,
   tokenStore: ssoTokenStore,
