@@ -98,7 +98,7 @@ if (typeof document !== 'undefined') {
   }
 
   function canonicalNick(user) {
-    const raw = String(user.msgnickname_normalized || user.msgnickname || user.nickname || '').trim();
+    const raw = String(user.msgnickname_normalized || user.msgnickname || '').trim();
     if (!raw) return '';
     return raw.replace(/^@+/, '');
   }
@@ -364,12 +364,11 @@ if (typeof document !== 'undefined') {
     qs('#f-status').checked = Number(user.status ?? 1) === 1;
     qs('#f-pin').value = user.pin ?? '';
     qs('#f-birth-date').value = user.birth_date ?? '';
-    qs('#f-schedule-nickname').value = user.nickname ?? '';
+    qs('#f-display-name-custom').value = user.nickname ?? '';
     qs('#f-messenger-username').value = messengerNick(user);
     qs('#f-tg-id').value = user.tg_id ?? '';
     qs('#f-allow-discovery').checked = Number(user.allow_discovery_outside_harmony ?? 0) === 1;
     qs('#f-avatar-url-custom').value = user.avatar_url_custom ?? '';
-    qs('#f-display-name-custom').value = user.display_name_custom ?? '';
     syncExternalRoleState();
     qs('#user-drawer-title').textContent = user.id ? 'Редактирование пользователя' : 'Новый пользователь';
     qs('#user-drawer-subtitle').textContent = `ID: ${user.id ?? '—'}`;
@@ -520,12 +519,11 @@ if (typeof document !== 'undefined') {
           status: qs('#f-status').checked ? 1 : 0,
           pin: qs('#f-pin').value.trim(),
           birth_date: qs('#f-birth-date').value,
-          nickname: qs('#f-schedule-nickname').value.trim(),
+          nickname: qs('#f-display-name-custom').value.trim(),
           messenger_username: qs('#f-messenger-username').value.trim(),
           tg_id: qs('#f-tg-id').value.trim(),
           allow_discovery_outside_harmony: qs('#f-allow-discovery').checked ? 1 : 0,
           avatar_url_custom: qs('#f-avatar-url-custom').value.trim(),
-          display_name_custom: qs('#f-display-name-custom').value.trim(),
         };
         if (!payload.name) {
           qs('#f-name').focus();

@@ -1305,7 +1305,7 @@ function normalizeMessengerUsername(value) {
     .replace(/^@+/, '');
 }
 
-function normalizeScheduleNickname(value) {
+function normalizeProfileNickname(value) {
   return String(value ?? '').trim();
 }
 
@@ -1324,16 +1324,16 @@ function parseBirthDate(value) {
 
 function getUserPayload(body = {}) {
   const hasCanonicalUsername = Object.hasOwn(body, 'messenger_username');
-  const hasScheduleNickname = Object.hasOwn(body, 'nickname');
+  const hasNickname = Object.hasOwn(body, 'nickname');
   const hasBirthDate = Object.hasOwn(body, 'birth_date');
+  const hasDisplayNameCustom = Object.hasOwn(body, 'display_name_custom');
   const messengerUsername = normalizeMessengerUsername(body.messenger_username);
 
   return {
     name: String(body.name ?? '').trim(),
-    // The legacy schedule and Balalayka use separate nickname columns.
-    // Keep the schedule value exactly as supplied by the profile form.
-    nickname: hasScheduleNickname
-      ? normalizeScheduleNickname(body.nickname)
+    // The profile's displayed name is stored in the legacy nickname column.
+    nickname: hasNickname
+      ? normalizeProfileNickname(body.nickname)
       : hasCanonicalUsername ? messengerUsername : String(body.nickname ?? '').trim(),
     msgnickname: hasCanonicalUsername ? messengerUsername : String(body.msgnickname ?? '').trim(),
     msgnickname_normalized: hasCanonicalUsername
@@ -1347,7 +1347,7 @@ function getUserPayload(body = {}) {
     tg_id: (body.tg_id === '' || body.tg_id == null || Number.isNaN(Number(body.tg_id))) ? null : Number(body.tg_id),
     allow_discovery_outside_harmony: Number(body.allow_discovery_outside_harmony ?? 0),
     avatar_url_custom: String(body.avatar_url_custom ?? '').trim(),
-    display_name_custom: String(body.display_name_custom ?? '').trim(),
+    display_name_custom: hasDisplayNameCustom ? String(body.display_name_custom ?? '').trim() : undefined,
     birth_date: hasBirthDate ? parseBirthDate(body.birth_date) : undefined,
   };
 }

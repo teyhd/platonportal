@@ -805,7 +805,7 @@ export async function update_user(id, {
             tg_id = ?,
             allow_discovery_outside_harmony = ?,
             avatar_url_custom = ?,
-            display_name_custom = ?,
+            display_name_custom = CASE WHEN ? THEN ? ELSE display_name_custom END,
             birth_date = CASE WHEN ? THEN ? ELSE birth_date END
       WHERE id = ?`,
     [
@@ -820,6 +820,7 @@ export async function update_user(id, {
       tg_id,
       Number(allow_discovery_outside_harmony || 0),
       avatar_url_custom || null,
+      Number(display_name_custom !== undefined),
       display_name_custom || null,
       Number(birth_date !== undefined),
       birth_date ?? null,

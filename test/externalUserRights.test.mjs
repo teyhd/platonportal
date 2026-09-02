@@ -56,6 +56,23 @@ test('saving an External profile clears its service roles atomically', async () 
   assert.equal(fixture.calls.some(call => call.sql.startsWith('INSERT INTO rights')), false);
 });
 
+test('profile updates keep legacy display_name_custom when the field is omitted', async () => {
+  const fixture = makePool();
+  const result = await update_user(42, {
+    name: 'External user',
+    nickname: 'Отображаемое имя', msgnickname: '', msgnickname_normalized: '', kaf: null,
+    type: EXTERNAL_ROLE_ID, status: 1, pin: '', tg_id: null,
+    allow_discovery_outside_harmony: 0, avatar_url_custom: '', display_name_custom: undefined,
+    birth_date: undefined, email: undefined,
+  }, fixture.pool);
+
+  assert.equal(result, true);
+  const update = fixture.calls.find(call => call.sql.startsWith('UPDATE users'));
+  assert.match(update.sql, /display_name_custom = CASE WHEN \? THEN \? ELSE display_name_custom END/);
+  assert.equal(update.params[11], 0);
+  assert.equal(update.params[12], null);
+});
+
 test('saving roles for an External user removes rights instead of inserting them', async () => {
   const fixture = makePool();
   const result = await replace_user_rights(42, [{ srv_id: 1, role_id: 2 }], fixture.pool);
