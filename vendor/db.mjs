@@ -952,6 +952,67 @@ export async function get_services_with_roles() {
 
 // ==== RIGHTS ====
 
+function getTelegramBotDatabaseIdentifier(value) {
+  const database = String(value ?? '').trim();
+  if (!/^[A-Za-z0-9_]+$/.test(database)) {
+    throw new Error('Telegram bot database name is invalid');
+  }
+  return `\`${database}\``;
+}
+
+function isPositiveIntegerString(value) {
+  return /^[1-9]\d*$/.test(String(value ?? ''));
+}
+
+export async function resolveTelegramMiniAppIdentity(telegramUserId, botDatabase, pool = usr) {
+  const normalizedTelegramUserId = String(telegramUserId ?? '').trim();
+  if (!/^\d+$/.test(normalizedTelegramUserId)) return { status: 'not_linked' };
+
+  const botDatabaseIdentifier = getTelegramBotDatabaseIdentifier(botDatabase);
+  const [botUsers] = await pool.query(
+    `SELECT id, role, truename
+       FROM ${botDatabaseIdentifier}.users
+      WHERE tgid = ?
+      ORDER BY id`,
+    [normalizedTelegramUserId]
+  );
+
+  if (botUsers.length === 0) return { status: 'not_linked' };
+  if (botUsers.length !== 1) return { status: 'ambiguous' };
+
+  const botUser = botUsers[0];
+  if (![1, 2].includes(Number(botUser.role)) || !isPositiveIntegerString(botUser.truename)) {
+    return { status: 'not_linked' };
+  }
+
+  const [portalUsers] = await pool.query(
+    `SELECT id, name, type, status, lifecycle_state, tg_id
+       FROM users
+      WHERE id = ?
+      LIMIT 1`,
+    [String(botUser.truename)]
+  );
+  if (portalUsers.length !== 1) return { status: 'not_linked' };
+
+  const portalUser = portalUsers[0];
+  if (Number(portalUser.status) !== 1 || String(portalUser.lifecycle_state) !== 'active') {
+    return { status: 'inactive' };
+  }
+  if (Number(portalUser.type) === EXTERNAL_ROLE_ID) return { status: 'not_linked' };
+  if (portalUser.tg_id !== null && Number(portalUser.tg_id) !== Number(botUser.id)) {
+    return { status: 'ambiguous' };
+  }
+
+  return {
+    status: 'active',
+    telegramUserId: normalizedTelegramUserId,
+    botUserId: Number(botUser.id),
+    portalUserId: Number(portalUser.id),
+    name: String(portalUser.name ?? ''),
+    role: Number(portalUser.type ?? 0),
+  };
+}
+
 export async function get_user_rights(userId) {
   const [rows] = await usr.query(
     `SELECT srv_id, role_id FROM rights WHERE usr_id = ?`,

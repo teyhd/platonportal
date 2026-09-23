@@ -10,6 +10,8 @@ import * as hlp from './vendor/hlp.mjs';
 import * as vcall from './vendor/vcall.mjs';
 import { makeSsoRouter } from "./vendor/ssoRouter.mjs";
 import { RedisRevocableTokenStore, createSsoSessionLifecycle } from './vendor/ssoRevocableSessions.mjs';
+import { getTelegramMiniAppConfig, verifyTelegramMiniAppInitData } from './vendor/telegramMiniApp.mjs';
+import { makeTelegramMiniAppRouter } from './vendor/telegramMiniAppRouter.mjs';
 import platformsso from "./vendor/platformsso.mjs";
 import { CALENDAR_SSO_CLIENT_ID, getCalendarSsoClient } from './vendor/calendarSso.mjs';
 import { getRequiredEnvironmentValue, getSsoClientSecrets } from './vendor/ssoClientSecrets.mjs';
@@ -59,6 +61,35 @@ const ssoTokenStore = new RedisRevocableTokenStore(ssoRedis, {
   prefix: 'sso:oauth:',
   ttlSeconds: SSO_SESSION_TTL_SECONDS,
 });
+let telegramMiniAppConfig = { enabled: false };
+try {
+  telegramMiniAppConfig = getTelegramMiniAppConfig();
+} catch (error) {
+  mlog(`Telegram Mini App is disabled because its configuration is invalid: ${error?.message || error}`);
+}
+const telegramMiniAppSessionStore = telegramMiniAppConfig.enabled
+  ? new RedisStore({
+    client: ssoRedis,
+    prefix: 'tma:session:',
+    ttl: telegramMiniAppConfig.sessionTtlSeconds,
+  })
+  : null;
+const telegramMiniAppSession = telegramMiniAppConfig.enabled
+  ? session({
+    name: 'tma.sid',
+    store: telegramMiniAppSessionStore,
+    resave: false,
+    saveUninitialized: false,
+    secret: SESSION_SECRET,
+    cookie: {
+      secure: 'auto',
+      httpOnly: true,
+      sameSite: 'none',
+      path: '/tg',
+      maxAge: telegramMiniAppConfig.sessionTtlSeconds * 1000,
+    },
+  })
+  : null;
 const hbs = exphbs.create({
 defaultLayout: 'main',
 extname: 'hbs',
@@ -227,6 +258,12 @@ const ssoLifecycle = createSsoSessionLifecycle({
   sessionStore: ssoSessionStore,
   logger: message => mlog(message),
 });
+const telegramMiniAppLifecycle = telegramMiniAppConfig.enabled
+  ? createSsoSessionLifecycle({
+    sessionStore: telegramMiniAppSessionStore,
+    logger: message => mlog(message),
+  })
+  : null;
 
 app.use("/sso", makeSsoRouter({
   issuer: SSO_ISSUER,
@@ -1069,6 +1106,62 @@ function isNoisyIntroInfo(card) {
   const title = (card?.title ?? '').toString();
   const text = stripHtml(card?.cont ?? '');
   return /сервисы платоникса/i.test(title) && /добро пожаловать|коллекция ссылок|ключевые ресурсы/i.test(text);
+}
+
+function getTelegramMiniAppLink(value = '') {
+  const href = String(value ?? '').trim();
+  if (!/^https:\/\//i.test(href)) return null;
+  try {
+    return new URL(href).toString();
+  } catch {
+    return null;
+  }
+}
+
+async function getTelegramMiniAppPortalData(identity) {
+  const rights = await db.get_user_rights(identity.portalUserId);
+  const role = getSessionPortalRole(rights);
+  const catalogRole = getPortalCatalogRole(role);
+  const cards = await db.get_cards(catalogRole);
+  const services = cards
+    .filter(card => Number(card.type) === 0)
+    .map((card, index) => normalizeMenuCard(card, index))
+    .filter(card => !isOperationService(card))
+    .sort((left, right) => getCardOrder(left) - getCardOrder(right) || left._menuIndex - right._menuIndex)
+    .map(card => {
+      const href = getTelegramMiniAppLink(card.cont);
+      if (!href) return null;
+      return {
+        title: String(card.title ?? '').trim().slice(0, 80),
+        href,
+        imageSrc: String(card.imageSrc || '').startsWith('/') ? card.imageSrc : '',
+      };
+    })
+    .filter(Boolean);
+
+  const home = getHomeRoleMeta(catalogRole);
+  return {
+    title: home.homeTitle,
+    subtitle: home.homeSubtitle,
+    services,
+  };
+}
+
+if (telegramMiniAppConfig.enabled) {
+  app.use('/tg', telegramMiniAppSession);
+  app.use('/tg', makeTelegramMiniAppRouter({
+    ...telegramMiniAppConfig,
+    verifyInitData: verifyTelegramMiniAppInitData,
+    resolveIdentity: db.resolveTelegramMiniAppIdentity,
+    getUserRights: db.get_user_rights,
+    lifecycle: telegramMiniAppLifecycle,
+    getPortalData: getTelegramMiniAppPortalData,
+    logger: message => mlog(message),
+  }));
+  app.get('/tg', (_req, res) => {
+    res.set('Cache-Control', 'no-store, private, max-age=0');
+    res.render('telegram', { layout: 'telegram', title: 'Гармония Образования' });
+  });
 }
 
 app.get('/',async (req,res)=>{

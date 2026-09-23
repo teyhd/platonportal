@@ -1,0 +1,28 @@
+<main class="telegram-miniapp-shell" aria-live="polite">
+  <section class="telegram-miniapp-panel" data-tma-panel>
+    <div class="telegram-miniapp-loading" data-tma-loading>
+      <span class="telegram-miniapp-spinner" aria-hidden="true"></span>
+      <p>Открываем ваш портал…</p>
+    </div>
+
+    <div class="telegram-miniapp-error" data-tma-error hidden>
+      <h1 data-tma-error-title>Не удалось открыть портал</h1>
+      <p data-tma-error-message>Повторите попытку немного позже.</p>
+      <button type="button" data-tma-retry>Повторить</button>
+    </div>
+
+    <div data-tma-content hidden>
+      <header class="telegram-miniapp-header">
+        <p class="telegram-miniapp-kicker">Гармония Образования</p>
+        <h1 data-tma-name>Ваши сервисы</h1>
+        <p data-tma-subtitle>Доступные вам сервисы школы.</p>
+      </header>
+      <section aria-labelledby="tma-services-title">
+        <h2 id="tma-services-title">Приложения и сервисы</h2>
+        <div class="telegram-miniapp-grid" data-tma-services></div>
+        <p class="telegram-miniapp-empty" data-tma-empty hidden>Для вашей роли пока нет доступных сервисов.</p>
+      </section>
+      <button type="button" class="telegram-miniapp-logout" data-tma-logout>Выйти из Mini App</button>
+    </div>
+  </section>
+</main>
