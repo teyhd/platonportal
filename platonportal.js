@@ -248,6 +248,21 @@ const SSO_CLIENTS = {
     "vote": { client_secret: SSO_CLIENT_SECRETS.vote, redirect_uri: "https://vote.platoniks.ru/api/cb",
       post_logout_redirect_uris: ['https://vote.platoniks.ru'], srv_name: 'vote', legacy_audience: 14 },
 
+    "chess": { client_secret: SSO_CLIENT_SECRETS.chess, redirect_uri: "https://chess.platoniks.ru/auth/callback",
+      post_logout_redirect_uris: ['https://chess.platoniks.ru/'], srv_name: 'chess', legacy_audience: 16 },
+
+    "zayavki": {
+      client_secret: SSO_CLIENT_SECRETS.zayavki,
+      redirect_uri: "https://tech.platoniks.ru/auth/callback",
+      post_logout_redirect_uris: ['https://tech.platoniks.ru/'],
+      srv_name: 'zayavki',
+      service_scoped_access_token: true,
+      member_role_ids: [5],
+      revocable_sessions: true,
+      backchannel_logout_uri: "https://tech.platoniks.ru/api/auth/backchannel-logout",
+      backchannel_secret: SSO_CLIENT_SECRETS.zayavki,
+    },
+
     [CALENDAR_SSO_CLIENT_ID]: getCalendarSsoClient(),
 
 };

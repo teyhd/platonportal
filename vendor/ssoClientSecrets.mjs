@@ -6,6 +6,8 @@ export const SSO_CLIENT_SECRET_ENV_NAMES = {
   diary: 'DIARY_SSO_CLIENT_SECRET',
   atten: 'ATTEN_SSO_CLIENT_SECRET',
   vote: 'VOTE_SSO_CLIENT_SECRET',
+  chess: 'CHESS_SSO_CLIENT_SECRET',
+  zayavki: 'ZAYAVKI_SSO_CLIENT_SECRET',
 };
 
 export function getRequiredEnvironmentValue(name, env = process.env) {
