@@ -25,6 +25,7 @@ import express from 'express'
 import exphbs from 'express-handlebars'
 import session from 'express-session'
 import { RedisStore } from 'connect-redis'
+import cookieSignature from 'cookie-signature'
 import { createClient } from 'redis'
 import cookieParser from 'cookie-parser'
 import path from 'path'
@@ -264,6 +265,44 @@ const telegramMiniAppLifecycle = telegramMiniAppConfig.enabled
     logger: message => mlog(message),
   })
   : null;
+
+function saveStoreSession(store, sessionId, sessionValue) {
+  return new Promise((resolve, reject) => {
+    store.set(sessionId, sessionValue, error => (error ? reject(error) : resolve()));
+  });
+}
+
+async function establishTelegramSsoHandoff(res, { identity, right, logins }) {
+  const sessionId = crypto.randomBytes(24).toString('base64url');
+  const maxAge = SSO_SESSION_TTL_SECONDS * 1000;
+  const expires = new Date(Date.now() + maxAge);
+  const sessionValue = {
+    cookie: {
+      originalMaxAge: maxAge,
+      expires,
+      secure: true,
+      httpOnly: true,
+      path: '/',
+      sameSite: 'lax',
+    },
+    uid: identity.portalUserId,
+    name: identity.name,
+    role: identity.role,
+    right,
+    logins,
+    rolen: getSessionPortalRole(right),
+    sso_clients: [],
+  };
+  await saveStoreSession(ssoSessionStore, sessionId, sessionValue);
+  res.cookie('sso.sid', `s:${cookieSignature.sign(sessionId, SESSION_SECRET)}`, {
+    secure: true,
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge,
+    expires,
+  });
+}
 
 app.use("/sso", makeSsoRouter({
   issuer: SSO_ISSUER,
@@ -1108,43 +1147,97 @@ function isNoisyIntroInfo(card) {
   return /сервисы платоникса/i.test(title) && /добро пожаловать|коллекция ссылок|ключевые ресурсы/i.test(text);
 }
 
-function getTelegramMiniAppLink(value = '') {
-  const href = String(value ?? '').trim();
-  if (!/^https:\/\//i.test(href)) return null;
+const TELEGRAM_PORTAL_LAUNCH_PATHS = new Set(['/cloud', '/diary', '/tplatform', '/pgmplatform']);
+
+function getTelegramMiniAppLaunch(card) {
+  const rawHref = String(card?.cont ?? '').trim();
+  if (TELEGRAM_PORTAL_LAUNCH_PATHS.has(rawHref)) {
+    return { type: 'portal', target: rawHref };
+  }
+
+  if (!/^https:\/\//i.test(rawHref)) return null;
+  let destination;
   try {
-    return new URL(href).toString();
+    destination = new URL(rawHref);
   } catch {
     return null;
   }
+
+  if (destination.hostname === 'platoniks.ru' && TELEGRAM_PORTAL_LAUNCH_PATHS.has(destination.pathname)) {
+    return { type: 'portal', target: destination.pathname };
+  }
+
+  for (const [clientId, client] of Object.entries(SSO_CLIENTS)) {
+    try {
+      if (new URL(client.redirect_uri).origin === destination.origin) {
+        return { type: 'sso', clientId };
+      }
+    } catch (_) {}
+  }
+
+  return null;
 }
 
-async function getTelegramMiniAppPortalData(identity) {
-  const rights = await db.get_user_rights(identity.portalUserId);
-  const role = getSessionPortalRole(rights);
-  const catalogRole = getPortalCatalogRole(role);
-  const cards = await db.get_cards(catalogRole);
-  const services = cards
+function getTelegramMiniAppServices(cards) {
+  return cards
     .filter(card => Number(card.type) === 0)
     .map((card, index) => normalizeMenuCard(card, index))
     .filter(card => !isOperationService(card))
     .sort((left, right) => getCardOrder(left) - getCardOrder(right) || left._menuIndex - right._menuIndex)
     .map(card => {
-      const href = getTelegramMiniAppLink(card.cont);
-      if (!href) return null;
+      const launch = getTelegramMiniAppLaunch(card);
+      const serviceId = Number(card.id);
+      if (!launch || !Number.isSafeInteger(serviceId) || serviceId <= 0) return null;
       return {
+        id: serviceId,
         title: String(card.title ?? '').trim().slice(0, 80),
-        href,
+        launchUrl: `/tg/launch/${serviceId}`,
         imageSrc: String(card.imageSrc || '').startsWith('/') ? card.imageSrc : '',
       };
     })
     .filter(Boolean);
+}
 
+async function getTelegramMiniAppCatalog(identity) {
+  const rights = await db.get_user_rights(identity.portalUserId);
+  const role = getSessionPortalRole(rights);
+  const catalogRole = getPortalCatalogRole(role);
+  const cards = await db.get_cards(catalogRole);
+  return { rights, catalogRole, cards };
+}
+
+async function getTelegramMiniAppPortalData(identity) {
+  const { catalogRole, cards } = await getTelegramMiniAppCatalog(identity);
   const home = getHomeRoleMeta(catalogRole);
   return {
     title: home.homeTitle,
     subtitle: home.homeSubtitle,
-    services,
+    services: getTelegramMiniAppServices(cards),
   };
+}
+
+async function launchTelegramMiniAppService(identity, serviceId, res) {
+  const cardId = Number(serviceId);
+  if (!Number.isSafeInteger(cardId) || cardId <= 0) {
+    return res.status(404).json({ ok: false, code: 'service_unavailable' });
+  }
+
+  const { rights, cards } = await getTelegramMiniAppCatalog(identity);
+  const card = cards.find(item => Number(item.id) === cardId && Number(item.type) === 0);
+  const launch = card && getTelegramMiniAppLaunch(card);
+  if (!launch) return res.status(404).json({ ok: false, code: 'service_unavailable' });
+
+  const logins = await db.get_user_logins(identity.portalUserId);
+  await establishTelegramSsoHandoff(res, { identity, right: rights, logins });
+
+  if (launch.type === 'portal') return res.redirect(302, launch.target);
+  const client = SSO_CLIENTS[launch.clientId];
+  if (!client) return res.status(404).json({ ok: false, code: 'service_unavailable' });
+  const authorize = new URLSearchParams({
+    client_id: launch.clientId,
+    redirect_uri: client.redirect_uri,
+  });
+  return res.redirect(302, `/sso/authorize?${authorize}`);
 }
 
 if (telegramMiniAppConfig.enabled) {
@@ -1156,6 +1249,7 @@ if (telegramMiniAppConfig.enabled) {
     getUserRights: db.get_user_rights,
     lifecycle: telegramMiniAppLifecycle,
     getPortalData: getTelegramMiniAppPortalData,
+    launchService: launchTelegramMiniAppService,
     logger: message => mlog(message),
   }));
   app.get('/tg', (_req, res) => {

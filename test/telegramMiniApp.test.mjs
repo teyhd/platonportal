@@ -143,6 +143,10 @@ test('Telegram router creates an isolated session only after verified auth and r
     getUserRights: async () => [{ srv_id: 1, role_id: 3 }],
     lifecycle: createSessionLifecycle(),
     getPortalData: async () => ({ title: 'Ваши сервисы', subtitle: 'Доступно', services: [] }),
+    launchService: async (_identity, serviceId, res) => {
+      if (serviceId !== '7') return res.status(404).json({ ok: false, code: 'service_unavailable' });
+      return res.redirect(302, '/sso/authorize?client_id=calendar');
+    },
   }));
   const server = await new Promise(resolve => {
     const listener = app.listen(0, '127.0.0.1', () => resolve(listener));
@@ -167,6 +171,10 @@ test('Telegram router creates an isolated session only after verified auth and r
     const portal = await fetch(`${baseUrl}/tg/api/portal`, { headers: { cookie } });
     assert.equal(portal.status, 200);
     assert.equal((await portal.json()).user.name, 'Тестовый пользователь');
+
+    const launch = await fetch(`${baseUrl}/tg/launch/7`, { headers: { cookie }, redirect: 'manual' });
+    assert.equal(launch.status, 302);
+    assert.equal(launch.headers.get('location'), '/sso/authorize?client_id=calendar');
 
     isActive = false;
     const revoked = await fetch(`${baseUrl}/tg/api/session`, { headers: { cookie } });

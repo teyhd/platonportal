@@ -15,6 +15,13 @@
   };
   let csrfToken = '';
 
+  function getInitData() {
+    if (telegram?.initData) return telegram.initData;
+    const query = new URLSearchParams(window.location.search);
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    return query.get('tgWebAppData') || hash.get('tgWebAppData') || '';
+  }
+
   function setVisible(element, visible) {
     if (element) element.hidden = !visible;
   }
@@ -55,7 +62,7 @@
     elements.services.replaceChildren();
     for (const service of services) {
       const card = document.createElement('a');
-      card.href = service.href;
+      card.href = service.launchUrl;
       card.className = 'telegram-miniapp-card';
       card.setAttribute('aria-label', `Открыть: ${service.title}`);
 
@@ -75,13 +82,7 @@
       card.append(label);
       card.addEventListener('click', event => {
         event.preventDefault();
-        if (telegram?.openTelegramLink && /^https:\/\/t\.me\//i.test(service.href)) {
-          telegram.openTelegramLink(service.href);
-        } else if (telegram?.openLink) {
-          telegram.openLink(service.href);
-        } else {
-          window.open(service.href, '_blank', 'noopener');
-        }
+        window.location.assign(service.launchUrl);
       });
       elements.services.append(card);
     }
@@ -93,8 +94,9 @@
     setVisible(elements.content, false);
     setVisible(elements.loading, true);
 
-    if (!telegram?.initData) {
-      showError('Откройте приложение из Telegram', 'Для безопасного входа откройте Mini App кнопкой бота.', false);
+    const initData = getInitData();
+    if (!initData) {
+      showError('Откройте приложение из Telegram', 'Для безопасного входа используйте кнопку «Открыть портал» в чате с ботом.', false);
       return;
     }
 
@@ -104,7 +106,7 @@
       const authenticated = await request('/tg/api/auth', {
         method: 'POST',
         headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({ initData: telegram.initData }),
+        body: JSON.stringify({ initData }),
       });
       csrfToken = authenticated.csrfToken;
       const payload = await request('/tg/api/portal', { headers: { accept: 'application/json' } });

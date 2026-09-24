@@ -40,6 +40,7 @@ export function makeTelegramMiniAppRouter({
   getUserRights,
   lifecycle,
   getPortalData,
+  launchService,
   logger = () => {},
 } = {}) {
   const router = express.Router();
@@ -124,6 +125,19 @@ export function makeTelegramMiniAppRouter({
       if (!identity) return;
       const portal = await getPortalData(identity);
       return res.json({ ok: true, user: publicUser(identity), portal });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  router.get('/launch/:serviceId', async (req, res, next) => {
+    try {
+      const identity = await resolveActiveIdentity(req, res);
+      if (!identity) return;
+      if (typeof launchService !== 'function') {
+        return res.status(404).json({ ok: false, code: 'service_unavailable' });
+      }
+      return await launchService(identity, req.params.serviceId, res);
     } catch (error) {
       return next(error);
     }
