@@ -1147,15 +1147,38 @@ function isNoisyIntroInfo(card) {
   return /сервисы платоникса/i.test(title) && /добро пожаловать|коллекция ссылок|ключевые ресурсы/i.test(text);
 }
 
-const TELEGRAM_PORTAL_LAUNCH_PATHS = new Set(['/cloud', '/diary', '/tplatform', '/pgmplatform']);
+const TELEGRAM_SSO_LOGIN_URLS = Object.freeze({
+  rasp: 'https://rasp.platoniks.ru/api/auth/login',
+  buy: 'https://buy.platoniks.ru/api/auth/login',
+  report: 'https://rep.platoniks.ru/login',
+  diary: 'https://diary.platoniks.ru/api/auth/login',
+  atten: 'https://stud.platoniks.ru/api/auth/login',
+  vote: 'https://vote.platoniks.ru/api/auth/login',
+  calendar: 'https://event.platoniks.ru/api/auth/login',
+  chess: 'https://chess.platoniks.ru/auth/login',
+  zayavki: 'https://tech.platoniks.ru/auth/login',
+});
+
+function getTelegramPortalPath(rawHref) {
+  if (rawHref.startsWith('/') && !rawHref.startsWith('//') && !rawHref.includes('\\')) {
+    return rawHref;
+  }
+
+  try {
+    const destination = new URL(rawHref);
+    if (destination.origin === 'https://platoniks.ru') {
+      return `${destination.pathname}${destination.search}`;
+    }
+  } catch (_) {}
+
+  return null;
+}
 
 function getTelegramMiniAppLaunch(card) {
   const rawHref = String(card?.cont ?? '').trim();
-  if (TELEGRAM_PORTAL_LAUNCH_PATHS.has(rawHref)) {
-    return { type: 'portal', target: rawHref };
-  }
+  const portalPath = getTelegramPortalPath(rawHref);
+  if (portalPath) return { type: 'portal', target: portalPath };
 
-  if (!/^https:\/\//i.test(rawHref)) return null;
   let destination;
   try {
     destination = new URL(rawHref);
@@ -1163,19 +1186,22 @@ function getTelegramMiniAppLaunch(card) {
     return null;
   }
 
-  if (destination.hostname === 'platoniks.ru' && TELEGRAM_PORTAL_LAUNCH_PATHS.has(destination.pathname)) {
-    return { type: 'portal', target: destination.pathname };
-  }
+  if (!['http:', 'https:'].includes(destination.protocol)) return null;
 
   for (const [clientId, client] of Object.entries(SSO_CLIENTS)) {
     try {
-      if (new URL(client.redirect_uri).origin === destination.origin) {
-        return { type: 'sso', clientId };
+      const callback = new URL(client.redirect_uri);
+      if (callback.hostname === destination.hostname) {
+        return {
+          type: 'sso',
+          clientId,
+          target: TELEGRAM_SSO_LOGIN_URLS[clientId] || null,
+        };
       }
     } catch (_) {}
   }
 
-  return null;
+  return { type: 'external', target: destination.toString() };
 }
 
 function getTelegramMiniAppServices(cards) {
@@ -1230,9 +1256,10 @@ async function launchTelegramMiniAppService(identity, serviceId, res) {
   const logins = await db.get_user_logins(identity.portalUserId);
   await establishTelegramSsoHandoff(res, { identity, right: rights, logins });
 
-  if (launch.type === 'portal') return res.redirect(302, launch.target);
+  if (launch.type === 'portal' || launch.type === 'external') return res.redirect(302, launch.target);
   const client = SSO_CLIENTS[launch.clientId];
   if (!client) return res.status(404).json({ ok: false, code: 'service_unavailable' });
+  if (launch.target) return res.redirect(302, launch.target);
   const authorize = new URLSearchParams({
     client_id: launch.clientId,
     redirect_uri: client.redirect_uri,
