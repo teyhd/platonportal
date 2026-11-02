@@ -7,11 +7,9 @@ import 'dotenv/config'
 import bcrypt from 'bcrypt';
 import * as db from './vendor/db.mjs';
 import * as hlp from './vendor/hlp.mjs';
+import { getAdminNginxServices } from './vendor/nginxServices.mjs';
 import * as vcall from './vendor/vcall.mjs';
 import { makeSsoRouter } from "./vendor/ssoRouter.mjs";
-import { RedisRevocableTokenStore, createSsoSessionLifecycle } from './vendor/ssoRevocableSessions.mjs';
-import { getTelegramMiniAppConfig, verifyTelegramMiniAppInitData } from './vendor/telegramMiniApp.mjs';
-import { makeTelegramMiniAppRouter } from './vendor/telegramMiniAppRouter.mjs';
 import platformsso from "./vendor/platformsso.mjs";
 import { CALENDAR_SSO_CLIENT_ID, getCalendarSsoClient } from './vendor/calendarSso.mjs';
 import { getRequiredEnvironmentValue, getSsoClientSecrets } from './vendor/ssoClientSecrets.mjs';
@@ -24,9 +22,6 @@ import {
 import express from 'express'
 import exphbs from 'express-handlebars'
 import session from 'express-session'
-import { RedisStore } from 'connect-redis'
-import cookieSignature from 'cookie-signature'
-import { createClient } from 'redis'
 import cookieParser from 'cookie-parser'
 import path from 'path'
 import fs from 'fs-extra'
@@ -37,60 +32,12 @@ import { fileURLToPath } from 'url';
 var PORT = process.env.PORT || 777;
 const SSO_CLIENT_SECRETS = getSsoClientSecrets();
 const SESSION_SECRET = getRequiredEnvironmentValue('SESSION_SECRET');
-const SSO_REDIS_ADDR = getRequiredEnvironmentValue('SSO_REDIS_ADDR');
-const SSO_REDIS_PASSWORD = getRequiredEnvironmentValue('SSO_REDIS_PASSWORD');
-const SSO_SESSION_TTL_SECONDS = Number.parseInt(process.env.SSO_SESSION_TTL_SECONDS || '28800', 10);
 const {
   PORTAL_ADMIN_ROLE_ID,
   PORTAL_MODERATOR_ROLE_ID,
 } = db;
  //PORT = process.env.PORT || 80;
 const app = express();
-const [ssoRedisHost, ssoRedisPortRaw] = SSO_REDIS_ADDR.split(':');
-const ssoRedis = createClient({
-  socket: { host: ssoRedisHost, port: Number.parseInt(ssoRedisPortRaw || '6379', 10) },
-  password: SSO_REDIS_PASSWORD,
-  database: Number.parseInt(process.env.SSO_REDIS_DB || '0', 10),
-});
-ssoRedis.on('error', error => mlog(`SSO Redis error: ${error?.message || error}`));
-const ssoSessionStore = new RedisStore({
-  client: ssoRedis,
-  prefix: 'sso:session:',
-  ttl: SSO_SESSION_TTL_SECONDS,
-});
-const ssoTokenStore = new RedisRevocableTokenStore(ssoRedis, {
-  prefix: 'sso:oauth:',
-  ttlSeconds: SSO_SESSION_TTL_SECONDS,
-});
-let telegramMiniAppConfig = { enabled: false };
-try {
-  telegramMiniAppConfig = getTelegramMiniAppConfig();
-} catch (error) {
-  mlog(`Telegram Mini App is disabled because its configuration is invalid: ${error?.message || error}`);
-}
-const telegramMiniAppSessionStore = telegramMiniAppConfig.enabled
-  ? new RedisStore({
-    client: ssoRedis,
-    prefix: 'tma:session:',
-    ttl: telegramMiniAppConfig.sessionTtlSeconds,
-  })
-  : null;
-const telegramMiniAppSession = telegramMiniAppConfig.enabled
-  ? session({
-    name: 'tma.sid',
-    store: telegramMiniAppSessionStore,
-    resave: false,
-    saveUninitialized: false,
-    secret: SESSION_SECRET,
-    cookie: {
-      secure: 'auto',
-      httpOnly: true,
-      sameSite: 'none',
-      path: '/tg',
-      maxAge: telegramMiniAppConfig.sessionTtlSeconds * 1000,
-    },
-  })
-  : null;
 const hbs = exphbs.create({
 defaultLayout: 'main',
 extname: 'hbs',
@@ -210,29 +157,20 @@ app.use(express.static(publicPath, {
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
-app.use(session({
-  name: 'sso.sid',
-  store: ssoSessionStore,
-  resave: false,
-  saveUninitialized: false,
-  secret: SESSION_SECRET,
-  cookie: {
-    secure: 'auto', // Secure behind the trusted HTTPS proxy, while keeping local HTTP development usable.
-    httpOnly: true,
-    sameSite: 'lax',
-    maxAge: SSO_SESSION_TTL_SECONDS * 1000,
-  },
+app.use(session({name: 'sso.sid',resave:true,saveUninitialized:false, secret: SESSION_SECRET, cookie:
+  {secure: false, // ⚠️ обязательно false на HTTP!
+  httpOnly: true}
 }))
 
-const SSO_CLIENTS = {
+app.use("/sso", makeSsoRouter({
+  issuer: process.env.SSOADR,
+  jwtSecret: process.env.JWTSECRET,
+  clients: {
     "bookpc": { client_secret: SSO_CLIENT_SECRETS.bookpc, redirect_uri: "https://pc.platoniks.ru/cb",
       post_logout_redirect_uris: ['https://pc.platoniks.ru'], srv_name: 'bookpc', legacy_audience: 2 },
 
     "rasp": { client_secret: SSO_CLIENT_SECRETS.rasp, redirect_uri: "https://rasp.platoniks.ru/api/cb",
-      post_logout_redirect_uris: ['https://rasp.platoniks.ru'], srv_name: 'rasp', legacy_audience: 8,
-      revocable_sessions: true,
-      backchannel_logout_uri: 'https://rasp.platoniks.ru/api/auth/backchannel-logout',
-      backchannel_secret: SSO_CLIENT_SECRETS.rasp },
+    post_logout_redirect_uris: ['https://rasp.platoniks.ru'], srv_name: 'rasp', legacy_audience: 8 },
     
     "buy": { client_secret: SSO_CLIENT_SECRETS.buy, redirect_uri: "https://buy.platoniks.ru/api/cb",
       post_logout_redirect_uris: ['https://buy.platoniks.ru'], srv_name: 'buy', legacy_audience: 12 },
@@ -248,83 +186,9 @@ const SSO_CLIENTS = {
     "vote": { client_secret: SSO_CLIENT_SECRETS.vote, redirect_uri: "https://vote.platoniks.ru/api/cb",
       post_logout_redirect_uris: ['https://vote.platoniks.ru'], srv_name: 'vote', legacy_audience: 14 },
 
-    "chess": { client_secret: SSO_CLIENT_SECRETS.chess, redirect_uri: "https://chess.platoniks.ru/auth/callback",
-      post_logout_redirect_uris: ['https://chess.platoniks.ru/'], srv_name: 'chess', legacy_audience: 16 },
-
-    "zayavki": {
-      client_secret: SSO_CLIENT_SECRETS.zayavki,
-      redirect_uri: "https://tech.platoniks.ru/auth/callback",
-      post_logout_redirect_uris: ['https://tech.platoniks.ru/'],
-      srv_name: 'zayavki',
-      service_scoped_access_token: true,
-      member_role_ids: [5],
-      revocable_sessions: true,
-      backchannel_logout_uri: "https://tech.platoniks.ru/api/auth/backchannel-logout",
-      backchannel_secret: SSO_CLIENT_SECRETS.zayavki,
-    },
-
     [CALENDAR_SSO_CLIENT_ID]: getCalendarSsoClient(),
 
-};
-const SSO_ISSUER = process.env.SSO_ISSUER || process.env.SSOADR;
-const ssoLifecycle = createSsoSessionLifecycle({
-  clients: SSO_CLIENTS,
-  issuer: SSO_ISSUER,
-  tokenStore: ssoTokenStore,
-  sessionStore: ssoSessionStore,
-  logger: message => mlog(message),
-});
-const telegramMiniAppLifecycle = telegramMiniAppConfig.enabled
-  ? createSsoSessionLifecycle({
-    sessionStore: telegramMiniAppSessionStore,
-    logger: message => mlog(message),
-  })
-  : null;
-
-function saveStoreSession(store, sessionId, sessionValue) {
-  return new Promise((resolve, reject) => {
-    store.set(sessionId, sessionValue, error => (error ? reject(error) : resolve()));
-  });
-}
-
-async function establishTelegramSsoHandoff(res, { identity, right, logins }) {
-  const sessionId = crypto.randomBytes(24).toString('base64url');
-  const maxAge = SSO_SESSION_TTL_SECONDS * 1000;
-  const expires = new Date(Date.now() + maxAge);
-  const sessionValue = {
-    cookie: {
-      originalMaxAge: maxAge,
-      expires,
-      secure: true,
-      httpOnly: true,
-      path: '/',
-      sameSite: 'lax',
-    },
-    uid: identity.portalUserId,
-    name: identity.name,
-    role: identity.role,
-    right,
-    logins,
-    rolen: getSessionPortalRole(right),
-    sso_clients: [],
-  };
-  await saveStoreSession(ssoSessionStore, sessionId, sessionValue);
-  res.cookie('sso.sid', `s:${cookieSignature.sign(sessionId, SESSION_SECRET)}`, {
-    secure: true,
-    httpOnly: true,
-    sameSite: 'lax',
-    path: '/',
-    maxAge,
-    expires,
-  });
-}
-
-app.use("/sso", makeSsoRouter({
-  issuer: SSO_ISSUER,
-  jwtSecret: process.env.JWTSECRET,
-  clients: SSO_CLIENTS,
-  tokenStore: ssoTokenStore,
-  lifecycle: ssoLifecycle,
+  }
 }));
 app.use(platformsso)
 
@@ -750,6 +614,7 @@ function getCardImageSrc(pic = '') {
 
 const CARD_IMAGE_UPLOAD_DIR = path.join(publicPath, 'img', 'cards');
 const CARD_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
+const CARD_IMAGE_PIC_MAX_LENGTH = 255;
 const CARD_IMAGE_TYPES = new Map([
   ['image/png', 'png'],
   ['image/jpeg', 'jpg'],
@@ -777,7 +642,7 @@ async function validateCardPayload(body = {}) {
 
   const title = getLimitedString(body.title, 50);
   const cont = getLimitedString(body.cont, 3000);
-  const pic = getLimitedString(body.pic, 50);
+  const pic = getLimitedString(body.pic, CARD_IMAGE_PIC_MAX_LENGTH);
   const role = Number(body.role);
   const shows = Number(body.shows);
   const crdorder = Number(body.crdorder);
@@ -785,7 +650,7 @@ async function validateCardPayload(body = {}) {
   if (!title) return { error: 'title required' };
   if ((body.title ?? '').toString().trim().length > 50) return { error: 'title too long' };
   if ((body.cont ?? '').toString().trim().length > 3000) return { error: 'content too long' };
-  if ((body.pic ?? '').toString().trim().length > 50) return { error: 'pic too long' };
+  if ((body.pic ?? '').toString().trim().length > CARD_IMAGE_PIC_MAX_LENGTH) return { error: 'pic too long' };
   if (!Number.isInteger(role)) return { error: 'role required' };
   if (!Number.isInteger(shows) || ![0, 1].includes(shows)) return { error: 'shows must be 0 or 1' };
   if (!Number.isInteger(crdorder) || crdorder < 0 || crdorder > 127) return { error: 'crdorder must be from 0 to 127' };
@@ -868,9 +733,10 @@ function getSafeImageFileName(fileName = 'card', extension = 'webp') {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-zA-Z0-9_-]+/g, '-')
     .replace(/^-+|-+$/g, '')
-    .slice(0, 16) || 'card';
+    .slice(0, 8) || 'card';
+  const stamp = Date.now().toString(36);
   const suffix = crypto.randomBytes(4).toString('hex');
-  return `${baseName}-${Date.now()}-${suffix}.${extension}`;
+  return `${baseName}-${stamp}-${suffix}.${extension}`;
 }
 
 function getLinkMeta(href = '') {
@@ -1162,144 +1028,6 @@ function isNoisyIntroInfo(card) {
   return /сервисы платоникса/i.test(title) && /добро пожаловать|коллекция ссылок|ключевые ресурсы/i.test(text);
 }
 
-const TELEGRAM_SSO_LOGIN_URLS = Object.freeze({
-  rasp: 'https://rasp.platoniks.ru/api/auth/login',
-  buy: 'https://buy.platoniks.ru/api/auth/login',
-  report: 'https://rep.platoniks.ru/login',
-  diary: 'https://diary.platoniks.ru/api/auth/login',
-  atten: 'https://stud.platoniks.ru/api/auth/login',
-  vote: 'https://vote.platoniks.ru/api/auth/login',
-  calendar: 'https://event.platoniks.ru/api/auth/login',
-  chess: 'https://chess.platoniks.ru/auth/login',
-  zayavki: 'https://tech.platoniks.ru/auth/login',
-});
-
-function getTelegramPortalPath(rawHref) {
-  if (rawHref.startsWith('/') && !rawHref.startsWith('//') && !rawHref.includes('\\')) {
-    return rawHref;
-  }
-
-  try {
-    const destination = new URL(rawHref);
-    if (destination.origin === 'https://platoniks.ru') {
-      return `${destination.pathname}${destination.search}`;
-    }
-  } catch (_) {}
-
-  return null;
-}
-
-function getTelegramMiniAppLaunch(card) {
-  const rawHref = String(card?.cont ?? '').trim();
-  const portalPath = getTelegramPortalPath(rawHref);
-  if (portalPath) return { type: 'portal', target: portalPath };
-
-  let destination;
-  try {
-    destination = new URL(rawHref);
-  } catch {
-    return null;
-  }
-
-  if (!['http:', 'https:'].includes(destination.protocol)) return null;
-
-  for (const [clientId, client] of Object.entries(SSO_CLIENTS)) {
-    try {
-      const callback = new URL(client.redirect_uri);
-      if (callback.hostname === destination.hostname) {
-        return {
-          type: 'sso',
-          clientId,
-          target: TELEGRAM_SSO_LOGIN_URLS[clientId] || null,
-        };
-      }
-    } catch (_) {}
-  }
-
-  return { type: 'external', target: destination.toString() };
-}
-
-function getTelegramMiniAppServices(cards) {
-  return cards
-    .filter(card => Number(card.type) === 0)
-    .map((card, index) => normalizeMenuCard(card, index))
-    .filter(card => !isOperationService(card))
-    .sort((left, right) => getCardOrder(left) - getCardOrder(right) || left._menuIndex - right._menuIndex)
-    .map(card => {
-      const launch = getTelegramMiniAppLaunch(card);
-      const serviceId = Number(card.id);
-      if (!launch || !Number.isSafeInteger(serviceId) || serviceId <= 0) return null;
-      return {
-        id: serviceId,
-        title: String(card.title ?? '').trim().slice(0, 80),
-        launchUrl: `/tg/launch/${serviceId}`,
-        imageSrc: String(card.imageSrc || '').startsWith('/') ? card.imageSrc : '',
-      };
-    })
-    .filter(Boolean);
-}
-
-async function getTelegramMiniAppCatalog(identity) {
-  const rights = await db.get_user_rights(identity.portalUserId);
-  const role = getSessionPortalRole(rights);
-  const catalogRole = getPortalCatalogRole(role);
-  const cards = await db.get_cards(catalogRole);
-  return { rights, catalogRole, cards };
-}
-
-async function getTelegramMiniAppPortalData(identity) {
-  const { catalogRole, cards } = await getTelegramMiniAppCatalog(identity);
-  const home = getHomeRoleMeta(catalogRole);
-  return {
-    title: home.homeTitle,
-    subtitle: home.homeSubtitle,
-    services: getTelegramMiniAppServices(cards),
-  };
-}
-
-async function launchTelegramMiniAppService(identity, serviceId, res) {
-  const cardId = Number(serviceId);
-  if (!Number.isSafeInteger(cardId) || cardId <= 0) {
-    return res.status(404).json({ ok: false, code: 'service_unavailable' });
-  }
-
-  const { rights, cards } = await getTelegramMiniAppCatalog(identity);
-  const card = cards.find(item => Number(item.id) === cardId && Number(item.type) === 0);
-  const launch = card && getTelegramMiniAppLaunch(card);
-  if (!launch) return res.status(404).json({ ok: false, code: 'service_unavailable' });
-
-  const logins = await db.get_user_logins(identity.portalUserId);
-  await establishTelegramSsoHandoff(res, { identity, right: rights, logins });
-
-  if (launch.type === 'portal' || launch.type === 'external') return res.redirect(302, launch.target);
-  const client = SSO_CLIENTS[launch.clientId];
-  if (!client) return res.status(404).json({ ok: false, code: 'service_unavailable' });
-  if (launch.target) return res.redirect(302, launch.target);
-  const authorize = new URLSearchParams({
-    client_id: launch.clientId,
-    redirect_uri: client.redirect_uri,
-  });
-  return res.redirect(302, `/sso/authorize?${authorize}`);
-}
-
-if (telegramMiniAppConfig.enabled) {
-  app.use('/tg', telegramMiniAppSession);
-  app.use('/tg', makeTelegramMiniAppRouter({
-    ...telegramMiniAppConfig,
-    verifyInitData: verifyTelegramMiniAppInitData,
-    resolveIdentity: db.resolveTelegramMiniAppIdentity,
-    getUserRights: db.get_user_rights,
-    lifecycle: telegramMiniAppLifecycle,
-    getPortalData: getTelegramMiniAppPortalData,
-    launchService: launchTelegramMiniAppService,
-    logger: message => mlog(message),
-  }));
-  app.get('/tg', (_req, res) => {
-    res.set('Cache-Control', 'no-store, private, max-age=0');
-    res.render('telegram', { layout: 'telegram', title: 'Гармония Образования' });
-  });
-}
-
 app.get('/',async (req,res)=>{
    
     let rolen = 0
@@ -1316,6 +1044,10 @@ app.get('/',async (req,res)=>{
     const menuCards = cards.filter(c => c.type === 0).map((card, index) => normalizeMenuCard(card, index))
     const infoCards = cards.filter(c => c.type === 1).map(normalizeInfoCard)
     const homeCatalog = buildHomeCatalog(menuCards, catalogRole)
+    if (hasPortalAdminRole(req.session)) {
+      homeCatalog.catalogServices.push(...getAdminNginxServices(menuCards)
+        .map((card, index) => normalizeMenuCard(card, menuCards.length + index)))
+    }
     const serviceCount = homeCatalog.catalogServices.length
     const operationMenu = [...menuCards]
       .filter(isOperationService)
@@ -1832,13 +1564,10 @@ app.get('/auth',async (req,res)=>{
         if (ans!=undefined){
             let right = await db.get_user_rights(ans.id)
             let logins = await db.get_user_logins(ans.id)
-            await ssoLifecycle.establish(req, {
-              id: ans.id,
-              name: ans.name,
-              role: ans.role,
-              right,
-              logins,
-            })
+            req.session.uid = ans.id
+            req.session.name = ans.name
+            req.session.role = ans.role//roles[0].role
+            req.session.right = ans.role
             res.send('ok')
         } else {
             res.send('nok')
@@ -1850,11 +1579,19 @@ app.get('/auth',async (req,res)=>{
     }
 })  
 
-app.get('/logout', async function(req, res) {
+app.get('/logout', function(req, res) {
     mlog( req.session.name,"вышел из системы");
-    await ssoLifecycle.logout(req, 'logout');
-    res.clearCookie('sso.sid', { path: '/' });
-    res.redirect('/');
+    req.session.uid = null;
+    req.session.name = null;
+    req.session.role = null;
+    req.session.roles = null;
+    req.session.right = null;
+    req.session.rolen = null;
+    req.session.logins = null;
+    req.session.destroy(() => {
+      res.clearCookie('sso.sid', { path: '/' });
+      res.redirect('/');
+    });
 })
 
 // server/tg-probe.js
@@ -2137,13 +1874,8 @@ app.get('*',async function(req, res){
 
 async function start(){
     try {
-        await ssoRedis.connect();
-        try {
-            await db.migratePortalModeratorRole();
-            await db.migrateCalendarSso();
-        } catch (migrationError) {
-            mlog(`Startup migration warning: ${migrationError?.stack || migrationError}`);
-        }
+        await db.migratePortalModeratorRole();
+        await db.migrateCalendarSso();
         app.listen(PORT,()=> {
             mlog('Сервер - запущен')
            // say('Распределительный портал - запущен \nПорт: '+PORT)
@@ -2160,9 +1892,7 @@ async function start(){
             });
         })
     } catch (e) {
-        mlog(`Startup failed: ${e?.stack || e}`);
-        try { await ssoRedis.disconnect(); } catch {}
-        process.exit(1);
+        mlog(e);
     }
 }
 start();

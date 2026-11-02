@@ -1,3 +1,9 @@
+function requireEnvironment(name) {
+  const value = process.env[name];
+  if (!value) throw new Error('Missing environment variable: ' + name);
+  return value;
+}
+
 import {mlog} from './vendor/logs.js'
 process.on('uncaughtException', (err) => {
 mlog('Глобальный косяк приложения!!! ', err.stack);
@@ -73,7 +79,7 @@ if (iswin) {
 }
 
 app.use(cookieParser());
-app.use(session({name: 'login',resave:false,saveUninitialized:false, secret: 'keyboard cat', cookie: { domain: "platoniks.ru" }}));
+app.use(session({name: 'login',resave:false,saveUninitialized:false, secret: requireEnvironment('SESSION_SECRET'), cookie: { domain: "platoniks.ru" }}));
 
 app.use(async function (req, res, next) {
     let page = req._parsedOriginalUrl.pathname;
