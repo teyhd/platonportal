@@ -7,7 +7,7 @@ import 'dotenv/config'
 import bcrypt from 'bcrypt';
 import * as db from './vendor/db.mjs';
 import * as hlp from './vendor/hlp.mjs';
-import { getAdminNginxServices } from './vendor/nginxServices.mjs';
+import { getRegisteredService } from './vendor/nginxServices.mjs';
 import * as vcall from './vendor/vcall.mjs';
 import { makeSsoRouter } from "./vendor/ssoRouter.mjs";
 import platformsso from "./vendor/platformsso.mjs";
@@ -980,6 +980,7 @@ function buildHomeCatalog(menuCards = [], role = 0) {
 }
 
 function normalizeMenuCard(card, index = 0) {
+  const registeredService = getRegisteredService(card.cont);
   const meta = pickMeta(card.title, SERVICE_META, {
     tag: 'Сервис',
     summary: 'Быстрый переход к нужному разделу.',
@@ -991,6 +992,8 @@ function normalizeMenuCard(card, index = 0) {
     ...card,
     ...meta,
     ...linkMeta,
+    summary: registeredService?.summary ?? meta.summary,
+    serviceDescription: registeredService?.summary,
     _menuIndex: index,
     _priority: getServicePriority(card.title, card.cont),
     catalogGroup,
@@ -1042,10 +1045,6 @@ app.get('/',async (req,res)=>{
     const menuCards = cards.filter(c => c.type === 0).map((card, index) => normalizeMenuCard(card, index))
     const infoCards = cards.filter(c => c.type === 1).map(normalizeInfoCard)
     const homeCatalog = buildHomeCatalog(menuCards, catalogRole)
-    if (hasPortalAdminRole(req.session)) {
-      homeCatalog.catalogServices.push(...getAdminNginxServices(menuCards)
-        .map((card, index) => normalizeMenuCard(card, menuCards.length + index)))
-    }
     const serviceCount = homeCatalog.catalogServices.length
     const operationMenu = [...menuCards]
       .filter(isOperationService)

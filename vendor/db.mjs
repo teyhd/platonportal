@@ -1,4 +1,5 @@
 import mysql from 'mysql2'
+import { CARD_VISIBILITY_SQL, cardVisibilityParams } from './domainCatalog.mjs';
 let sets = {
     host: process.env.MDBHOST,
     user: process.env.DBUSER,
@@ -1093,11 +1094,9 @@ export async function get_card_role_options() {
 }
 
 export async function get_cards(role = 0) {
-  const numericRole = Number(role);
-  const safeRole = Number.isFinite(numericRole) ? numericRole : 0;
   const [rows] = await portal.query(
-    `SELECT * FROM cards WHERE role <= ? AND shows = 1 ORDER BY crdorder, id`,
-    [safeRole]
+    CARD_VISIBILITY_SQL,
+    cardVisibilityParams(role)
   );
   return rows;
 }
