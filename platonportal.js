@@ -1238,12 +1238,20 @@ app.get('/users', async (req, res) => {
   req.session.rolen = getSessionPortalRole(req.session?.right ?? req.session?.role ?? 0);
 
   try {
-    const users    = await db.get_users({ excludeExternal: !canViewExternalUsers });
-    const types    = await db.get_types();
+    const moderatorOnly = !canViewExternalUsers;
+    const users    = await db.get_users({ moderatorOnly });
+    const types    = (await db.get_types()).filter(role => !moderatorOnly || !isAdminManagedUserType(role.id));
     const kafs     = await db.get_kafs();
     const services = await db.get_services_with_allowed_roles(); // для вкладок/панели
     const allRoles = await db.get_all_roles();
-    const errrules = await db.get_err_roles_users();
+    const errrules = await db.get_err_roles_users(undefined, { moderatorOnly });
+    if (moderatorOnly) {
+      for (const service of services) {
+        if (Number(service.id) === db.PORTAL_SERVICE_ID) {
+          service.roles = service.roles.filter(role => Number(role.id) !== PORTAL_ADMIN_ROLE_ID);
+        }
+      }
+    }
 
     res.render('users', {
       title: 'Пользователи',
@@ -1301,22 +1309,25 @@ app.put('/api/srvs-roles', async (req, res) => {
 });
 
 // Получить полный профиль пользователя (для шторки)
+function isAdminManagedUserType(type) {
+  return [db.EXTERNAL_ROLE_ID, PORTAL_ADMIN_ROLE_ID].includes(Number(type));
+}
+
+function userNotFound(res) {
+  return res.status(404).json({ ok: false, message: 'Пользователь не найден' });
+}
+
 app.get('/api/users/:id', async (req, res) => {
   const forbidden = requirePortalAdminJson(req, res);
   if (forbidden) return forbidden;
 
   const id = Number(req.params.id);
-  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ ok: false, message: 'bad id' });
+  if (!Number.isSafeInteger(id) || id <= 0) return res.status(400).json({ ok: false, message: 'bad id' });
 
   try {
-    const user = await db.get_user_by_id(id);
-    if (!user) return res.status(404).json({ ok:false, message: 'Not found' });
-
-    const [rights, logins] = await Promise.all([
-      db.get_user_rights(id),
-      db.get_user_logins(id),
-    ]);
-    return res.json({ ok:true, user, rights, logins });
+    const details = await db.get_managed_user_details(id, !hasPortalAdminRole(req.session));
+    if (!details) return userNotFound(res);
+    return res.json({ ok: true, ...details });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ ok: false, message: 'db error' });
@@ -1383,6 +1394,10 @@ app.post('/api/users', async (req, res) => {
   if (forbidden) return forbidden;
 
   const data = getUserPayload(req.body || {});
+  if (!Number.isSafeInteger(data.type)) return res.status(400).json({ ok: false, message: 'Некорректная роль' });
+  if (isAdminManagedUserType(data.type) && !hasPortalAdminRole(req.session)) {
+    return res.status(403).json({ ok: false, message: 'Эту роль может назначить только администратор' });
+  }
   if (!data.name) return res.status(400).json({ ok:false, message:'name required' });
   if (Object.hasOwn(req.body || {}, 'birth_date') && data.birth_date === undefined) return res.status(400).json({ ok:false, message:'Укажите корректную дату рождения' });
   try {
@@ -1402,13 +1417,18 @@ app.put('/api/users/:id', async (req, res) => {
 
   const id = Number(req.params.id);
   const data = getUserPayload(req.body || {});
-  if (!id) return res.status(400).json({ ok:false, message:'bad id' });
+  if (!Number.isSafeInteger(data.type)) return res.status(400).json({ ok: false, message: 'Некорректная роль' });
+  if (!Number.isSafeInteger(id) || id <= 0) return res.status(400).json({ ok:false, message:'bad id' });
+  const moderatorOnly = !hasPortalAdminRole(req.session);
+  if (moderatorOnly && isAdminManagedUserType(data.type)) {
+    return res.status(403).json({ ok: false, message: 'Эту роль может назначить только администратор' });
+  }
   if (!data.name) return res.status(400).json({ ok:false, message:'name required' });
   if (Object.hasOwn(req.body || {}, 'birth_date') && data.birth_date === undefined) return res.status(400).json({ ok:false, message:'Укажите корректную дату рождения' });
 
   try {
-    const ok = await db.update_user(id, data);
-    if (!ok) return res.status(404).json({ ok:false, message:'Not found' });
+    const ok = await db.update_user(id, data, undefined, { moderatorOnly });
+    if (!ok) return userNotFound(res);
     res.json({ ok:true });
   } catch (e) {
     if (e.code === 'ER_DUP_ENTRY') return res.status(409).json({ ok:false, message:'PIN уже используется' });
@@ -1426,10 +1446,14 @@ app.put('/api/users/:id/rights', async (req, res) => {
   const pairs = Array.isArray(req.body?.pairs) ? req.body.pairs : [];
   // ожидается массив объектов {srv_name, role_id}
 
-  if (!id) return res.status(400).json({ ok:false, message:'bad id' });
+  if (!Number.isSafeInteger(id) || id <= 0) return res.status(400).json({ ok:false, message:'bad id' });
+  const moderatorOnly = !hasPortalAdminRole(req.session);
+  if (moderatorOnly && pairs.some(pair => Number(pair?.srv_id) === db.PORTAL_SERVICE_ID && Number(pair?.role_id) === PORTAL_ADMIN_ROLE_ID)) {
+    return res.status(403).json({ ok: false, message: 'Эту роль может назначить только администратор' });
+  }
   try {
-    const result = await db.replace_user_rights(id, pairs);
-    if (!result) return res.status(404).json({ ok:false, message:'Not found' });
+    const result = await db.replace_user_rights(id, pairs, undefined, { moderatorOnly });
+    if (!result) return userNotFound(res);
     res.json({ ok:true, external: result.isExternal });
   } catch (e) {
     console.error(e);
@@ -1446,7 +1470,7 @@ app.put('/api/users/:id/logins', async (req, res) => {
   const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
   // ожидается массив {srv_name, login, new_password}
 
-  if (!id) return res.status(400).json({ ok:false, message:'bad id' });
+  if (!Number.isSafeInteger(id) || id <= 0) return res.status(400).json({ ok:false, message:'bad id' });
 
   // Хэшируй только если пароль передан
   for (const r of rows) {
@@ -1456,7 +1480,8 @@ app.put('/api/users/:id/logins', async (req, res) => {
     }
   }
   try {
-    await db.upsert_user_logins(id, rows);
+    const updated = await db.upsert_user_logins(id, rows, { moderatorOnly: !hasPortalAdminRole(req.session) });
+    if (!updated) return userNotFound(res);
     res.json({ ok:true });
   } catch (e) {
     console.error(e);
@@ -1470,10 +1495,10 @@ app.delete('/api/users/:id', async (req, res) => {
   if (forbidden) return forbidden;
 
   const id = Number(req.params.id);
-  if (!id) return res.status(400).json({ ok:false, message:'bad id' });
+  if (!Number.isSafeInteger(id) || id <= 0) return res.status(400).json({ ok:false, message:'bad id' });
   try {
-    const ok = await db.delete_user(id);
-    if (!ok) return res.status(404).json({ ok:false, message:'Not found' });
+    const ok = await db.delete_user(id, { moderatorOnly: !hasPortalAdminRole(req.session) });
+    if (!ok) return userNotFound(res);
     res.json({ ok:true });
   } catch (e) {
     console.error(e);

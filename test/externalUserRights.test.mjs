@@ -5,10 +5,13 @@ import {
   EXTERNAL_ROLE_ID,
   clear_external_user_rights,
   replace_user_rights,
+  get_managed_user_details,
+  upsert_user_logins,
+  delete_user,
   update_user,
 } from '../vendor/db.mjs';
 
-function makePool({ type = EXTERNAL_ROLE_ID, updateAffectedRows = 1 } = {}) {
+function makePool({ type = EXTERNAL_ROLE_ID, updateAffectedRows = 1, hidden = false } = {}) {
   const calls = [];
   let committed = false;
   let rolledBack = false;
@@ -23,6 +26,7 @@ function makePool({ type = EXTERNAL_ROLE_ID, updateAffectedRows = 1 } = {}) {
       calls.push({ sql, params });
       if (sql.startsWith('UPDATE users')) return [{ affectedRows: updateAffectedRows }];
       if (sql.startsWith('SELECT type FROM users')) return [[{ type }]];
+      if (sql.startsWith('SELECT u.id FROM users')) return [hidden ? [] : [{ id: 42 }]];
       if (sql.startsWith('DELETE FROM rights')) return [{ affectedRows: 3 }];
       if (sql.startsWith('INSERT INTO rights')) return [{ affectedRows: 1 }];
       throw new Error(`Unexpected query: ${sql}`);
@@ -97,4 +101,25 @@ test('bulk cleanup targets only External accounts', async () => {
   assert.equal(removed, 55);
   assert.match(calls[0].sql, /JOIN users u ON u\.id = r\.usr_id/);
   assert.deepEqual(calls[0].params, [EXTERNAL_ROLE_ID]);
+});
+
+test('protected targets are rejected inside the DB transaction before any profile, credential or access operation', async () => {
+  const checks = [
+    pool => get_managed_user_details(42, true, pool),
+    pool => update_user(42, { name: 'Fixture', type: 2 }, pool, { moderatorOnly: true }),
+    pool => replace_user_rights(42, [{ srv_id: 2, role_id: 2 }], pool, { moderatorOnly: true }),
+    pool => upsert_user_logins(42, [{ srv_id: 2, login: 'fixture' }], { moderatorOnly: true }, pool),
+    pool => delete_user(42, { moderatorOnly: true }, pool),
+  ];
+  for (const check of checks) {
+    const fixture = makePool({ hidden: true });
+    assert.ok(!await check(fixture.pool));
+    assert.equal(fixture.calls.length, 2);
+    assert.match(fixture.calls[0].sql, /FOR UPDATE$/);
+    assert.match(fixture.calls[1].sql, /u\.type <> -1/);
+    assert.match(fixture.calls[1].sql, /u\.type <> 5/);
+    assert.match(fixture.calls[1].sql, /u\.id <> 100/);
+    assert.match(fixture.calls[1].sql, /admin_right\.srv_id = 1\s+AND admin_right\.role_id = 5/);
+    assert.ok(fixture.rolledBack && fixture.released && !fixture.committed);
+  }
 });

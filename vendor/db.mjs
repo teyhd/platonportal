@@ -41,6 +41,34 @@ export function getNonExternalUserClause(prefix = 'WHERE') {
   return `${prefix} (u.type <> ${EXTERNAL_ROLE_ID} OR u.type IS NULL)`;
 }
 
+function moderatableUserClause() {
+  return `${getNonExternalUserClause('AND')}
+    AND (u.type <> ${PORTAL_ADMIN_ROLE_ID} OR u.type IS NULL)
+    AND u.id <> ${PORTAL_ADMIN_USER_ID}
+    AND NOT EXISTS (
+      SELECT 1 FROM rights admin_right
+       WHERE admin_right.usr_id = u.id
+         AND admin_right.srv_id = ${PORTAL_SERVICE_ID}
+         AND admin_right.role_id = ${PORTAL_ADMIN_ROLE_ID}
+    )`;
+}
+
+async function lockManagedUser(conn, id, moderatorOnly) {
+  const [[user]] = await conn.query(
+    'SELECT type FROM users WHERE id = ? FOR UPDATE',
+    [id]
+  );
+  if (!user || !moderatorOnly) return user;
+
+  // Rights updates also lock the user first, so a concurrent Portal Admin grant
+  // cannot land between the authorization check and the protected operation.
+  const [[allowed]] = await conn.query(
+    `SELECT u.id FROM users u WHERE u.id = ? ${moderatableUserClause()}`,
+    [id]
+  );
+  return allowed ? user : null;
+}
+
 const CALENDAR_SSO_SERVICE_NAME = 'calendar';
 const CALENDAR_SSO_ROLE_IDS = [1, 2, 3, 4, 5, 6, PORTAL_MODERATOR_ROLE_ID];
 const REQUIRED_SERVICE_ID_LIMIT = 10;
@@ -481,9 +509,9 @@ export async function getUserRolesForsrvnam(usrId, srvNmae) {
 }
 ///console.log(await getUserRolesForServiceById(147, 'portal'))
 // ==== USERS ====zz
-export async function get_err_roles_users(pool = usr) {
+export async function get_err_roles_users(pool = usr, { moderatorOnly = false } = {}) {
   // External accounts do not receive service roles by design, so they are never access issues.
-  const externalFilter = getNonExternalUserClause('AND');
+  const externalFilter = moderatorOnly ? moderatableUserClause() : getNonExternalUserClause('AND');
   const sql = `
         SELECT
             u.id,
@@ -527,8 +555,10 @@ export async function get_kafs() {
   return rows;
 }
 
-export async function get_users({ excludeExternal = false } = {}) {
-  const externalFilter = excludeExternal ? getNonExternalUserClause() : '';
+export async function get_users({ excludeExternal = false, moderatorOnly = false } = {}) {
+  const externalFilter = moderatorOnly
+    ? `WHERE 1 = 1 ${moderatableUserClause()}`
+    : excludeExternal ? getNonExternalUserClause() : '';
   const sql = `
     SELECT u.*, DATE_FORMAT(u.birth_date, '%Y-%m-%d') AS birth_date, oi.provider_email AS email
     FROM users u
@@ -703,8 +733,8 @@ async function upsert_user_email(userId, email) {
   );
 }
 
-export async function get_user_by_id(id) {
-  const [rows] = await usr.query(
+export async function get_user_by_id(id, pool = usr) {
+  const [rows] = await pool.query(
     `SELECT u.*, DATE_FORMAT(u.birth_date, '%Y-%m-%d') AS birth_date, oi.provider_email AS email
        FROM users u
        LEFT JOIN (
@@ -722,6 +752,27 @@ export async function get_user_by_id(id) {
     [id]
   );
   return rows[0] ?? null;
+}
+
+export async function get_managed_user_details(id, moderatorOnly, pool = usr) {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    if (!await lockManagedUser(conn, id, moderatorOnly)) {
+      await conn.rollback();
+      return null;
+    }
+    const user = await get_user_by_id(id, conn);
+    const rights = await get_user_rights(id, conn);
+    const logins = await get_user_logins(id, conn);
+    await conn.commit();
+    return { user, rights, logins };
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
 }
 
 export async function create_user({
@@ -785,13 +836,19 @@ export async function update_user(id, {
   display_name_custom,
   birth_date,
   email
-}, pool = usr) {
+}, pool = usr, { moderatorOnly = false } = {}) {
   const conn = await pool.getConnection();
   let transactionStarted = false;
 
   try {
     await conn.beginTransaction();
     transactionStarted = true;
+
+    if (moderatorOnly && !await lockManagedUser(conn, id, true)) {
+      await conn.rollback();
+      transactionStarted = false;
+      return false;
+    }
 
     const [res] = await conn.query(
     `UPDATE users
@@ -862,9 +919,28 @@ export async function update_user(id, {
   }
 }
 
-export async function delete_user(id) {
-  const [res] = await usr.query(`DELETE FROM users WHERE id = ?`, [id]);
-  return res.affectedRows > 0;
+export async function delete_user(id, { moderatorOnly = false } = {}, pool = usr) {
+  if (!moderatorOnly) {
+    const [res] = await pool.query('DELETE FROM users WHERE id = ?', [id]);
+    return res.affectedRows > 0;
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    if (!await lockManagedUser(conn, id, true)) {
+      await conn.rollback();
+      return false;
+    }
+    const [res] = await conn.query('DELETE FROM users WHERE id = ?', [id]);
+    await conn.commit();
+    return res.affectedRows > 0;
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
 }
 
 // ==== SERVICES & ROLES (для отрисовки вкладок) ====
@@ -953,15 +1029,15 @@ export async function get_services_with_roles() {
 
 // ==== RIGHTS ====
 
-export async function get_user_rights(userId) {
-  const [rows] = await usr.query(
+export async function get_user_rights(userId, pool = usr) {
+  const [rows] = await pool.query(
     `SELECT srv_id, role_id FROM rights WHERE usr_id = ?`,
     [userId]
   );
   return rows;
 }
 
-export async function replace_user_rights(userId, pairs, pool = usr) {
+export async function replace_user_rights(userId, pairs, pool = usr, { moderatorOnly = false } = {}) {
   const conn = await pool.getConnection();
   let transactionStarted = false;
 
@@ -974,14 +1050,14 @@ export async function replace_user_rights(userId, pairs, pool = usr) {
     await conn.beginTransaction();
     transactionStarted = true;
 
-    const [users] = await conn.query('SELECT type FROM users WHERE id = ? FOR UPDATE', [userId]);
-    if (!users.length) {
+    const user = await lockManagedUser(conn, userId, moderatorOnly);
+    if (!user) {
       await conn.rollback();
       transactionStarted = false;
       return null;
     }
 
-    const isExternal = Number(users[0].type) === EXTERNAL_ROLE_ID;
+    const isExternal = Number(user.type) === EXTERNAL_ROLE_ID;
     await conn.query('DELETE FROM rights WHERE usr_id = ?', [userId]);
 
     if (!isExternal) {
@@ -1015,15 +1091,34 @@ export async function clear_external_user_rights(pool = usr) {
 
 // ==== LOGINS ====
 
-export async function get_user_logins(userId) {
-  const [rows] = await usr.query(
+export async function get_user_logins(userId, pool = usr) {
+  const [rows] = await pool.query(
     `SELECT srvs_id AS srv_id, login, pass FROM logins WHERE usr_id = ?`,
     [userId]
   );
   return rows;
 }
 
-export async function upsert_user_logins(userId, rows) {
+export async function upsert_user_logins(userId, rows, { moderatorOnly = false } = {}, pool = usr) {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    if (!await lockManagedUser(conn, userId, moderatorOnly)) {
+      await conn.rollback();
+      return false;
+    }
+    await writeUserLogins(userId, rows, conn);
+    await conn.commit();
+    return true;
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
+}
+
+async function writeUserLogins(userId, rows, conn) {
   // rows: [{srv_id, login, pass_hash?}]
   if (!Array.isArray(rows)) return;
 
@@ -1036,12 +1131,12 @@ export async function upsert_user_logins(userId, rows) {
 
     // если пусто — удаляем запись логина для этого сервиса
     if (!login && !pass) {
-      await usr.query(`DELETE FROM logins WHERE usr_id = ? AND srvs_id = ?`, [userId, srv]);
+      await conn.query(`DELETE FROM logins WHERE usr_id = ? AND srvs_id = ?`, [userId, srv]);
       continue;
     }
 
     // ищем, есть ли уже логин в этом сервисе
-    const [ex] = await usr.query(
+    const [ex] = await conn.query(
       `SELECT id FROM logins WHERE usr_id = ? AND srvs_id = ? LIMIT 1`,
       [userId, srv]
     );
@@ -1049,19 +1144,19 @@ export async function upsert_user_logins(userId, rows) {
     if (ex.length) {
       // апдейт
       if (pass) {
-        await usr.query(
+        await conn.query(
           `UPDATE logins SET login = ?, pass = ? WHERE id = ?`,
           [login, pass, ex[0].id]
         );
       } else {
-        await usr.query(
+        await conn.query(
           `UPDATE logins SET login = ? WHERE id = ?`,
           [login, ex[0].id]
         );
       }
     } else {
       // инсерт
-      await usr.query(
+      await conn.query(
         `INSERT INTO logins (srvs_id, usr_id, login, pass) VALUES (?, ?, ?, ?)`,
         [srv, userId, login, pass]
       );
