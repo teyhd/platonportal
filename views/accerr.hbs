@@ -1,3 +1,17 @@
+{{#if errorTitle}}
+<main class="mx-auto max-w-2xl px-4 py-20">
+  <section class="rounded-lg border border-slate-200 bg-white p-6 text-slate-950 shadow-sm">
+    <h1 class="text-2xl font-semibold">{{errorTitle}}</h1>
+    <p class="mt-3 text-slate-600">{{errorMessage}}</p>
+    <div class="mt-5 flex flex-wrap gap-3">
+      {{#if retryHref}}
+        <a href="{{retryHref}}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Попробовать ещё раз</a>
+      {{/if}}
+      <a href="/" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50">На главную</a>
+    </div>
+  </section>
+</main>
+{{else}}
 <main class="pt-12 px-4 max-w-7xl mx-auto space-y-8">
   <!-- Hero / Error block -->
   <section>
@@ -81,4 +95,5 @@
 <footer class="mt-16 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
   © 2025 Гармония образования
 </footer>
+{{/if}}
 

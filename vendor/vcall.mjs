@@ -8,16 +8,51 @@ const pnm = new PlugNmeet(
   process.env.MEETKEY,
   process.env.MEETSECR
 );
-export async function openroom(room_id,usr_name,usr_id,admin,acc={pub:true,need_auth:false}) {
-    let result = await pnm.isRoomActive({"room_id": room_id})
-    console.log(result);
-    
-    if (result.is_active) {
-        return await get_link(room_id,usr_name,usr_id,admin,acc)
-     //Получили активную комнату
+function parseRoomBoolean(value) {
+    if (value === true || value === 'true') return true;
+    if (value === false || value === 'false') return false;
+    return null;
+}
+
+export function readRoomAccess(roomInfo) {
+    try {
+        const metadata = typeof roomInfo?.metadata === 'string'
+            ? JSON.parse(roomInfo.metadata)
+            : roomInfo?.metadata;
+        const access = typeof metadata?.extra_data === 'string'
+            ? JSON.parse(metadata.extra_data)
+            : metadata?.extra_data;
+        const pub = parseRoomBoolean(access?.pub);
+        const needAuth = parseRoomBoolean(access?.need_auth);
+        if (pub === null || needAuth === null) return null;
+
+        const owner = access?.portal_owner;
+        if (!Number.isSafeInteger(owner) || owner < 1) {
+            // Legacy room metadata did not capture edits made after creation.
+            return { pub: false, need_auth: true, owner: null };
+        }
+        return { pub, need_auth: needAuth, owner };
+    } catch {
+        return null;
     }
-     else {//Создать
-        let result = await pnm.createRoom(
+}
+
+export async function get_active_room(room_id) {
+    const status = await pnm.isRoomActive({ room_id });
+    if (status.status !== true || typeof status.is_active !== 'boolean') {
+        throw new Error('Room status unavailable');
+    }
+    if (!status.is_active) return null;
+
+    const details = await pnm.getActiveRoomInfo({ room_id });
+    if (details.status !== true || details.room?.room_info?.room_id !== room_id) {
+        throw new Error('Room details unavailable');
+    }
+    return details.room;
+}
+
+export async function create_room(room_id, usr_name, acc) {
+    return pnm.createRoom(
             {"room_id": room_id,
                 "empty_timeout": 20,
                         "metadata": {
@@ -94,17 +129,9 @@ export async function openroom(room_id,usr_name,usr_id,admin,acc={pub:true,need_
                         
             }
             }
-        )
-
-        mlog(result);
-        console.dir(result);
-        return await get_link(room_id,usr_name,usr_id,admin,acc)
-        
-    }
-   
+    );
 }
 
-//openroom('VCALL')
 export async function get_link(room_id,usr_name,usr_id,admin,acc={pub:true,need_auth:false}){
     let res = await pnm.getJoinToken({
                 "room_id": room_id,
@@ -128,17 +155,29 @@ export async function get_link(room_id,usr_name,usr_id,admin,acc={pub:true,need_
                     }
                 }
     })
+    if (res.status !== true || typeof res.token !== 'string' || !res.token) {
+        throw new Error('Conference join link unavailable');
+    }
     const custom = {
         custom_css_url: "https://platoniks.ru/pgm/plugnmeet.css?v=1",
     };
    
-    res.link = `https://meet.platoniks.ru/?access_token=${res.token}&custom_design=${encodeURIComponent(JSON.stringify(custom))}`;//`https://meet.platoniks.ru/?access_token=${res.token}&custom_design={"custom_css_url":"https://platoniks.ru/pgm/plugnmeet.css"}`
-    return res
+    const link = new URL('https://meet.platoniks.ru/');
+    link.searchParams.set('access_token', res.token);
+    link.searchParams.set('custom_design', JSON.stringify(custom));
+    return { link: link.href };
 }
 
 
 export async function rooms_info() {
-    return await pnm.getActiveRoomsInfo()
+    const result = await pnm.getActiveRoomsInfo();
+    if (result.status === false && result.msg?.trim?.().toLowerCase() === 'no active room found') {
+        return { status: true, rooms: [] };
+    }
+    if (result.status !== true || (result.rooms !== undefined && !Array.isArray(result.rooms))) {
+        throw new Error('Conference room list unavailable');
+    }
+    return { status: true, rooms: result.rooms ?? [] };
 }
 
 export async function get_analytic(room_id) {

@@ -33,13 +33,10 @@ export function formatBirthDate(value) {
 
 export function normalizeUserDetailsPayload(data) {
   const user = data?.user;
-  if (data?.ok !== true || !user || user.id == null || user.id === '') return null;
+  if (data?.ok !== true || !user || user.id == null || user.id === '' ||
+      !Array.isArray(data.rights) || !Array.isArray(data.logins)) return null;
 
-  return {
-    user,
-    rights: Array.isArray(data.rights) ? data.rights : [],
-    logins: Array.isArray(data.logins) ? data.logins : [],
-  };
+  return { user, rights: data.rights, logins: data.logins };
 }
 
 if (typeof document !== 'undefined') {
@@ -53,6 +50,7 @@ if (typeof document !== 'undefined') {
 
   const elements = {
     tbody: qs('#users-tbody'),
+    workspace: qs('.users-workspace'),
     table: qs('#users-table'),
     empty: qs('#users-empty'),
     noResults: qs('#users-no-results'),
@@ -67,6 +65,9 @@ if (typeof document !== 'undefined') {
     mobileSort: qs('#mobile-sort'),
     userDrawer: qs('#user-drawer'),
     userMessage: qs('#user-drawer-message'),
+    userRetry: qs('#btn-retry-user'),
+    issuesButton: qs('#btn-open-issues'),
+    issuesList: qs('#issues-list'),
     issuesDrawer: qs('#issues-drawer'),
     serviceDrawer: qs('#service-roles-drawer'),
     serviceMessage: qs('#service-roles-message'),
@@ -83,6 +84,10 @@ if (typeof document !== 'undefined') {
     currentUserId: null,
     userDetailsState: 'idle',
     userLoadSequence: 0,
+    userSaving: false,
+    userDrafts: new Set(),
+    userLoadTarget: null,
+    savedUserType: null,
   };
 
   const TYPE_LABELS = Object.fromEntries(qsa('#f-type option').map(option => [option.value, option.textContent.trim()]));
@@ -279,29 +284,68 @@ if (typeof document !== 'undefined') {
     element.classList.toggle('is-success', kind === 'success');
   }
 
-  function openDrawer(drawer, { focus = true } = {}) {
+  function openDrawer(drawer, { focus = true, opener = document.activeElement } = {}) {
     if (!drawer) return;
-    if (state.activeDrawer && state.activeDrawer !== drawer) closeDrawer(state.activeDrawer, { restoreFocus: false });
-    state.lastFocused = document.activeElement;
+    if (state.activeDrawer && state.activeDrawer !== drawer && !closeDrawer(state.activeDrawer, { restoreFocus: false })) return;
+    state.lastFocused = opener;
     state.activeDrawer = drawer;
     drawer.classList.add('is-open');
     drawer.setAttribute('aria-hidden', 'false');
+    elements.workspace.inert = true;
     document.body.classList.add('users-drawer-open');
-    if (focus) window.setTimeout(() => qs('button[data-close-drawer]', drawer)?.focus(), 20);
+    if (focus) window.setTimeout(() => {
+      if (state.activeDrawer === drawer) qs('button[data-close-drawer]', drawer)?.focus();
+    }, 20);
   }
 
   function closeDrawer(drawer = state.activeDrawer, { restoreFocus = true } = {}) {
     if (!drawer) return;
     if (drawer === elements.userDrawer) {
+      if (state.userSaving) return false;
+      if (state.userDrafts.size && !window.confirm('Закрыть форму и потерять несохранённые изменения?')) return false;
       state.userLoadSequence += 1;
       state.currentUserId = null;
+      state.userLoadTarget = null;
       state.userDetailsState = 'idle';
+      state.userDrafts.clear();
     }
     drawer.classList.remove('is-open');
     drawer.setAttribute('aria-hidden', 'true');
     if (state.activeDrawer === drawer) state.activeDrawer = null;
-    if (!state.activeDrawer) document.body.classList.remove('users-drawer-open');
-    if (restoreFocus && state.lastFocused instanceof HTMLElement) state.lastFocused.focus();
+    if (!state.activeDrawer) {
+      elements.workspace.inert = false;
+      document.body.classList.remove('users-drawer-open');
+    }
+    if (restoreFocus && state.lastFocused instanceof HTMLElement) {
+      if (state.lastFocused.getClientRects().length) state.lastFocused.focus();
+      else elements.search?.focus();
+    }
+    return true;
+  }
+
+  function currentTab() {
+    return qs('.users-tab[aria-selected="true"]', elements.userDrawer)?.dataset.tab || 'profile';
+  }
+
+  function renderUserControls() {
+    const { userDetailsState, userSaving } = state;
+    const ready = userDetailsState === 'ready';
+    const editable = (ready || userDetailsState === 'new') && !userSaving;
+    const tab = currentTab();
+    qsa('.users-tab-panel input, .users-tab-panel select, .users-tab-panel button', elements.userDrawer)
+      .forEach(control => { control.disabled = !editable; });
+    qsa('.users-tab', elements.userDrawer).forEach(button => {
+      button.disabled = userSaving || (button.dataset.tab !== 'profile' &&
+        (!ready || (button.dataset.tab === 'roles' && Number(state.savedUserType) === EXTERNAL_ROLE_ID)));
+    });
+    qsa('button[data-close-drawer]', elements.userDrawer).forEach(button => { button.disabled = userSaving; });
+    qs('.users-drawer-body', elements.userDrawer).setAttribute('aria-busy', String(userDetailsState === 'loading' || userSaving));
+    elements.userRetry.hidden = userDetailsState !== 'error';
+    elements.userSave.disabled = !editable || (tab !== 'profile' && !ready);
+    elements.userSave.textContent = {
+      profile: 'Сохранить профиль', roles: 'Сохранить доступы', logins: 'Сохранить учётные записи',
+    }[tab];
+    updateMissingRoleAction();
   }
 
   function setTab(name) {
@@ -310,17 +354,18 @@ if (typeof document !== 'undefined') {
       setMessage(elements.userMessage, 'Сначала сохраните профиль пользователя.', 'error');
       return;
     }
-    if (name !== 'profile' && state.userDetailsState === 'error') {
-      setMessage(elements.userMessage, 'Не удалось загрузить доступы и учётные записи. Повторите открытие пользователя.', 'error');
-      return;
-    }
-    if (name === 'roles' && isExternalUser()) {
+    if (name === 'roles' && Number(state.savedUserType) === EXTERNAL_ROLE_ID) {
       setMessage(elements.userMessage, 'Внешним пользователям роли сервисов не назначаются.', 'error');
       return;
     }
-    qsa('.users-tab', elements.userDrawer).forEach(button => button.setAttribute('aria-selected', String(button.dataset.tab === name)));
+    qsa('.users-tab', elements.userDrawer).forEach(button => {
+      const selected = button.dataset.tab === name;
+      button.setAttribute('aria-selected', String(selected));
+      button.tabIndex = selected ? 0 : -1;
+    });
     qsa('.users-tab-panel', elements.userDrawer).forEach(panel => { panel.hidden = panel.id !== `tab-${name}`; });
     setMessage(elements.userMessage);
+    renderUserControls();
   }
 
   function clearRoles() {
@@ -334,14 +379,10 @@ if (typeof document !== 'undefined') {
   function syncExternalRoleState() {
     const isExternal = isExternalUser();
     const rolesTab = qs('#tab-roles-button');
-    rolesTab.disabled = isExternal;
-    rolesTab.setAttribute('aria-disabled', String(isExternal));
     qs('#external-role-hint').hidden = !isExternal;
 
-    if (isExternal) {
-      clearRoles();
-      if (rolesTab.getAttribute('aria-selected') === 'true') setTab('profile');
-    }
+    if (Number(state.savedUserType) === EXTERNAL_ROLE_ID && rolesTab.getAttribute('aria-selected') === 'true') setTab('profile');
+    renderUserControls();
   }
 
   function clearLogins() {
@@ -370,12 +411,12 @@ if (typeof document !== 'undefined') {
     qs('#f-allow-discovery').checked = Number(user.allow_discovery_outside_harmony ?? 0) === 1;
     qs('#f-avatar-url-custom').value = user.avatar_url_custom ?? '';
     syncExternalRoleState();
-    qs('#user-drawer-title').textContent = user.id ? 'Редактирование пользователя' : 'Новый пользователь';
+    qs('#user-drawer-title').textContent = user.id ? (user.name || 'Редактирование пользователя') : 'Новый пользователь';
     qs('#user-drawer-subtitle').textContent = `ID: ${user.id ?? '—'}`;
   }
 
   function fillRoles(rights = []) {
-    if (isExternalUser()) {
+    if (Number(state.savedUserType) === EXTERNAL_ROLE_ID) {
       clearRoles();
       return;
     }
@@ -411,11 +452,11 @@ if (typeof document !== 'undefined') {
     }
     if (!response.ok) throw new Error(body?.message || 'Не удалось загрузить пользователя');
     const details = normalizeUserDetailsPayload(body);
-    if (!details) throw new Error(body?.message || 'Сервер вернул неполные данные пользователя');
+    if (!details || String(details.user.id) !== String(id)) throw new Error(body?.message || 'Сервер вернул неполные данные пользователя');
     return details;
   }
 
-  async function openUser(row, tab = 'profile') {
+  function openUser(row, tab = 'profile', opener = qs('.action-menu-toggle', row)) {
     const fallbackUser = userFromRow(row);
     const id = String(fallbackUser.id || '').trim();
     if (!id) {
@@ -423,38 +464,53 @@ if (typeof document !== 'undefined') {
       return;
     }
 
-    const request = ++state.userLoadSequence;
+    state.userLoadTarget = { id, tab };
+    state.userDrafts.clear();
     state.currentUserId = id;
+    state.savedUserType = fallbackUser.type;
     state.userDetailsState = 'loading';
     fillProfile(fallbackUser);
     clearRoles();
     clearLogins();
-    setTab(tab);
-    openDrawer(elements.userDrawer);
+    setTab('profile');
+    openDrawer(elements.userDrawer, { opener });
+    loadUserDrawer();
+  }
+
+  async function loadUserDrawer() {
+    const { id, tab } = state.userLoadTarget;
+    const request = ++state.userLoadSequence;
+    state.userDetailsState = 'loading';
+    renderUserControls();
     setMessage(elements.userMessage, 'Загрузка…');
     try {
       const data = await loadUser(id);
       if (request !== state.userLoadSequence) return;
 
       state.currentUserId = String(data.user.id);
+      state.savedUserType = data.user.type;
       state.userDetailsState = 'ready';
-      fillProfile(data.user);
-      fillRoles(data.rights);
-      fillLogins(data.logins);
-      setTab(tab);
-      setMessage(elements.userMessage);
+      if (!state.userDrafts.has('profile')) fillProfile(data.user);
+      if (!state.userDrafts.has('roles')) fillRoles(data.rights);
+      if (!state.userDrafts.has('logins')) fillLogins(data.logins);
+      updateAccessIssue(data);
+      setTab(tab === 'roles' && Number(state.savedUserType) === EXTERNAL_ROLE_ID ? 'profile' : tab);
+      if (document.activeElement === document.body) qs('.users-tab[aria-selected="true"]', elements.userDrawer)?.focus();
     } catch (error) {
       if (request !== state.userLoadSequence) return;
 
       state.userDetailsState = 'error';
       setTab('profile');
-      setMessage(elements.userMessage, `Профиль открыт по данным списка. ${error.message}`, 'error');
+      setMessage(elements.userMessage, `${error.message}. Повторите загрузку, чтобы внести изменения.`, 'error');
     }
   }
 
   function openCreate() {
+    state.userDrafts.clear();
     state.userLoadSequence += 1;
     state.currentUserId = null;
+    state.savedUserType = null;
+    state.userLoadTarget = null;
     state.userDetailsState = 'new';
     clearRoles();
     clearLogins();
@@ -462,7 +518,9 @@ if (typeof document !== 'undefined') {
     setTab('profile');
     setMessage(elements.userMessage);
     openDrawer(elements.userDrawer);
-    window.setTimeout(() => qs('#f-name')?.focus(), 30);
+    window.setTimeout(() => {
+      if (state.activeDrawer === elements.userDrawer && state.userDetailsState === 'new') qs('#f-name')?.focus();
+    }, 30);
   }
 
   function assignDataset(row, user) {
@@ -504,14 +562,69 @@ if (typeof document !== 'undefined') {
     applyListState();
   }
 
+  function missingPrimaryRoles(user, rights) {
+    const type = String(user.type);
+    if (Number(type) === EXTERNAL_ROLE_ID || user.lifecycle_state !== 'active') return [];
+    // Match the required-service filter in get_err_roles_users.
+    const existing = new Set(rights.map(item => `${item.srv_id}:${item.role_id}`));
+    return qsa('#service-roles-tbody tr').filter(row => {
+      const { srvId, allowedRoles } = row.dataset;
+      return Number(srvId) < 10 && allowedRoles.split(',').includes(type) && !existing.has(`${srvId}:${type}`);
+    });
+  }
+
+  function updateIssueVisibility() {
+    const items = qsa('.users-issue-item', elements.issuesList);
+    qs('#users-issues-count').textContent = items.length;
+    elements.issuesButton.hidden = items.length === 0;
+    qs('#users-no-issues').hidden = items.length > 0;
+    const query = normalizeSearchText(qs('#issues-search').value);
+    items.forEach(item => { item.hidden = Boolean(query) && !normalizeSearchText(item.dataset.search).includes(query); });
+    qs('#issues-empty').textContent = items.length ? 'По вашему запросу ничего не найдено.' : 'Проблем доступа нет.';
+    qs('#issues-empty').hidden = items.some(item => !item.hidden);
+  }
+
+  function updateAccessIssue({ user, rights }) {
+    const matching = qs(`.users-issue-item[data-user-id="${CSS.escape(String(user.id))}"]`, elements.issuesList);
+    const missing = missingPrimaryRoles(user, rights);
+    if (!missing.length) matching?.remove();
+    else {
+      const item = matching || qs('#users-issue-template').content.firstElementChild.cloneNode(true);
+      const names = missing.map(row => row.dataset.srvName).join(', ');
+      item.dataset.userId = user.id;
+      item.dataset.missingSrvIds = missing.map(row => row.dataset.srvId).join(',');
+      item.dataset.search = `${user.name} ${user.id} ${names}`;
+      qs('.users-issue-name', item).textContent = user.name;
+      qs('.users-issue-meta', item).textContent = `ID: ${user.id}`;
+      qs('.users-issue-missing', item).textContent = names;
+      if (!matching) elements.issuesList.append(item);
+    }
+    updateIssueVisibility();
+  }
+
+  function missingRoleBoxes() {
+    const issue = qs(`.users-issue-item[data-user-id="${CSS.escape(String(state.currentUserId))}"]`, elements.issuesList);
+    const missing = new Set((issue?.dataset.missingSrvIds || '').split(','));
+    const userType = String(state.savedUserType);
+    return qsa('.role-checkbox', elements.userDrawer)
+      .filter(box => missing.has(box.dataset.srvId) && box.dataset.roleId === userType && !box.checked);
+  }
+
+  function updateMissingRoleAction() {
+    const action = qs('#btn-add-missing-roles');
+    action.hidden = state.userDetailsState !== 'ready' || !missingRoleBoxes().length;
+    action.disabled = state.userSaving;
+  }
+
   async function saveCurrent() {
-    const activeTab = qs('.users-tab[aria-selected="true"]', elements.userDrawer)?.dataset.tab || 'profile';
-    const currentId = state.currentUserId || qs('#f-id').value;
-    elements.userSave.disabled = true;
-    elements.userSave.setAttribute('aria-busy', 'true');
+    const activeTab = currentTab();
+    const currentId = state.currentUserId;
+    const canCreate = state.userDetailsState === 'new' && activeTab === 'profile';
+    if (state.userSaving || (!canCreate && state.userDetailsState !== 'ready')) return;
+    state.userSaving = true;
+    renderUserControls();
     try {
       if (activeTab === 'profile') {
-        if (state.userDetailsState === 'loading') throw new Error('Дождитесь завершения загрузки пользователя');
         const payload = {
           name: qs('#f-name').value.trim(),
           kaf: qs('#f-kaf').value,
@@ -526,16 +639,24 @@ if (typeof document !== 'undefined') {
           avatar_url_custom: qs('#f-avatar-url-custom').value.trim(),
         };
         if (!payload.name) {
-          qs('#f-name').focus();
           throw new Error('Введите имя пользователя');
         }
+        if (currentId && isExternalUser() && Number(state.savedUserType) !== EXTERNAL_ROLE_ID &&
+            !window.confirm('При переводе во внешние пользователи роли сервисов будут сняты. Сохранить профиль?')) return;
         const response = await api(`/api/users${currentId ? `/${currentId}` : ''}`, { method: currentId ? 'PUT' : 'POST', body: JSON.stringify(payload) });
         if (!response.ok) throw new Error(await readApiError(response, 'Не удалось сохранить профиль'));
         const result = await response.json();
         const id = currentId || result.id;
         if (!id) throw new Error('Сервер не вернул ID пользователя');
         state.currentUserId = String(id);
+        state.savedUserType = payload.type;
+        state.userLoadTarget = { id: String(id), tab: 'profile' };
         state.userDetailsState = 'ready';
+        state.userDrafts.delete('profile');
+        if (payload.type === EXTERNAL_ROLE_ID) {
+          clearRoles();
+          state.userDrafts.delete('roles');
+        }
         const row = qs(`.user-row[data-user-id="${CSS.escape(String(id))}"]`, elements.tbody);
         const messengerUsername = normalizeSearchText(payload.messenger_username);
         const localUser = {
@@ -549,18 +670,22 @@ if (typeof document !== 'undefined') {
         updateRow(localUser);
         try {
           const fresh = await loadUser(id);
+          state.savedUserType = fresh.user.type;
           fillProfile(fresh.user);
-          fillRoles(fresh.rights);
-          fillLogins(fresh.logins);
+          if (!state.userDrafts.has('roles')) fillRoles(fresh.rights);
+          if (!state.userDrafts.has('logins')) fillLogins(fresh.logins);
+          if (isExternalUser()) state.userDrafts.delete('roles');
           updateRow(fresh.user);
+          updateAccessIssue(fresh);
+          setMessage(elements.userMessage, 'Профиль сохранён', 'success');
         } catch (_) {
-          // Профиль уже сохранён; оставляем локально подтверждённые данные в форме и таблице.
+          state.userDetailsState = 'error';
+          setMessage(elements.userMessage, 'Профиль сохранён. Повторите загрузку, чтобы продолжить работу.', 'error');
         }
-        setMessage(elements.userMessage, 'Профиль сохранён', 'success');
       }
       if (activeTab === 'roles') {
         if (!currentId) throw new Error('Сначала сохраните профиль пользователя');
-        if (isExternalUser()) {
+        if (Number(state.savedUserType) === EXTERNAL_ROLE_ID) {
           clearRoles();
           setMessage(elements.userMessage, 'Внешним пользователям роли сервисов не назначаются.', 'success');
           return;
@@ -568,7 +693,18 @@ if (typeof document !== 'undefined') {
         const pairs = qsa('.role-checkbox:checked', elements.userDrawer).map(box => ({ srv_id: Number(box.dataset.srvId), role_id: Number(box.dataset.roleId) }));
         const response = await api(`/api/users/${currentId}/rights`, { method: 'PUT', body: JSON.stringify({ pairs }) });
         if (!response.ok) throw new Error(await readApiError(response, 'Не удалось сохранить доступы'));
-        setMessage(elements.userMessage, 'Доступы сохранены', 'success');
+        state.userDrafts.delete('roles');
+        try {
+          const fresh = await loadUser(currentId);
+          fillRoles(fresh.rights);
+          updateAccessIssue(fresh);
+          setMessage(elements.userMessage, 'Доступы сохранены', 'success');
+        } catch (_) {
+          state.userDetailsState = 'error';
+          state.userLoadTarget = { id: currentId, tab: 'roles' };
+          setTab('profile');
+          setMessage(elements.userMessage, 'Доступы сохранены. Повторите загрузку, чтобы обновить список проблем доступа.', 'error');
+        }
       }
       if (activeTab === 'logins') {
         if (!currentId) throw new Error('Сначала сохраните профиль пользователя');
@@ -577,13 +713,15 @@ if (typeof document !== 'undefined') {
         }));
         const response = await api(`/api/users/${currentId}/logins`, { method: 'PUT', body: JSON.stringify({ rows }) });
         if (!response.ok) throw new Error(await readApiError(response, 'Не удалось сохранить учётные записи'));
+        state.userDrafts.delete('logins');
         setMessage(elements.userMessage, 'Учётные записи сохранены', 'success');
       }
     } catch (error) {
       setMessage(elements.userMessage, error.message, 'error');
     } finally {
-      elements.userSave.disabled = false;
-      elements.userSave.removeAttribute('aria-busy');
+      state.userSaving = false;
+      renderUserControls();
+      if (activeTab === 'profile' && !qs('#f-name').value.trim()) qs('#f-name').focus();
     }
   }
 
@@ -598,6 +736,7 @@ if (typeof document !== 'undefined') {
     row.remove();
     qs(`.users-issue-item[data-user-id="${CSS.escape(String(user.id))}"]`)?.remove();
     applyListState();
+    updateIssueVisibility();
   }
 
   function initServiceRoles() {
@@ -618,7 +757,7 @@ if (typeof document !== 'undefined') {
       const response = await api('/api/srvs-roles', { method: 'PUT', body: JSON.stringify({ pairs }) });
       if (!response.ok) throw new Error(await readApiError(response, 'Не удалось сохранить роли сервисов'));
       qsa('#service-roles-tbody tr').forEach(row => { row.dataset.allowedRoles = qsa('.service-role-checkbox:checked', row).map(box => box.dataset.roleId).join(','); });
-      setMessage(elements.serviceMessage, 'Настройки сохранены', 'success');
+      setMessage(elements.serviceMessage, 'Настройки сохранены. Обновите страницу перед назначением ролей пользователям.', 'success');
     } catch (error) {
       setMessage(elements.serviceMessage, error.message, 'error');
     } finally {
@@ -628,10 +767,12 @@ if (typeof document !== 'undefined') {
 
   function trapFocus(event) {
     if (event.key !== 'Tab' || !state.activeDrawer) return;
-    const focusable = qsa('button:not([disabled]), input:not([disabled]), select:not([disabled]), [href]', state.activeDrawer).filter(item => !item.hidden && item.offsetParent !== null);
-    if (!focusable.length) return;
+    const focusable = qsa('button:not([disabled]), input:not([disabled]), select:not([disabled]), summary, [href]', state.activeDrawer)
+      .filter(item => item.tabIndex >= 0 && item.getClientRects().length);
+    if (!focusable.length) { event.preventDefault(); return; }
     const first = focusable[0];
     const last = focusable.at(-1);
+    if (!state.activeDrawer.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
     if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   }
@@ -641,6 +782,23 @@ if (typeof document !== 'undefined') {
   qs('#btn-srvs-roles')?.addEventListener('click', () => { initServiceRoles(); setMessage(elements.serviceMessage); openDrawer(elements.serviceDrawer); });
   qs('#btn-save-service-roles')?.addEventListener('click', saveServiceRoles);
   elements.userSave?.addEventListener('click', saveCurrent);
+  elements.userRetry?.addEventListener('click', loadUserDrawer);
+  qs('#form-profile')?.addEventListener('submit', event => {
+    event.preventDefault();
+    if (currentTab() === 'profile') saveCurrent();
+  });
+  elements.userDrawer?.addEventListener('input', event => {
+    const panel = event.target.closest('.users-tab-panel');
+    if (panel && !state.userSaving) state.userDrafts.add(panel.id.replace('tab-', ''));
+    if (panel?.id === 'tab-roles') updateMissingRoleAction();
+  });
+  qs('#btn-add-missing-roles')?.addEventListener('click', () => {
+    missingRoleBoxes().forEach(box => { box.checked = true; });
+    state.userDrafts.add('roles');
+    updateMissingRoleAction();
+    setMessage(elements.userMessage, 'Недостающие роли отмечены. Сохраните доступы, чтобы применить изменения.');
+    elements.userSave.focus();
+  });
   elements.search?.addEventListener('input', () => applyListState());
   elements.status?.addEventListener('change', () => applyListState());
   elements.type?.addEventListener('change', () => applyListState());
@@ -678,6 +836,18 @@ if (typeof document !== 'undefined') {
     else openUser(row, action.dataset.openTab);
   });
   qsa('.users-tab', elements.userDrawer).forEach(button => button.addEventListener('click', () => setTab(button.dataset.tab)));
+  qs('.users-tabs', elements.userDrawer).addEventListener('keydown', event => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    const tabs = qsa('.users-tab:not([disabled])', elements.userDrawer);
+    const index = tabs.indexOf(event.target);
+    if (index === -1) return;
+    event.preventDefault();
+    const nextIndex = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
+      : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    const next = tabs[nextIndex];
+    setTab(next.dataset.tab);
+    next.focus();
+  });
   qs('#f-type')?.addEventListener('change', syncExternalRoleState);
   qsa('.user-pin-reveal').forEach(button => button.addEventListener('click', () => {
     const row = button.closest('.user-row');
@@ -697,16 +867,13 @@ if (typeof document !== 'undefined') {
     reveal.setAttribute('aria-label', shown ? 'Показать PIN/код доступа' : 'Скрыть PIN/код доступа');
   });
   qsa('[data-close-drawer]').forEach(button => button.addEventListener('click', () => closeDrawer(button.closest('.users-drawer'))));
-  qs('#issues-search')?.addEventListener('input', event => {
-    const query = normalizeSearchText(event.target.value);
-    qsa('.users-issue-item').forEach(item => { item.hidden = Boolean(query) && !normalizeSearchText(item.dataset.search).includes(query); });
-  });
+  qs('#issues-search')?.addEventListener('input', updateIssueVisibility);
   qs('#issues-list')?.addEventListener('click', event => {
     const item = event.target.closest('.users-issue-item');
     if (!item) return;
     closeDrawer(elements.issuesDrawer, { restoreFocus: false });
     const row = qs(`.user-row[data-user-id="${CSS.escape(String(item.dataset.userId))}"]`, elements.tbody);
-    if (row) openUser(row, 'roles');
+    if (row) openUser(row, 'roles', elements.issuesButton);
   });
   qs('#service-roles-search')?.addEventListener('input', event => {
     const query = normalizeSearchText(event.target.value);
@@ -730,4 +897,6 @@ if (typeof document !== 'undefined') {
 
   readUrlState();
   applyListState();
+  updateIssueVisibility();
+  renderUserControls();
 }

@@ -11,7 +11,7 @@
 
     <div class="flex shrink-0 items-center gap-2">
       <button id="theme" class="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500" title="Сменить тему" hidden>🌞</button>
-      {{#if auth}}
+      {{#if (or isSignedIn auth)}}
         <button id="logoutBtn" class="inline-flex min-h-[36px] items-center justify-center rounded-lg border border-transparent px-3 py-1.5 text-sm font-semibold text-red-700 transition duration-150 hover:border-red-200 hover:bg-red-50 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2">
           Выйти
         </button>

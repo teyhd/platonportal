@@ -62,6 +62,8 @@ test('user drawer accepts only complete user-detail responses', () => {
     logins: [{ srv_id: 2, login: 'user' }],
   });
   assert.equal(normalizeUserDetailsPayload({ ok: true, user: {} }), null);
+  assert.equal(normalizeUserDetailsPayload({ ok: true, user: { id: 42 }, logins: [] }), null);
+  assert.equal(normalizeUserDetailsPayload({ ok: true, user: { id: 42 }, rights: [] }), null);
   assert.equal(normalizeUserDetailsPayload({ ok: false, user: { id: 42 } }), null);
 });
 

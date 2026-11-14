@@ -195,6 +195,7 @@ app.use(platformsso)
 app.use(express.json({ limit: "20mb" })); // для application/json
 app.use(async function (req, res, next) {
     let page = req._parsedOriginalUrl.pathname;
+    res.locals.isSignedIn = Number.isSafeInteger(Number(req.session.uid)) && Number(req.session.uid) > 0;
     //console.log('Cookie:', req.headers);
     //.log('Session:', req.session);
      mlog(page,req.session.uid,req.session.name,req.session.info,req.headers['nip'],hlp.getcurip(req.socket.remoteAddress),req.query)
@@ -994,6 +995,7 @@ function normalizeMenuCard(card, index = 0) {
     ...linkMeta,
     summary: registeredService?.summary ?? meta.summary,
     serviceDescription: registeredService?.summary,
+    catalogDomain: registeredService?.domain,
     _menuIndex: index,
     _priority: getServicePriority(card.title, card.cont),
     catalogGroup,
@@ -1045,6 +1047,7 @@ app.get('/',async (req,res)=>{
     const menuCards = cards.filter(c => c.type === 0).map((card, index) => normalizeMenuCard(card, index))
     const infoCards = cards.filter(c => c.type === 1).map(normalizeInfoCard)
     const homeCatalog = buildHomeCatalog(menuCards, catalogRole)
+    const showManualLink = !homeCatalog.catalogServices.some(card => /^\/(?:manual)\/?(?:[?#]|$)/.test(card.cont))
     const serviceCount = homeCatalog.catalogServices.length
     const operationMenu = [...menuCards]
       .filter(isOperationService)
@@ -1076,7 +1079,8 @@ app.get('/',async (req,res)=>{
       infoCount: infoCards.length,
       auth: rolen,
       canManageCards,
-      isGuestHome: homeCatalog.homeRoleMode === 'guest',
+      showManualLink,
+      isGuestHome: !res.locals.isSignedIn && homeCatalog.homeRoleMode === 'guest',
       isAdminHome: homeCatalog.homeRoleMode === 'admin',
       infoGroup,
       ...homeCatalog,
@@ -1218,7 +1222,18 @@ app.post('/api/cards/upload-image', async (req, res) => {
 });
 
 app.get('/users', async (req, res) => {
-  if (!hasPortalManagementRole(req.session)) return res.redirect('/');
+  if (!res.locals.isSignedIn) {
+    req.session.return_to = '/users';
+    return res.redirect('/auth');
+  }
+  if (!hasPortalManagementRole(req.session)) {
+    return res.status(403).render('accerr', {
+      title: 'Управление пользователями',
+      auth: true,
+      errorTitle: 'Управление пользователями недоступно',
+      errorMessage: 'Этот раздел доступен администраторам и модераторам портала.',
+    });
+  }
   const canViewExternalUsers = hasPortalAdminRole(req.session);
   req.session.rolen = getSessionPortalRole(req.session?.right ?? req.session?.role ?? 0);
 
@@ -1242,7 +1257,13 @@ app.get('/users', async (req, res) => {
     });
   } catch (e) {
     console.error(e);
-    res.status(500).render('errors/500', { title:'Ошибка сервера' });
+    res.status(503).render('accerr', {
+      title: 'Пользователи',
+      auth: true,
+      errorTitle: 'Пользователи временно недоступны',
+      errorMessage: 'Не удалось загрузить список. Попробуйте ещё раз.',
+      retryHref: '/users',
+    });
   }
 });
 
@@ -1460,57 +1481,156 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
-app.get('/manual',(req,res)=>{
-    let files = fs.readdirSync(path.join(appDir,"public/docs"))
-    console.log(files);
-    res.render('manual',{
-        title: 'Инструкции',
-        auth: req.session.rolen,
-        files:files
+app.get('/manual', async (req, res) => {
+  try {
+    const entries = await fs.readdir(path.join(publicPath, 'docs'), { withFileTypes: true });
+    const files = entries.filter(entry => entry.isFile()).map(entry => ({
+      name: entry.name,
+      url: `/docs/${encodeURIComponent(entry.name)}`,
+      format: path.extname(entry.name).slice(1).toUpperCase(),
+    })).sort((left, right) => left.name.localeCompare(right.name, 'ru', { numeric: true }));
+    res.render('manual', { title: 'Инструкции', files });
+  } catch (error) {
+    console.error('Не удалось загрузить список инструкций', error.code || error.name);
+    res.status(503).render('accerr', {
+      title: 'Инструкции',
+      errorTitle: 'Инструкции временно недоступны',
+      errorMessage: 'Попробуйте открыть список ещё раз.',
+      retryHref: '/manual',
     });
-})
+  }
+});
 
-let ROOMS = { }
-app.get('/getvlinks',async (req,res)=>{
-    let roomid = hlp.translit(req.session.name)
-    if (roomid==null) {
-        res.send({roomid:'Перезагрузите старницу'})
-        return 1
-    }
-    let pub = req.query?.pub || ROOMS[roomid]?.pub || true
-    let need_auth = req.query?.need_auth || ROOMS[roomid]?.need_auth || false
-    let acc={pub:pub,need_auth:need_auth}
-    ROOMS[roomid] = acc
-    let ans = await vcall.openroom(roomid,req.session.name,`id0000${req.session.uid}`,true, acc)
-    //console.log(ROOMS[roomid]);
-    
-    ans.roomid = `jointo?roomid=${roomid}`
-    ans.acc = acc
-    res.send(ans)    
-})
-app.get('/jointo',async (req,res)=>{
-    if (req.query.roomid==undefined){
-        res.redirect('/')
-    }    
-    let need_auth = ROOMS[req.query.roomid]?.need_auth || false
-    console.log(`NEED AUTH ${need_auth}`);
-    
-    if (need_auth == true){
-        if (req.session.name==undefined || req.session.name==null){
-          res.redirect('/sso/err')
-          return 1
-        } 
-    }
-    let name = req.session.name ||= `user${Math.floor(Math.random()*100000)}`;
-    let uid = req.session.uid  ||= `id0000${Math.floor(100000 + Math.random()*900000)}`;
+function getVcallUser(session = {}) {
+  const uid = Number(session.uid);
+  if (!Number.isSafeInteger(uid) || uid < 1 || typeof session.name !== 'string' || !session.name.trim()) return null;
+  return { uid, name: session.name };
+}
 
-    let roomid = hlp.translit(name)
-    let admin = roomid == req.query.roomid
-    
-    let ans = await vcall.openroom(req.query.roomid,name,`id0000${uid}`,admin)
-    res.redirect(ans.link)
-    
-})
+function isVcallRoomId(value) {
+  return typeof value === 'string' && value.length > 0 && value.length <= 250 && !/[\s\x00-\x1f\x7f\\/?#&]/u.test(value);
+}
+
+function getVcallInvite(roomId, host = false) {
+  const query = new URLSearchParams({ roomid: roomId });
+  if (host) query.set('host', '1');
+  return `/jointo?${query}`;
+}
+
+async function canUseVcallAction(session, action) {
+  const role = getSessionPortalRole(session.right ?? session.role ?? 0);
+  if (!role) return false;
+  const cards = await db.get_cards(getPortalCatalogRole(role));
+  return cards.some(card => Number(card.type) === 0 && String(card.cont ?? '').trim() === action);
+}
+
+function isVcallHost(room, roomId, user, access) {
+  if (!user) return false;
+  if (access.owner !== null) return access.owner === user.uid;
+  if (hlp.translit(user.name) !== roomId) return false;
+
+  // A legacy room has no explicit owner. Recover only a verified existing host.
+  return room.participants_info?.some(participant => {
+    try {
+      const metadata = JSON.parse(participant.metadata);
+      return metadata.is_admin === true && metadata.ex_user_id === `id0000${user.uid}`;
+    } catch {
+      return false;
+    }
+  }) === true;
+}
+
+async function handleVcallLesson(req, res) {
+  res.set('Cache-Control', 'no-store');
+  const user = getVcallUser(req.session);
+  if (!user) return res.status(401).json({ message: 'Войдите по PIN, чтобы начать урок.' });
+
+  try {
+    if (!await canUseVcallAction(req.session, '#lesson')) {
+      return res.status(403).json({ message: 'Вашей роли недоступно создание уроков.' });
+    }
+
+    const roomId = hlp.translit(user.name);
+    if (!isVcallRoomId(roomId)) {
+      return res.status(400).json({ message: 'Не удалось определить название вашей комнаты. Обратитесь в техподдержку.' });
+    }
+
+    let room = await vcall.get_active_room(roomId);
+    if (!room && req.method === 'POST') {
+      const { pub, need_auth } = req.body ?? {};
+      if (typeof pub !== 'boolean' || typeof need_auth !== 'boolean') {
+        return res.status(400).json({ message: 'Выберите настройки доступа к комнате.' });
+      }
+      const result = await vcall.create_room(roomId, user.name, { pub, need_auth, portal_owner: user.uid });
+      room = result.status === true && result.room_info?.room_id === roomId && vcall.readRoomAccess(result.room_info)
+        ? { room_info: result.room_info }
+        : await vcall.get_active_room(roomId);
+      if (!room) throw new Error('Created room unavailable');
+    }
+
+    if (!room) return res.json({ active: false });
+    const access = vcall.readRoomAccess(room.room_info);
+    if (!access || !isVcallHost(room, roomId, user, access)) {
+      return res.status(409).json({ message: 'Комната уже открыта. Не удалось подтвердить, что вы её ведущий.' });
+    }
+
+    return res.json({
+      active: true,
+      roomid: getVcallInvite(roomId),
+      joinPath: getVcallInvite(roomId, true),
+      acc: { pub: access.pub, need_auth: access.need_auth },
+    });
+  } catch {
+    return res.status(502).json({ message: 'V.CALL временно недоступен. Попробуйте ещё раз.' });
+  }
+}
+
+app.get('/getvlinks', handleVcallLesson);
+app.post('/getvlinks', handleVcallLesson);
+
+app.get('/jointo', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const roomId = req.query.roomid;
+  const renderError = (status, errorTitle, errorMessage, retryHref) => res.status(status).render('accerr', {
+    title: errorTitle, errorTitle, errorMessage, retryHref,
+    auth: getSessionPortalRole(req.session.right ?? req.session.role ?? 0),
+  });
+
+  if (!isVcallRoomId(roomId)) {
+    return renderError(400, 'Некорректное приглашение', 'Попросите ведущего отправить ссылку заново.');
+  }
+  const hostRequested = req.query.host === '1';
+  const invite = getVcallInvite(roomId, hostRequested);
+
+  try {
+    const room = await vcall.get_active_room(roomId);
+    if (!room) {
+      return renderError(404, 'Комната сейчас не открыта', 'Уточните у ведущего, начался ли урок, и попробуйте снова.', invite);
+    }
+    const access = vcall.readRoomAccess(room.room_info);
+    if (!access) {
+      return renderError(403, 'Не удалось проверить доступ', 'Попросите ведущего проверить настройки комнаты и прислать приглашение.');
+    }
+
+    const user = getVcallUser(req.session);
+    if ((access.need_auth || hostRequested) && !user) {
+      req.session.return_to = invite;
+      return res.redirect('/auth');
+    }
+
+    const guestId = user ? null : crypto.randomUUID();
+    const name = user?.name ?? `Гость ${guestId.slice(0, 6)}`;
+    const participantId = user ? `id0000${user.uid}` : `guest-${guestId}`;
+    const host = isVcallHost(room, roomId, user, access) && await canUseVcallAction(req.session, '#lesson');
+    if (hostRequested && !host) {
+      return renderError(403, 'Вход ведущего недоступен', 'Войдите под аккаунтом, с которого открыли эту комнату.');
+    }
+    const { link } = await vcall.get_link(roomId, name, participantId, host, { pub: access.pub, need_auth: access.need_auth });
+    return res.redirect(link);
+  } catch {
+    return renderError(502, 'Не удалось подключиться к V.CALL', 'Сервис конференций временно недоступен. Попробуйте снова.', invite);
+  }
+});
 app.post('/vcalllog',async (req,res)=>{
     const body = req.body || {};
     console.dir(body)
@@ -1518,16 +1638,30 @@ app.post('/vcalllog',async (req,res)=>{
     res.send('ok')
 })
 
-app.get('/rooms',async (req,res)=>{
-    mlog(req.session.rolen)
-    if (req.session.rolen>=1){
-        let ans = await vcall.rooms_info() 
-        ans.acc = ROOMS
-        res.send(ans)
-    } else{
-        res.sendStatus(403)
+app.get('/rooms', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  if (!getVcallUser(req.session)) return res.status(401).json({ message: 'Войдите по PIN, чтобы увидеть комнаты.' });
+
+  try {
+    if (!await canUseVcallAction(req.session, '#room')) {
+      return res.status(403).json({ message: 'Вашей роли недоступен список комнат.' });
     }
-})
+    const result = await vcall.rooms_info();
+    const rooms = [];
+    const acc = Object.create(null);
+    for (const entry of result.rooms) {
+      const room_info = entry?.room_info;
+      const access = vcall.readRoomAccess(room_info);
+      if (!access?.pub || !isVcallRoomId(room_info.room_id)) continue;
+      const { room_id, room_title, joined_participants } = room_info;
+      rooms.push({ room_info: { room_id, room_title, joined_participants } });
+      acc[room_id] = { pub: access.pub, need_auth: access.need_auth };
+    }
+    return res.json({ status: true, rooms, acc });
+  } catch {
+    return res.status(502).json({ message: 'Не удалось загрузить комнаты. Попробуйте ещё раз.' });
+  }
+});
 
 app.get('/getanalyt',async (req,res)=>{
     mlog(req.session.rolen)
@@ -1742,8 +1876,7 @@ app.get("/tplatform", (req, res) => {
 
 
 app.get('/conf', async (req, res) => {
-  const role = Number(req.session?.rolen ?? req.session?.right ?? 0);
-  const canUpload = role >= 5;
+  const canUpload = hasPortalManagementRole(req.session);
   const confDir = path.join(publicPath, 'conf');
 
   try {
@@ -1766,20 +1899,25 @@ app.get('/conf', async (req, res) => {
     files.sort((a, b) => b.mtimeTs - a.mtimeTs);
 
     res.render('conf', {
-      title: 'Конфигурация',
+      title: 'Файлы портала',
       canUpload,
       files,
       auth: req.session?.rolen
     });
   } catch (error) {
     console.error(error);
-    res.status(500).render('errors/500', { title: 'Ошибка сервера' });
+    res.status(503).render('accerr', {
+      title: 'Файлы портала',
+      errorTitle: 'Файлы временно недоступны',
+      errorMessage: 'Не удалось загрузить список файлов.',
+      retryHref: '/conf',
+    });
   }
 });
 
 app.post('/api/conf/upload', async (req, res) => {
-  const role = Number(req.session?.rolen ?? req.session?.right ?? 0);
-  if (role < 5) return res.status(403).json({ ok: false, message: 'forbidden' });
+  const forbidden = requirePortalManagementJson(req, res);
+  if (forbidden) return forbidden;
 
   try {
     const { filename, contentBase64 } = req.body || {};
@@ -1863,9 +2001,9 @@ app.get('/download/balalayka-android', async (req, res) => {
 });
 
 app.get('*',async function(req, res){
-    res.render('404', { 
-        url: req.url,
-        title: '404 Not Found',   
+    res.status(404).render('404', {
+        url: req.path,
+        title: 'Страница не найдена',
     });
 });
 

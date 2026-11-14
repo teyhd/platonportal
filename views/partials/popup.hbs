@@ -1,83 +1,62 @@
 <!-- Вход в систему -->
 <div id="modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-  <div class="relative w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 text-slate-950 shadow-2xl">
+  <div role="dialog" aria-modal="true" aria-labelledby="login-modal-title" class="relative w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 text-slate-950 shadow-2xl">
     <button id="closeLoginModal" type="button" class="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700" aria-label="Закрыть">
       &times;
     </button>
-    <h3 class="mb-4 text-xl font-semibold">Вход в систему</h3>
-    <form id="loginForm">
-      <input id="pass" name="pin" type="password" placeholder="PIN" autocomplete="one-time-code" inputmode="numeric" class="mb-4 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-950 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
-      <button id="btnlogin" type="submit" class="mb-2 w-full rounded-lg bg-blue-600 py-2.5 font-medium text-white transition hover:bg-blue-700">Войти</button>
-    </form>
-    <div class="text-center">
-      <a href="https://t.me/Platonicsbot" target="_blank" rel="noopener"
-         class="block w-full rounded-lg bg-slate-950 p-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800">
-         Забыли PIN / восстановить PIN
-      </a>
-    </div>
+    <h3 id="login-modal-title" class="mb-4 text-xl font-semibold">Вход по PIN</h3>
+    {{> pinForm pinId="modal-pin" loginError=""}}
   </div>
 </div>
 
 <!-- V.CALL -->
-<div id="modal2" class="fixed inset-0 z-50 hidden p-4">
-  <div id="modal2-overlay" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+<div id="modal2" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/60 p-4 backdrop-blur-sm">
 
-  <div class="relative mx-auto my-8 w-full max-w-xl">
-    <div class="relative rounded-lg border border-slate-200 bg-white p-6 text-slate-950 shadow-2xl">
+  <div role="dialog" aria-modal="true" aria-labelledby="vcallTitle" class="relative mx-auto my-8 w-full max-w-xl">
+    <div class="relative rounded-lg border border-slate-200 bg-white p-5 text-slate-950 shadow-2xl md:p-6">
       <button id="closeVcallModal" type="button"
               class="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
               aria-label="Закрыть">
         &times;
       </button>
 
-      <h3 class="mb-2 text-xl font-semibold">Ссылка на конференцию</h3>
-      <p class="mb-4 text-sm text-slate-500">Скопируйте ссылку-приглашение или сразу перейдите в комнату.</p>
+      <h3 id="vcallTitle" class="mb-2 pr-10 text-xl font-semibold">Начать урок</h3>
+      <p id="vcallStatus" role="status" class="mb-4 text-sm text-slate-600"></p>
 
-      <div class="flex flex-col gap-2 sm:flex-row">
-        <textarea id="copy-link" readonly
-                  class="h-28 flex-1 resize-y rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm leading-relaxed text-slate-950 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"></textarea>
-        <button id="copyBtn" type="button"
-                class="h-12 rounded-lg bg-slate-100 px-4 text-sm font-medium text-slate-900 transition hover:bg-slate-200 sm:h-28 sm:w-28 sm:shrink-0">
+      <div id="vcallInvite" hidden class="space-y-2">
+        <p class="text-xs text-slate-600">Зайдите в конференцию, чтобы комната не закрылась, пока в ней никого нет.</p>
+        <label for="copy-link" class="block text-sm font-medium text-slate-700">Ссылка для участников</label>
+        <input id="copy-link" type="text" readonly
+               class="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-950 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
+        <button id="copyBtn" type="button" class="rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-900 hover:bg-slate-200">
           Скопировать
         </button>
       </div>
 
-      <div class="mt-4 grid gap-3 sm:grid-cols-2">
-        <fieldset id="privacyGroup" role="radiogroup" aria-label="Тип комнаты"
-          class="rounded-lg border border-slate-200 bg-slate-50 p-2">
-          <input type="hidden" id="privacyInput" name="privacy" value="public">
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" role="radio" aria-checked="true" data-value="public"
-              class="seg inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm text-white transition">
-              <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#globe"></use></svg>
-              Публичная
-            </button>
-            <button type="button" role="radio" aria-checked="false" data-value="private"
-              class="seg inline-flex items-center justify-center gap-2 rounded-lg bg-white px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-100">
-              <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#lock"></use></svg>
-              Частная
-            </button>
-          </div>
-          <p id="privacyHint" class="mt-2 text-xs text-slate-500">Все ученики видят вашу комнату.</p>
-        </fieldset>
-
-        <label class="group flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
-          <div>
-            <div class="text-sm text-slate-900">Требовать авторизацию</div>
-            <div class="text-xs text-slate-500">Гости войдут только под аккаунтом.</div>
-          </div>
-          <span class="relative inline-flex h-7 w-12 items-center">
-            <input id="requireAuth" name="require_auth" type="checkbox" class="peer sr-only">
-            <span aria-hidden="true" class="absolute inset-0 rounded-full bg-slate-300 transition-colors peer-checked:bg-blue-600"></span>
-            <span aria-hidden="true" class="absolute left-1 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5"></span>
-          </span>
+      <fieldset id="vcallSettings" hidden class="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <legend class="px-1 text-sm font-medium">Доступ к комнате</legend>
+        <label class="flex items-start gap-2 text-sm">
+          <input id="vcallPublic" type="checkbox" checked class="mt-0.5 rounded text-blue-600" />
+          <span>Показывать в списке активных комнат</span>
         </label>
-      </div>
+        <label class="flex items-start gap-2 text-sm">
+          <input id="requireAuth" type="checkbox" class="mt-0.5 rounded text-blue-600" />
+          <span>Требовать вход по PIN</span>
+        </label>
+      </fieldset>
 
       <div class="mt-4 flex flex-col gap-2 sm:flex-row">
-        <button id="joinBtn" type="button"
-                class="w-full rounded-lg bg-blue-600 py-2.5 font-medium text-white transition hover:bg-blue-700">
+        <button id="vcallCreate" type="button" hidden
+                class="w-full rounded-lg bg-blue-600 py-2.5 font-medium text-white hover:bg-blue-700">
+          Открыть комнату
+        </button>
+        <a id="joinBtn" hidden target="_blank" rel="noopener"
+           class="w-full rounded-lg bg-blue-600 py-2.5 text-center font-medium text-white hover:bg-blue-700">
           Зайти в конференцию
+        </a>
+        <button id="vcallRetry" type="button" hidden
+                class="w-full rounded-lg bg-blue-600 py-2.5 font-medium text-white hover:bg-blue-700">
+          Повторить
         </button>
         <button id="closeBtn" type="button"
                 class="w-full rounded-lg bg-slate-100 py-2.5 font-medium text-slate-900 transition hover:bg-slate-200">
@@ -85,16 +64,12 @@
         </button>
       </div>
 
-      <div id="toast" class="pointer-events-none invisible fixed bottom-6 left-1/2 -translate-x-1/2 rounded-lg bg-slate-950 px-3 py-2 text-sm text-white opacity-0 transition">
-        Ссылка скопирована
-      </div>
     </div>
   </div>
 </div>
 
 <!-- Активные комнаты -->
-<div id="roomsModal" class="fixed inset-0 z-[100] hidden p-4">
-  <div id="roomsBackdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+<div id="roomsModal" class="fixed inset-0 z-[100] hidden overflow-y-auto bg-black/60 p-4 backdrop-blur-sm">
 
   <div role="dialog" aria-modal="true" aria-labelledby="roomsTitle" class="relative mx-auto my-10 w-full max-w-2xl">
     <div class="relative rounded-lg border border-slate-200 bg-white p-5 text-slate-950 shadow-2xl md:p-6">
@@ -107,11 +82,13 @@
       <h3 id="roomsTitle" class="mb-1 text-xl font-semibold">Активные комнаты</h3>
       <div id="roomsList" class="grid gap-3 sm:grid-cols-2"></div>
 
-      <div id="roomsEmpty" class="hidden py-6 text-center text-sm text-slate-500">
-        Сейчас нет активных комнат.
-      </div>
+      <p id="roomsStatus" role="status" class="py-4 text-sm text-slate-600"></p>
 
-      <div class="mt-4 flex justify-end">
+      <div class="mt-4 flex justify-end gap-2">
+        <button id="roomsRetry" type="button" hidden
+                class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700">
+          Обновить список
+        </button>
         <button id="roomsClose2" type="button"
                 class="rounded-lg bg-slate-100 px-4 py-2 font-medium text-slate-900 transition hover:bg-slate-200">
           Закрыть
@@ -123,261 +100,205 @@
 
 <script>
 (() => {
-  const qs = (selector, root = document) => root.querySelector(selector);
-  const qsa = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-
-  async function getJson(url) {
-    const response = await fetch(url, {
-      method: 'GET',
-      credentials: 'same-origin',
-      cache: 'no-store',
-      headers: { Accept: 'application/json' },
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return response.json();
-  }
-
-  function showError(message, error) {
-    if (error) console.error(message, error);
-    window.PortalToast?.error?.(message);
-  }
+  const qs = selector => document.querySelector(selector);
 
   const vcallModal = qs('#modal2');
-  const privacyGroup = qs('#privacyGroup');
-  const privacyInput = qs('#privacyInput');
-  const privacyHint = qs('#privacyHint');
-  const privacyButtons = qsa('.seg', privacyGroup || document);
-  const requireAuth = qs('#requireAuth');
-  const copyLink = qs('#copy-link');
-  const toast = qs('#toast');
-  let copyUrl = '';
-  let joinUrl = '';
-  let syncingModalState = false;
-
-  const privacyText = {
-    public: 'Все ученики видят вашу комнату.',
-    private: 'Доступ только по ссылке.',
-  };
-
-  function setPrivacy(value) {
-    if (!privacyInput) return;
-    privacyInput.value = value;
-    privacyButtons.forEach((button) => {
-      const active = button.dataset.value === value;
-      button.setAttribute('aria-checked', String(active));
-      button.className = [
-        'seg inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm transition',
-        active ? 'bg-blue-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100',
-      ].join(' ');
-    });
-    if (privacyHint) privacyHint.textContent = privacyText[value] || '';
-  }
-
-  async function sendVcallState() {
-    if (syncingModalState) return;
-    const params = new URLSearchParams({
-      pub: String(privacyInput?.value === 'public'),
-      need_auth: String(Boolean(requireAuth?.checked)),
-    });
-
-    try {
-      await getJson(`/getvlinks?${params.toString()}`);
-    } catch (error) {
-      showError('Не удалось обновить настройки комнаты', error);
-    }
-  }
-
-  function openVcallModal(copy, join, acc = {}) {
-    syncingModalState = true;
-    if (requireAuth) requireAuth.checked = String(acc.need_auth).toLowerCase() === 'true';
-    setPrivacy(String(acc.pub).toLowerCase() === 'true' ? 'public' : 'private');
-    syncingModalState = false;
-
-    copyUrl = copy || '';
-    joinUrl = join || '';
-    if (copyLink) copyLink.value = copyUrl;
-    vcallModal?.classList.remove('hidden');
-  }
-
-  function closeVcallModal() {
-    vcallModal?.classList.add('hidden');
-  }
-
-  async function openLessonModal() {
-    try {
-      const data = await getJson('/getvlinks');
-      const roomUrl = new URL(data.roomid, `${window.location.origin}/`).href;
-      openVcallModal(roomUrl, data.link, data.acc);
-    } catch (error) {
-      showError('Не удалось получить ссылку на конференцию', error);
-    }
-  }
-
-  privacyButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      setPrivacy(button.dataset.value);
-      sendVcallState();
-    });
-  });
-
-  privacyGroup?.addEventListener('keydown', (event) => {
-    if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
-    const current = privacyButtons.findIndex((button) => button.getAttribute('aria-checked') === 'true');
-    const next = event.key === 'ArrowRight'
-      ? (current + 1) % privacyButtons.length
-      : (current - 1 + privacyButtons.length) % privacyButtons.length;
-    event.preventDefault();
-    const button = privacyButtons[next];
-    setPrivacy(button.dataset.value);
-    button.focus();
-    sendVcallState();
-  });
-
-  requireAuth?.addEventListener('change', sendVcallState);
-  setPrivacy('public');
-
-  qs('#copyBtn')?.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(copyUrl);
-    } catch {
-      copyLink?.select();
-      document.execCommand('copy');
-    }
-    toast?.classList.remove('invisible', 'opacity-0');
-    window.PortalToast?.success?.('Ссылка скопирована');
-    window.setTimeout(() => toast?.classList.add('opacity-0'), 1200);
-    window.setTimeout(() => toast?.classList.add('invisible'), 1600);
-  });
-
-  qs('#joinBtn')?.addEventListener('click', () => {
-    if (joinUrl) window.open(joinUrl, '_blank', 'noopener');
-  });
-
-  [qs('#closeBtn'), qs('#closeVcallModal'), qs('#modal2-overlay')].forEach((element) => {
-    element?.addEventListener('click', closeVcallModal);
-  });
-
   const roomsModal = qs('#roomsModal');
+  const vcallStatus = qs('#vcallStatus');
+  const vcallSettings = qs('#vcallSettings');
+  const vcallInvite = qs('#vcallInvite');
+  const createButton = qs('#vcallCreate');
+  const lessonRetry = qs('#vcallRetry');
+  const joinButton = qs('#joinBtn');
+  const copyLink = qs('#copy-link');
   const roomsList = qs('#roomsList');
-  const roomsEmpty = qs('#roomsEmpty');
+  const roomsStatus = qs('#roomsStatus');
+  const roomsRetry = qs('#roomsRetry');
+  let dialog;
+  let previousFocus;
+  let previousOverflow;
+  let request;
+  let creatingRoom = false;
 
-  function closeRoomsModal() {
-    roomsModal?.classList.add('hidden');
+  function openDialog(element) {
+    if (dialog) closeDialog();
+    previousFocus = document.activeElement;
+    previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    dialog = element;
+    dialog.classList.remove('hidden');
+    dialog.querySelector('button')?.focus();
   }
 
-  function renderRooms(rooms = []) {
-    if (!roomsList || !roomsEmpty) return;
-    roomsList.innerHTML = '';
+  function closeDialog() {
+    if (!dialog) return;
+    request?.abort();
+    dialog.classList.add('hidden');
+    dialog = null;
+    document.body.style.overflow = previousOverflow;
+    previousFocus?.focus();
+  }
 
-    if (!rooms.length) {
-      roomsEmpty.classList.remove('hidden');
-      return;
+  async function getJson(url, controller, fallback, body) {
+    const headers = { Accept: 'application/json' };
+    if (body) headers['Content-Type'] = 'application/json';
+    const timeout = new AbortController();
+    const cancel = () => timeout.abort();
+    controller.signal.addEventListener('abort', cancel, { once: true });
+    const timer = window.setTimeout(cancel, 15000);
+    try {
+      const response = await fetch(url, {
+        method: body ? 'POST' : 'GET',
+        body: body ? JSON.stringify(body) : undefined,
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers,
+        signal: timeout.signal,
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data) throw new Error(data?.message || fallback);
+      return data;
+    } catch (error) {
+      if (timeout.signal.aborted) throw new Error(fallback);
+      throw error;
+    } finally {
+      window.clearTimeout(timer);
+      controller.signal.removeEventListener('abort', cancel);
     }
-    roomsEmpty.classList.add('hidden');
-
-    rooms.forEach((room) => {
-      const rid = String(room.roomid ?? '').trim();
-      const title = String(room.title ?? `Комната ${rid || 'без ID'}`);
-      const people = String(room.peops ?? 0);
-
-      const link = document.createElement('a');
-      link.href = `/jointo?roomid=${encodeURIComponent(rid)}`;
-      link.className = 'block rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm transition hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500';
-
-      const row = document.createElement('div');
-      row.className = 'flex items-start gap-3';
-
-      const icon = document.createElement('div');
-      icon.className = 'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-500';
-      icon.innerHTML = '<svg class="h-5 w-5" aria-hidden="true"><use href="/icons/lucide.svg#video"></use></svg>';
-
-      const content = document.createElement('div');
-      content.className = 'min-w-0';
-
-      const name = document.createElement('div');
-      name.className = 'truncate font-medium';
-      name.textContent = title;
-
-      const roomId = document.createElement('div');
-      roomId.className = 'mt-0.5 text-xs text-slate-500';
-      roomId.innerHTML = 'roomid: ';
-      const code = document.createElement('span');
-      code.className = 'font-mono';
-      code.textContent = rid;
-      roomId.appendChild(code);
-
-      const badges = document.createElement('div');
-      badges.className = 'mt-2 inline-flex flex-wrap items-center gap-2';
-      const peopleBadge = document.createElement('span');
-      peopleBadge.className = 'rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-700';
-      peopleBadge.textContent = `Участников: ${people}`;
-      const activeBadge = document.createElement('span');
-      activeBadge.className = 'rounded-md bg-blue-50 px-2 py-0.5 text-xs text-blue-700';
-      activeBadge.textContent = 'активна';
-      badges.append(peopleBadge, activeBadge);
-
-      content.append(name, roomId, badges);
-      row.append(icon, content);
-      link.appendChild(row);
-      roomsList.appendChild(link);
-    });
   }
 
-  function openRoomsModal(rooms) {
-    renderRooms(Array.isArray(rooms) ? rooms : []);
-    roomsModal?.classList.remove('hidden');
+  async function loadLesson(create = false) {
+    if (creatingRoom) return;
+    if (dialog !== vcallModal) openDialog(vcallModal);
+    request?.abort();
+    const controller = new AbortController();
+    request = controller;
+    creatingRoom = create;
+    vcallStatus.textContent = create ? 'Открываем комнату…' : 'Проверяем, открыта ли комната…';
+    vcallSettings.hidden = vcallInvite.hidden = createButton.hidden = joinButton.hidden = lessonRetry.hidden = true;
+    joinButton.removeAttribute('href');
+
+    const body = create ? { pub: qs('#vcallPublic').checked, need_auth: qs('#requireAuth').checked } : undefined;
+    try {
+      const data = await getJson('/getvlinks', controller, 'Не удалось загрузить комнату. Попробуйте ещё раз.', body);
+      if (controller.signal.aborted) return;
+      if (data.active === false) {
+        vcallStatus.textContent = 'Выберите настройки доступа перед открытием комнаты.';
+        vcallSettings.hidden = createButton.hidden = false;
+        createButton.focus();
+        return;
+      }
+      if (data.active !== true || !data.roomid || !data.joinPath || typeof data.acc?.pub !== 'boolean' || typeof data.acc?.need_auth !== 'boolean') {
+        throw new Error('Не удалось получить приглашение в комнату.');
+      }
+      const invite = new URL(data.roomid, location.origin);
+      const join = new URL(data.joinPath, location.origin);
+      if ([invite, join].some(url => url.origin !== location.origin || url.pathname !== '/jointo')) throw new Error('Приглашение недоступно.');
+      const visibility = data.acc.pub ? 'Комната в списке активных комнат.' : 'Комната доступна по ссылке.';
+      const login = data.acc.need_auth ? ' Для входа нужен PIN.' : ' Гости могут подключиться без PIN.';
+      vcallStatus.textContent = visibility + login;
+      copyLink.value = invite.href;
+      joinButton.href = join.href;
+      vcallInvite.hidden = joinButton.hidden = false;
+      joinButton.focus();
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      vcallStatus.textContent = error instanceof TypeError ? 'Не удалось загрузить комнату. Проверьте соединение.' : error.message;
+      lessonRetry.hidden = false;
+      lessonRetry.focus();
+    } finally {
+      creatingRoom = false;
+    }
+  }
+
+  function renderRooms(rooms) {
+    for (const { room_info: room } of rooms) {
+      const link = document.createElement('a');
+      link.href = `/jointo?${new URLSearchParams({ roomid: room.room_id })}`;
+      link.className = 'block rounded-lg border border-slate-200 bg-slate-50 p-4 hover:bg-white focus-visible:ring-2 focus-visible:ring-blue-500';
+      const title = document.createElement('span');
+      title.className = 'block break-words font-medium';
+      title.textContent = room.room_title || 'Онлайн-урок';
+      const people = document.createElement('span');
+      people.className = 'mt-1 block text-xs text-slate-600';
+      people.textContent = `Участников: ${room.joined_participants ?? 0}`;
+      link.append(title, people);
+      roomsList.append(link);
+    }
   }
 
   async function loadRooms() {
+    if (dialog !== roomsModal) openDialog(roomsModal);
+    request?.abort();
+    const controller = new AbortController();
+    request = controller;
+    roomsList.replaceChildren();
+    roomsStatus.textContent = 'Загружаем активные комнаты…';
+    roomsRetry.hidden = true;
     try {
-      const data = await getJson('/rooms');
-      const rooms = [];
-      (data.rooms || []).forEach((element) => {
-        const roomInfo = element?.room_info || {};
-        const roomId = roomInfo.room_id;
-        const isPublic = String(data?.acc?.[roomId]?.pub).toLowerCase() === 'true';
-        if (isPublic) {
-          rooms.push({
-            roomid: roomId,
-            title: roomInfo.room_title,
-            peops: roomInfo.joined_participants,
-          });
-        }
-      });
-      openRoomsModal(rooms);
+      const data = await getJson('/rooms', controller, 'Не удалось загрузить комнаты. Попробуйте ещё раз.');
+      if (controller.signal.aborted) return;
+      if (!Array.isArray(data.rooms)) throw new Error('Не удалось загрузить комнаты.');
+      renderRooms(data.rooms);
+      roomsStatus.textContent = data.rooms.length ? '' : 'Сейчас нет открытых комнат в списке.';
+      window.dispatchEvent(new CustomEvent('portal:rooms-loaded', { detail: data }));
     } catch (error) {
-      showError('Не удалось получить список комнат', error);
+      if (controller.signal.aborted) return;
+      roomsStatus.textContent = error instanceof TypeError ? 'Не удалось загрузить комнаты. Проверьте соединение.' : error.message;
+      window.dispatchEvent(new CustomEvent('portal:rooms-loaded', { detail: null }));
     }
+    roomsRetry.hidden = false;
   }
 
-  [qs('#roomsClose'), qs('#roomsClose2'), qs('#roomsBackdrop')].forEach((element) => {
-    element?.addEventListener('click', closeRoomsModal);
+  qs('#copyBtn').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(copyLink.value);
+      window.PortalToast?.success?.('Ссылка скопирована');
+    } catch {
+      copyLink.focus();
+      copyLink.select();
+      window.PortalToast?.show?.('Скопируйте выделенную ссылку вручную', 'info');
+    }
   });
 
-  document.addEventListener('click', (event) => {
-    const lessonLink = event.target.closest('a[href="#lesson"]');
-    if (lessonLink) {
-      event.preventDefault();
-      openLessonModal();
-      return;
-    }
+  createButton.addEventListener('click', () => loadLesson(true));
+  lessonRetry.addEventListener('click', () => loadLesson());
+  roomsRetry.addEventListener('click', loadRooms);
+  for (const selector of ['#closeBtn', '#closeVcallModal', '#roomsClose', '#roomsClose2']) {
+    qs(selector).addEventListener('click', closeDialog);
+  }
+  for (const element of [vcallModal, roomsModal]) {
+    element.addEventListener('click', event => {
+      if (event.target === element) closeDialog();
+    });
+  }
 
-    const roomsLink = event.target.closest('a[href="#room"]');
-    if (roomsLink) {
+  document.addEventListener('click', (event) => {
+    if (event.target.closest('a[href="#lesson"]')) {
+      event.preventDefault();
+      loadLesson();
+    } else if (event.target.closest('a[href="#room"]')) {
       event.preventDefault();
       loadRooms();
     }
   });
 
   document.addEventListener('keydown', (event) => {
+    if (!dialog) return;
     if (event.key === 'Escape') {
-      closeVcallModal();
-      closeRoomsModal();
+      closeDialog();
+    } else if (event.key === 'Tab') {
+      const focusable = [...dialog.querySelectorAll('a[href],button,input')].filter(element => element.getClientRects().length);
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
     }
   });
-
-  window.openVcallModal = openVcallModal;
-  window.openRoomsModal = openRoomsModal;
-  window.closeRoomsModal = closeRoomsModal;
 })();
 </script>

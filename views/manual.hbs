@@ -1,38 +1,20 @@
-<section class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-  <div class="flex flex-col gap-6 lg:flex-row">
-    <aside class="w-full rounded-lg border border-slate-700 bg-gray-800 p-4 text-white shadow-lg lg:w-1/3">
-      <ul class="max-h-[500px] space-y-2 overflow-y-auto text-sm">
-        {{#each files}}
-          <li>
-            <a id="{{this}}"
-               href="#"
-               class="manual-file-link block rounded-lg px-4 py-2 leading-snug break-words transition hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              {{this}}
-            </a>
-          </li>
-        {{/each}}
-      </ul>
-    </aside>
-
-    <div class="w-full lg:flex-1">
-      <iframe id="frame"
-              src=""
-              class="h-[80vh] w-full rounded-lg border border-gray-700 bg-white text-black shadow-lg dark:bg-gray-900 dark:text-white">
-        не удалось показать документ
-      </iframe>
-    </div>
-  </div>
-</section>
-
-<script>
-(() => {
-  const frame = document.getElementById('frame');
-  document.querySelectorAll('.manual-file-link').forEach((link) => {
-    link.addEventListener('click', (event) => {
-      event.preventDefault();
-      const filename = link.id;
-      if (frame && filename) frame.src = `docs/${filename}`;
-    });
-  });
-})();
-</script>
+<main class="mx-auto max-w-4xl px-4 py-20 sm:px-6">
+  <h1 class="text-2xl font-semibold text-slate-950">Инструкции</h1>
+  {{#if files.length}}
+    <ul class="mt-4 divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white">
+      {{#each files}}
+        <li class="flex items-center justify-between gap-3 px-4 py-3">
+          {{#if (or (eq format "PDF") (eq format "MP4") (eq format "WEBM"))}}
+            <a href="{{url}}" class="min-w-0 break-words font-medium text-blue-700 hover:underline">{{name}}</a>
+            <a href="{{url}}" download aria-label="Скачать {{name}}" class="shrink-0 rounded-lg px-2 py-2 text-sm text-slate-600 hover:bg-slate-100">Скачать</a>
+          {{else}}
+            <a href="{{url}}" download class="min-w-0 break-words font-medium text-blue-700 hover:underline">{{name}}</a>
+            <span class="shrink-0 text-sm text-slate-500">{{format}}</span>
+          {{/if}}
+        </li>
+      {{/each}}
+    </ul>
+  {{else}}
+    <p class="mt-3 text-slate-600">Пока нет опубликованных инструкций.</p>
+  {{/if}}
+</main>

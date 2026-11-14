@@ -1,0 +1,9 @@
+<form action="/sso/auth" method="post" data-portal-login>
+  <label for="{{pinId}}" class="block text-sm font-medium text-slate-700">PIN</label>
+  <input id="{{pinId}}" name="pin" type="password" required autocomplete="one-time-code" inputmode="numeric"
+         aria-describedby="{{pinId}}-error" {{#if loginError}}aria-invalid="true"{{/if}}
+         class="mt-1 w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-950 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
+  <p id="{{pinId}}-error" data-pin-error role="status" class="mt-2 text-sm text-rose-700" {{#unless loginError}}hidden{{/unless}}>{{loginError}}</p>
+  <button type="submit" class="mt-4 w-full rounded-lg bg-blue-600 py-2.5 font-medium text-white transition hover:bg-blue-700 disabled:opacity-50">Войти</button>
+</form>
+<a href="https://t.me/Platonicsbot" target="_blank" rel="noopener" class="mt-4 inline-flex text-sm font-medium text-blue-700 hover:underline">Восстановить PIN в Telegram</a>

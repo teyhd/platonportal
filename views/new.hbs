@@ -10,14 +10,20 @@
 
     {{#if canManageCards}}
       <div class="mt-4 flex flex-wrap items-center gap-3">
-        <button type="button" data-card-admin-open
+        <button type="button" data-card-admin-open aria-haspopup="dialog" aria-controls="cards-admin-drawer"
                 class="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-slate-950/15 transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20">
-          <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#settings"></use></svg>
           Управлять карточками
         </button>
-        <span class="inline-flex min-h-[32px] items-center rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700">
-          Админ
-        </span>
+        <a href="/users" class="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20">
+          <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#users"></use></svg>
+          Пользователи
+        </a>
+        <a href="/conf" class="inline-flex min-h-[40px] items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700">
+          Файлы портала
+        </a>
+        <a href="/" data-catalog-refresh class="hidden text-sm font-semibold text-blue-700 underline">
+          Обновить каталог
+        </a>
       </div>
     {{/if}}
 
@@ -52,18 +58,36 @@
             </a>
           {{/each}}
 
-          <div class="rounded-lg border border-slate-200 bg-white p-4 lg:min-h-[132px]">
+          <div data-open-rooms-summary class="hidden rounded-lg border border-slate-200 bg-white p-4 lg:min-h-[132px]">
             <div class="text-sm font-semibold text-slate-500">Открытые комнаты</div>
-            <div data-open-rooms-count class="mt-3 text-3xl font-semibold leading-none text-slate-950">0</div>
+            <div data-open-rooms-count class="mt-3 text-3xl font-semibold leading-none text-slate-950" aria-live="polite">—</div>
+            <p data-open-rooms-status class="mt-2 text-sm text-slate-600">Загружаем…</p>
           </div>
         </div>
       </section>
     {{/if}}
 
-    <section class="mt-6" aria-labelledby="services-title">
-      <h2 id="services-title" class="text-2xl font-semibold tracking-tight text-slate-950 md:text-3xl">
-        Приложения и сервисы
-      </h2>
+    <section class="mt-6" data-catalog aria-labelledby="services-title">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="services-title" class="text-2xl font-semibold tracking-tight text-slate-950 md:text-3xl">
+          Приложения и сервисы
+        </h2>
+        {{#if showManualLink}}
+          <a href="/manual" data-catalog-card data-catalog-description="Документы и видео для учителей и учеников" class="text-sm font-semibold text-blue-700 underline">Инструкции</a>
+        {{/if}}
+      </div>
+
+      <div data-catalog-controls class="mt-3 hidden max-w-md items-center gap-2">
+        <label class="relative min-w-0 flex-1">
+          <span class="sr-only">Поиск сервисов</span>
+          <input type="text" role="searchbox" inputmode="search" autocomplete="off" data-catalog-search placeholder="Название, домен или описание"
+                 class="w-full rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-10 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10" />
+          <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </label>
+        <button type="button" data-catalog-clear class="hidden rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:border-blue-300">Очистить</button>
+      </div>
+
+      <p data-catalog-status class="mt-2 text-sm text-slate-600" role="status"></p>
 
       <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {{#if isGuestHome}}
@@ -81,16 +105,18 @@
         {{/if}}
 
         {{#each catalogServices}}
-          <a href="{{this.cont}}" title="{{this.serviceDescription}}"
-             class="group flex min-h-[148px] flex-col items-center justify-center rounded-lg border border-slate-200 bg-white p-3 text-center shadow-sm shadow-slate-950/5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 sm:min-h-[156px] md:min-h-[168px] md:p-4 xl:min-h-[176px]">
-            <span class="flex h-[76px] w-[76px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-3 sm:h-20 sm:w-20 md:h-24 md:w-24 md:p-4 xl:h-28 xl:w-28">
-              <img src="{{this.imageSrc}}" alt="" class="h-full w-full object-contain" loading="lazy" />
-            </span>
-            <span class="mt-3 block text-base font-semibold leading-6 text-slate-950 line-clamp-2">{{this.title}}</span>
-            {{#if (eq this.role 7)}}
-              <span class="mt-1 text-xs leading-5 text-slate-500 line-clamp-2">{{this.serviceDescription}}</span>
-            {{/if}}
-          </a>
+          {{#unless (and @root.canManageCards (eq this.cont '/users'))}}
+            <a href="{{this.cont}}" title="{{this.serviceDescription}}" data-catalog-card data-catalog-domain="{{this.catalogDomain}}" data-catalog-description="{{this.summary}}"
+               class="group flex min-h-[148px] flex-col items-center justify-center rounded-lg border border-slate-200 bg-white p-3 text-center shadow-sm shadow-slate-950/5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 sm:min-h-[156px] md:min-h-[168px] md:p-4 xl:min-h-[176px]">
+              <span class="flex h-[76px] w-[76px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-3 sm:h-20 sm:w-20 md:h-24 md:w-24 md:p-4 xl:h-28 xl:w-28">
+                <img src="{{this.imageSrc}}" alt="" class="h-full w-full object-contain" loading="lazy" />
+              </span>
+              <span class="mt-3 block text-base font-semibold leading-6 text-slate-950 line-clamp-2">{{this.title}}</span>
+              {{#if (eq this.role 7)}}
+                <span class="mt-1 text-xs leading-5 text-slate-500">{{this.serviceDescription}}</span>
+              {{/if}}
+            </a>
+          {{/unless}}
         {{/each}}
       </div>
     </section>
@@ -218,7 +244,7 @@
         <button type="button" data-card-admin-close
                 class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-blue-300 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20"
                 aria-label="Закрыть">
-          <svg class="h-5 w-5" aria-hidden="true"><use href="/icons/lucide.svg#x"></use></svg>
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m18 6-12 12M6 6l12 12"/></svg>
         </button>
       </div>
 
@@ -233,19 +259,20 @@
             </div>
             <div class="flex flex-col gap-3 sm:flex-row">
               <label class="relative min-w-0 flex-1">
-                <input type="search" data-card-search placeholder="Поиск"
+                <input type="search" data-card-search aria-label="Поиск карточек" placeholder="Поиск карточек"
                        class="w-full rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-10 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10" />
-                <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true"><use href="/icons/lucide.svg#search"></use></svg>
+                <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
               </label>
-              <button type="button" data-card-new
+              <button type="button" data-card-new disabled
                       class="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20">
-                <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#plus"></use></svg>
                 Новая
               </button>
             </div>
           </div>
 
           <div class="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5">
+            <p data-card-list-status class="text-sm text-slate-700" role="status"></p>
+            <button type="button" data-card-retry class="mt-2 hidden rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700">Повторить загрузку</button>
             <div data-card-list class="grid gap-2 xl:grid-cols-2"></div>
             <div data-card-empty class="hidden rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
               Карточки не найдены
@@ -254,12 +281,8 @@
         </section>
 
         <section class="min-h-0 overflow-y-auto bg-slate-50 p-4 sm:p-5" aria-label="Редактор карточки">
-          <form data-card-form class="space-y-4">
+          <form data-card-form class="hidden space-y-4">
             <input type="hidden" data-card-id />
-
-            <div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-5 text-amber-900">
-              HTML виден пользователям выбранной роли.
-            </div>
 
             <div class="grid grid-cols-2 gap-3">
               <label class="block">
@@ -270,14 +293,15 @@
                 </select>
               </label>
               <label class="block">
-                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Роль</span>
-                <select data-card-role class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-950 focus:border-blue-400 focus:ring-blue-500/20"></select>
+                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Кому видна</span>
+                <select data-card-role required aria-describedby="card-audience-hint" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-950 focus:border-blue-400 focus:ring-blue-500/20"></select>
               </label>
             </div>
+            <p id="card-audience-hint" data-card-audience class="text-sm text-slate-600"></p>
 
             <label class="block">
               <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Заголовок</span>
-              <input type="text" data-card-title maxlength="50"
+              <input type="text" data-card-title required maxlength="50"
                      class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-950 focus:border-blue-400 focus:ring-blue-500/20" />
             </label>
 
@@ -290,13 +314,13 @@
             <div class="grid grid-cols-2 gap-3">
               <label class="block">
                 <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Порядок</span>
-                <input type="number" min="0" max="127" data-card-order
+                <input type="number" min="0" max="127" data-card-order required
                        class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-950 focus:border-blue-400 focus:ring-blue-500/20" />
               </label>
               <label class="flex items-end">
                 <span class="inline-flex min-h-[42px] w-full items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700">
                   <input type="checkbox" data-card-shows class="rounded border-slate-300 text-blue-600 focus:ring-blue-500/30" />
-                  Показывать
+                  Показывать в каталоге
                 </span>
               </label>
             </div>
@@ -312,7 +336,6 @@
                   <img data-card-image-preview src="/img/platon.png" alt="" class="h-full w-full object-contain" />
                 </span>
                 <label class="inline-flex min-h-[40px] cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700">
-                  <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#upload"></use></svg>
                   Загрузить
                   <input type="file" data-card-image-file accept="image/png,image/jpeg,image/webp" class="sr-only" />
                 </label>
@@ -321,7 +344,7 @@
 
             <div class="rounded-lg border border-slate-200 bg-white p-3">
               <div class="mb-2 flex items-center justify-between gap-3">
-                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Preview</span>
+                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Предпросмотр</span>
                 <span data-card-preview-kind class="rounded-lg bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">Сервис</span>
               </div>
               <div data-card-service-preview class="rounded-lg border border-slate-200 bg-white p-3 text-center">
@@ -335,14 +358,9 @@
             </div>
 
             <div class="sticky bottom-0 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50/95 p-3 backdrop-blur">
-              <button type="button" data-card-toggle
-                      class="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-amber-300 hover:text-amber-700">
-                <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#eye-off"></use></svg>
-                Скрыть
-              </button>
+              <p data-card-save-status class="text-sm text-slate-700" role="status"></p>
               <button type="submit"
                       class="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20">
-                <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#save"></use></svg>
                 Сохранить
               </button>
             </div>
@@ -369,6 +387,10 @@
     filter: 'all',
     search: '',
     selectedId: null,
+    loaded: false,
+    busy: '',
+    savedValues: null,
+    saveMessage: '',
   };
 
   const backdrop = qs('[data-card-admin-backdrop]');
@@ -376,6 +398,15 @@
   const list = qs('[data-card-list]');
   const empty = qs('[data-card-empty]');
   const form = qs('[data-card-form]');
+  const closeButton = qs('[data-card-admin-close]');
+  const newButton = qs('[data-card-new]');
+  const retry = qs('[data-card-retry]');
+  const listStatus = qs('[data-card-list-status]');
+  const saveStatus = qs('[data-card-save-status]');
+  const refreshLink = document.querySelector('[data-catalog-refresh]');
+  let opener;
+  let closeTimer;
+
   const fields = {
     id: qs('[data-card-id]'),
     type: qs('[data-card-type]'),
@@ -392,7 +423,7 @@
     serviceTitle: qs('[data-card-service-title]'),
     htmlPreview: qs('[data-card-html-preview]'),
     previewKind: qs('[data-card-preview-kind]'),
-    toggle: qs('[data-card-toggle]'),
+    audience: qs('[data-card-audience]'),
   };
 
   function toast(message, ok = true) {
@@ -445,31 +476,71 @@
       ...options,
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok || data.ok === false) {
+    if (!response.ok || data.ok !== true) {
       throw new Error(data.message || `HTTP ${response.status}`);
     }
     return data;
   }
 
-  function openDrawer() {
+  function openDrawer(event) {
+    window.clearTimeout(closeTimer);
+    opener = event.currentTarget;
     drawer.classList.remove('hidden');
+    closeButton.focus();
     window.requestAnimationFrame(() => {
       backdrop.style.opacity = '1';
       panel.style.transform = 'translateX(0)';
     });
-    if (!state.cards.length) loadCards();
+    if (!state.loaded) loadCards();
+  }
+
+  function isDirty() {
+    return state.savedValues !== null && state.savedValues !== JSON.stringify(collectForm());
+  }
+
+  function canDiscard() {
+    return !isDirty() || window.confirm('Сбросить несохранённые изменения?');
   }
 
   function closeDrawer() {
+    if (['saving', 'uploading'].includes(state.busy) || !canDiscard()) return;
+    if (isDirty()) fillForm(state.cards.find(card => Number(card.id) === state.selectedId));
     backdrop.style.opacity = '0';
     panel.style.transform = 'translateX(100%)';
-    window.setTimeout(() => drawer.classList.add('hidden'), 180);
+    window.clearTimeout(closeTimer);
+    closeTimer = window.setTimeout(() => {
+      drawer.classList.add('hidden');
+      opener?.focus();
+    }, 180);
+  }
+
+  function updateSaveStatus() {
+    const busyMessage = { saving: 'Сохраняем…', uploading: 'Загружаем изображение…' }[state.busy];
+    const dirty = isDirty();
+    saveStatus.textContent = busyMessage || state.saveMessage || (dirty ? 'Есть несохранённые изменения' : '');
+    if (dirty || busyMessage) window.addEventListener('beforeunload', warnBeforeLeaving);
+    else window.removeEventListener('beforeunload', warnBeforeLeaving);
+  }
+
+  function warnBeforeLeaving(event) {
+    event.preventDefault();
+    event.returnValue = '';
+  }
+
+  function setBusy(busy) {
+    state.busy = busy;
+    const editDisabled = Boolean(busy) || !state.loaded;
+    for (const control of form.elements) control.disabled = editDisabled;
+    newButton.disabled = editDisabled;
+    closeButton.disabled = ['saving', 'uploading'].includes(busy);
+    retry.disabled = Boolean(busy);
+    qsa('[data-card-select]').forEach(button => { button.disabled = editDisabled; });
+    updateSaveStatus();
   }
 
   function populateRoles() {
-    fields.role.innerHTML = state.roles
-      .map((role) => `<option value="${escapeHtml(role.id)}">${escapeHtml(role.id)} - ${escapeHtml(role.name)}</option>`)
-      .join('');
+    const options = state.roles.map((role) => `<option value="${escapeHtml(role.id)}">${escapeHtml(roleName(role.id))}</option>`);
+    fields.role.innerHTML = '<option value="" disabled>Выберите аудиторию</option>' + options.join('');
   }
 
   function typeLabel(type) {
@@ -477,6 +548,8 @@
   }
 
   function roleName(roleId) {
+    if (Number(roleId) === 0) return 'Все, включая гостей';
+    if (Number(roleId) === 7) return 'Модераторы и администраторы';
     const role = state.roles.find((item) => Number(item.id) === Number(roleId));
     return role ? role.name : String(roleId);
   }
@@ -499,6 +572,7 @@
   function renderFilters() {
     qsa('[data-card-filter]').forEach((button) => {
       const active = button.dataset.cardFilter === state.filter;
+      button.setAttribute('aria-pressed', String(active));
       button.className = active
         ? 'card-filter-btn rounded-lg bg-slate-950 px-3 py-2 text-sm font-semibold text-white'
         : 'card-filter-btn rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700';
@@ -508,20 +582,20 @@
   function renderList() {
     renderFilters();
     const items = filteredCards();
-    empty.classList.toggle('hidden', items.length > 0);
+    empty.classList.toggle('hidden', !state.loaded || items.length > 0);
 
     list.innerHTML = items.map((card) => {
       const selected = Number(card.id) === Number(state.selectedId);
       const hidden = Number(card.shows) !== 1;
       return `
-        <button type="button" data-card-select="${escapeHtml(card.id)}"
+        <button type="button" data-card-select="${escapeHtml(card.id)}" aria-pressed="${selected}" ${state.busy ? 'disabled' : ''}
                 class="w-full rounded-lg border p-3 text-left transition ${selected ? 'border-blue-400 bg-blue-50 ring-4 ring-blue-500/10' : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'} ${hidden ? 'opacity-70' : ''}">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
               <div class="truncate text-sm font-semibold text-slate-950">${escapeHtml(card.title || 'Без названия')}</div>
               <div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
                 <span class="rounded-md bg-slate-100 px-2 py-0.5">${typeLabel(card.type)}</span>
-                <span class="rounded-md bg-slate-100 px-2 py-0.5">роль ${escapeHtml(roleName(card.role))}</span>
+                <span class="rounded-md bg-slate-100 px-2 py-0.5">${escapeHtml(roleName(card.role))}</span>
                 <span class="rounded-md bg-slate-100 px-2 py-0.5">#${escapeHtml(card.id)}</span>
               </div>
             </div>
@@ -542,7 +616,7 @@
       title: '',
       cont: '',
       pic: '',
-      role: 0,
+      role: 7,
       shows: 1,
       crdorder: 100,
     };
@@ -558,7 +632,10 @@
     fields.order.value = String(card.crdorder ?? 100);
     fields.shows.checked = Number(card.shows ?? 1) === 1;
     fields.pic.value = card.pic || '';
+    state.savedValues = JSON.stringify(collectForm());
+    state.saveMessage = '';
     updatePreview();
+    updateSaveStatus();
     renderList();
   }
 
@@ -586,9 +663,12 @@
     fields.previewKind.textContent = isMaterial ? 'Материал' : 'Сервис';
     fields.servicePreview.classList.toggle('hidden', isMaterial);
     fields.htmlPreview.classList.toggle('hidden', !isMaterial);
-    fields.toggle.innerHTML = fields.shows.checked
-      ? '<svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#eye-off"></use></svg>Скрыть'
-      : '<svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#eye"></use></svg>Восстановить';
+    const audienceHints = {
+      '': 'Выберите, кому показывать карточку.',
+      0: 'Карточку увидят все посетители, включая гостей.',
+      7: 'Карточку увидят только модераторы и администраторы.',
+    };
+    fields.audience.textContent = audienceHints[fields.role.value] || 'Видимость зависит от уровня доступа пользователя.';
 
     if (isMaterial) {
       fields.htmlPreview.srcdoc = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><style>body{font:14px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;margin:12px;color:#0f172a}a{color:#1d4ed8}</style></head><body><h3>${escapeHtml(title)}</h3>${fields.content.value}</body></html>`;
@@ -603,43 +683,49 @@
   }
 
   async function loadCards() {
-    const data = await api('/api/cards');
-    state.cards = data.cards || [];
-    state.roles = data.roles || [];
-    populateRoles();
-    renderList();
-    fillForm(state.cards[0] || defaultCard());
+    if (state.busy || state.loaded) return;
+    setBusy('loading');
+    listStatus.textContent = 'Загружаем карточки…';
+    retry.classList.add('hidden');
+    try {
+      const data = await api('/api/cards');
+      if (!Array.isArray(data.cards) || !Array.isArray(data.roles)) throw new Error('Invalid cards response');
+      state.cards = data.cards;
+      state.roles = data.roles;
+      populateRoles();
+      state.loaded = true;
+      fillForm(state.cards[0]);
+      form.classList.remove('hidden');
+      listStatus.textContent = '';
+    } catch {
+      listStatus.textContent = 'Не удалось загрузить карточки.';
+      retry.classList.remove('hidden');
+    } finally {
+      setBusy('');
+    }
   }
 
   async function saveCard(event) {
     event.preventDefault();
+    if (state.busy || !state.loaded) return;
     const payload = collectForm();
     const id = Number(fields.id.value);
-    const data = await api(id ? `/api/cards/${id}` : '/api/cards', {
-      method: id ? 'PUT' : 'POST',
-      body: JSON.stringify(payload),
-    });
-    upsertCard(data.card);
-    fillForm(data.card);
-    toast('Карточка сохранена');
-  }
-
-  async function toggleVisibility() {
-    const id = Number(fields.id.value);
-    if (!id) {
-      fields.shows.checked = false;
-      updatePreview();
-      return;
+    setBusy('saving');
+    try {
+      const data = await api(id ? `/api/cards/${id}` : '/api/cards', {
+        method: id ? 'PUT' : 'POST',
+        body: JSON.stringify(payload),
+      });
+      upsertCard(data.card);
+      fillForm(data.card);
+      state.saveMessage = 'Карточка сохранена. Обновите каталог после закрытия редактора.';
+      refreshLink?.classList.remove('hidden');
+    } catch {
+      state.saveMessage = 'Не удалось сохранить карточку. Проверьте поля и повторите попытку.';
+    } finally {
+      setBusy('');
+      form.querySelector('button[type="submit"]').focus();
     }
-
-    const shows = fields.shows.checked ? 0 : 1;
-    const data = await api(`/api/cards/${id}/shows`, {
-      method: 'PATCH',
-      body: JSON.stringify({ shows }),
-    });
-    upsertCard(data.card);
-    fillForm(data.card);
-    toast(shows ? 'Карточка восстановлена' : 'Карточка скрыта');
   }
 
   function readFileAsDataUrl(file) {
@@ -701,8 +787,9 @@
   }
 
   document.querySelectorAll('[data-card-admin-open]').forEach((button) => button.addEventListener('click', openDrawer));
-  qsa('[data-card-admin-close]').forEach((button) => button.addEventListener('click', closeDrawer));
+  closeButton.addEventListener('click', closeDrawer);
   backdrop.addEventListener('click', closeDrawer);
+  retry.addEventListener('click', loadCards);
 
   qsa('[data-card-filter]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -718,26 +805,100 @@
 
   list.addEventListener('click', (event) => {
     const button = event.target.closest('[data-card-select]');
-    if (!button) return;
-    const card = state.cards.find((item) => Number(item.id) === Number(button.dataset.cardSelect));
-    if (card) fillForm(card);
+    if (!button || state.busy) return;
+    const cardId = Number(button.dataset.cardSelect);
+    if (cardId === state.selectedId || !canDiscard()) return;
+    const card = state.cards.find((item) => Number(item.id) === cardId);
+    if (card) {
+      fillForm(card);
+      fields.title.focus();
+    }
   });
 
-  qs('[data-card-new]').addEventListener('click', () => fillForm(defaultCard()));
-  form.addEventListener('submit', (event) => saveCard(event).catch((error) => toast(error.message, false)));
-  fields.toggle.addEventListener('click', () => toggleVisibility().catch((error) => toast(error.message, false)));
-  fields.file.addEventListener('change', (event) => uploadImage(event.target.files?.[0]));
-  [fields.type, fields.title, fields.content, fields.pic, fields.shows].forEach((field) => {
-    field.addEventListener('input', updatePreview);
-    field.addEventListener('change', updatePreview);
+  newButton.addEventListener('click', () => {
+    if (state.busy || !state.loaded || !canDiscard()) return;
+    fillForm();
+    fields.title.focus();
+  });
+  form.addEventListener('submit', saveCard);
+  fields.file.addEventListener('change', async (event) => {
+    const file = event.target.files?.[0];
+    if (!file || state.busy) return;
+    state.saveMessage = '';
+    setBusy('uploading');
+    try {
+      await uploadImage(file);
+    } finally {
+      setBusy('');
+      fields.file.focus();
+    }
+  });
+  form.addEventListener('input', () => {
+    state.saveMessage = '';
+    updatePreview();
+    updateSaveStatus();
   });
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !drawer.classList.contains('hidden')) closeDrawer();
+    if (drawer.classList.contains('hidden')) return;
+    if (event.key === 'Escape') closeDrawer();
+    if (event.key !== 'Tab') return;
+    const tabStops = qsa('button, input:not([type="hidden"]), select, textarea, iframe')
+      .filter(element => !element.matches(':disabled') && element.getClientRects().length);
+    const first = tabStops[0];
+    const last = tabStops.at(-1);
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last?.focus();
+    } else if ((!event.shiftKey && document.activeElement === last) || !drawer.contains(document.activeElement)) {
+      event.preventDefault();
+      first?.focus();
+    }
   });
 })();
 </script>
 {{/if}}
+
+<script>
+(() => {
+  const catalog = document.querySelector('[data-catalog]');
+  const cards = Array.from(catalog.querySelectorAll('[data-catalog-card]'));
+  if (!cards.length) return;
+
+  const controls = catalog.querySelector('[data-catalog-controls]');
+  const input = catalog.querySelector('[data-catalog-search]');
+  const clear = catalog.querySelector('[data-catalog-clear]');
+  const status = catalog.querySelector('[data-catalog-status]');
+  const normalize = value => value.toLowerCase().replace(/ё/g, 'е');
+  const searchable = cards.map(card => ({
+    card,
+    text: normalize(`${card.textContent} ${card.hostname} ${card.dataset.catalogDomain || ''} ${card.dataset.catalogDescription || ''}`),
+  }));
+
+  function filterCatalog() {
+    const query = normalize(input.value.trim());
+    const words = query.split(/\s+/);
+    let visible = 0;
+    for (const { card, text } of searchable) {
+      const match = words.every(word => text.includes(word));
+      card.classList.toggle('hidden', !match);
+      if (match) visible += 1;
+    }
+    clear.classList.toggle('hidden', !input.value);
+    status.textContent = !query ? '' : visible ? `Найдено: ${visible}` : 'Сервисы не найдены. Уточните запрос или очистите поиск.';
+  }
+
+  controls.classList.remove('hidden');
+  controls.classList.add('flex');
+  input.addEventListener('input', filterCatalog);
+  clear.addEventListener('click', () => {
+    input.value = '';
+    filterCatalog();
+    input.focus();
+  });
+  filterCatalog();
+})();
+</script>
 
 <script>
 (() => {
@@ -766,7 +927,9 @@
   if (!panel) return;
 
   const timeEl = panel.querySelector('[data-lesson-time]');
+  const roomsSummary = panel.querySelector('[data-open-rooms-summary]');
   const roomsCountEl = panel.querySelector('[data-open-rooms-count]');
+  const roomsStatusEl = panel.querySelector('[data-open-rooms-status]');
 
   function updateTime() {
     if (!timeEl) return;
@@ -776,31 +939,43 @@
     }).format(new Date());
   }
 
-  async function updateRoomsCount() {
-    if (!roomsCountEl || Number(panel.dataset.auth || 0) < 1) return;
+  function updateRoomsCount(data) {
+    if (!Array.isArray(data?.rooms)) {
+      roomsCountEl.textContent = '—';
+      roomsStatusEl.textContent = 'Не удалось обновить список';
+      return;
+    }
+    const openRooms = data.rooms.filter((room) => {
+      const id = room?.room_info?.room_id;
+      return Boolean(id) && String(data?.acc?.[id]?.pub).toLowerCase() === 'true';
+    });
+    roomsCountEl.textContent = String(openRooms.length);
+    roomsStatusEl.textContent = '';
+  }
 
+  async function loadRoomsCount() {
+    if (!panel.querySelector('a[href="#room"]') || Number(panel.dataset.auth || 0) < 1) return;
+    roomsSummary.classList.remove('hidden');
+    let listOpened = false;
+    window.addEventListener('portal:rooms-loaded', (event) => {
+      listOpened = true;
+      updateRoomsCount(event.detail);
+    });
     try {
       const response = await fetch('/rooms', {
         credentials: 'same-origin',
         cache: 'no-store',
         headers: { Accept: 'application/json' },
       });
-      if (!response.ok) return;
-
-      const data = await response.json();
-      const rooms = Array.isArray(data.rooms) ? data.rooms : [];
-      const openRooms = rooms.filter((room) => {
-        const id = room?.room_info?.room_id;
-        return Boolean(id) && String(data?.acc?.[id]?.pub).toLowerCase() === 'true';
-      });
-      roomsCountEl.textContent = String(openRooms.length);
-    } catch (error) {
-      console.error(error);
+      const data = response.ok ? await response.json() : null;
+      if (!listOpened) updateRoomsCount(data);
+    } catch {
+      if (!listOpened) updateRoomsCount(null);
     }
   }
 
   updateTime();
-  updateRoomsCount();
+  loadRoomsCount();
   window.setInterval(updateTime, 30000);
 })();
 </script>

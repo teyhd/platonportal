@@ -48,42 +48,70 @@
     window.setTimeout(() => window.location.reload(), 50);
   }
 
-  function openLoginModal() {
+  let loginTrigger;
+
+  function openLoginModal(trigger) {
     const modal = document.getElementById('modal');
     if (!modal) return;
+    loginTrigger = trigger;
     modal.classList.remove('hidden');
-    document.getElementById('pass')?.focus();
+    document.getElementById('modal-pin')?.focus();
   }
 
   function closeLoginModal() {
-    document.getElementById('modal')?.classList.add('hidden');
+    const modal = document.getElementById('modal');
+    if (!modal || modal.classList.contains('hidden')) return;
+    if (modal.querySelector('form[aria-busy="true"]')) return;
+    modal.classList.add('hidden');
+    loginTrigger?.focus();
   }
 
   async function login(event) {
     event?.preventDefault();
-    const input = document.getElementById('pass');
+    const form = event.currentTarget;
+    if (form.getAttribute('aria-busy') === 'true') return;
+    const input = form.elements.pin;
+    const submit = form.querySelector('button[type="submit"]');
+    const message = form.querySelector('[data-pin-error]');
     const pin = input?.value?.trim() || '';
 
+    function showError(text, invalid = false) {
+      message.textContent = text;
+      message.hidden = false;
+      if (invalid) input.setAttribute('aria-invalid', 'true');
+      input.focus();
+      input.select();
+    }
+
     if (!pin) {
-      showToast('Введите PIN', 'error');
-      input?.focus();
+      showError('Введите PIN.', true);
       return;
     }
 
+    form.setAttribute('aria-busy', 'true');
+    submit.disabled = true;
+    submit.textContent = 'Входим…';
+    input.removeAttribute('aria-invalid');
+    message.hidden = true;
     try {
-      const result = (await fetchText(`/sso/auth?pin=${encodeURIComponent(pin)}`)).trim();
-      if (result === 'ok') {
-        showToast('Авторизация успешна', 'success');
-        reloadSoon();
+      const response = await fetch(form.action, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { Accept: 'application/json' },
+        body: new URLSearchParams({ pin }),
+      });
+      const result = await response.json();
+      if (response.ok && result.ok) {
+        window.location.assign(result.redirect);
         return;
       }
-
-      if (input) input.value = '';
-      showToast('Неверный PIN', 'error');
-      input?.focus();
-    } catch (error) {
-      console.error(error);
-      showToast('Не удалось выполнить вход', 'error');
+      showError(result.message || 'Вход не удался. Попробуйте ещё раз.', response.status === 401);
+    } catch {
+      showError('Не удалось связаться с порталом. Попробуйте ещё раз.');
+    } finally {
+      form.removeAttribute('aria-busy');
+      submit.disabled = false;
+      submit.textContent = 'Войти';
     }
   }
 
@@ -109,7 +137,7 @@
     document.querySelectorAll('#openModal, [data-open-login]').forEach((button) => {
       button.addEventListener('click', (event) => {
         event.preventDefault();
-        openLoginModal();
+        openLoginModal(button);
       });
     });
 
@@ -118,13 +146,24 @@
       if (event.target === event.currentTarget) closeLoginModal();
     });
 
-    const pass = document.getElementById('pass');
-    pass?.closest('form')?.addEventListener('submit', login);
-    document.getElementById('btnlogin')?.addEventListener('click', login);
+    document.querySelectorAll('[data-portal-login]').forEach(form => form.addEventListener('submit', login));
     document.getElementById('logoutBtn')?.addEventListener('click', logout);
 
     document.addEventListener('keydown', (event) => {
+      const modal = document.getElementById('modal');
+      if (!modal || modal.classList.contains('hidden')) return;
       if (event.key === 'Escape') closeLoginModal();
+      if (event.key !== 'Tab') return;
+      const focusable = Array.from(modal.querySelectorAll('a[href], input, button:not(:disabled)'));
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
     });
   });
 })();

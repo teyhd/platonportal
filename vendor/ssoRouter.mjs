@@ -119,26 +119,31 @@ export function makeSsoRouter(config = {}) {
       }
   }) 
 
-  router.post('/auth',async (req,res)=>{
-    if (req.body.pin!=undefined){
-        let ans = await db.auth_user(req.body.pin);
-        if (ans!=undefined){
-            req.session.uid = ans.id
-            req.session.name = ans.name
-            req.session.right = await db.get_user_rights(ans.id)
-            req.session.logins = await db.get_user_logins(ans.id)
-            const back = req.session.return_to || "/"; req.session.return_to = null;
-            res.redirect(back);
-            //res.send('ok')
-        } else {
-            res.send('Ошибка авторизации')
-        }
-    } else{
-        res.render('auth',{
-            title: 'Авторизация'
-        });
+  router.post('/auth', async (req, res) => {
+    const json = req.accepts(['html', 'json']) === 'json';
+    const fail = (status, message) => json
+      ? res.status(status).json({ ok: false, message })
+      : res.status(status).render('auth', { title: 'Вход в портал', loginError: message });
+    const pin = typeof req.body?.pin === 'string' ? req.body.pin.trim() : '';
+    if (!pin) return fail(400, 'Введите PIN.');
+
+    try {
+      const user = await db.auth_user(pin);
+      if (!user) return fail(401, 'PIN не подошёл. Проверьте его или восстановите через бота.');
+      const returnTo = req.session.return_to;
+      const back = typeof returnTo === 'string' && /^\/(?!\/)/.test(returnTo) && !/[\\\r\n]/.test(returnTo)
+        ? returnTo : '/';
+      const right = await db.get_user_rights(user.id);
+      const logins = await db.get_user_logins(user.id);
+      Object.assign(req.session, { uid: user.id, name: user.name, role: user.role, right, logins });
+      req.session.return_to = null;
+      if (json) return res.json({ ok: true, redirect: back });
+      return res.redirect(303, back);
+    } catch (error) {
+      console.error('Не удалось завершить вход', error.code || error.name);
+      return fail(503, 'Вход временно недоступен. Попробуйте ещё раз.');
     }
-  }) 
+  });
   router.get("/login", (_req, res) => {
     res.redirect("/auth");
 /*
@@ -147,12 +152,8 @@ export function makeSsoRouter(config = {}) {
       <button>Login</button></form>`);*/
   });
 
-  router.post("/login", (req, res) => {
-    const email = req.body?.email || "user@example.com";
-    // Привяжи sub к своему users.id (здесь демо: 123)
-    req.session.uid = 123;
-    const back = req.session.return_to || "/"; req.session.return_to = null;
-    res.redirect(back);
+  router.post("/login", (_req, res) => {
+    res.status(405).send('Use /sso/auth to sign in');
   });
 
   // --- /authorize ---
