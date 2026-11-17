@@ -116,11 +116,8 @@ if (panel) {
     progress.hidden = true;
     progress.setAttribute('aria-hidden', 'true');
     progress.append(progressFill);
-    const contacts = element('div', 'important-mentors');
-    const contactLabel = element('span', 'important-mentor-label');
-    const contactList = element('ul');
+    const contacts = element('div', 'important-contacts');
     contacts.hidden = true;
-    contacts.append(contactLabel, contactList);
     const controls = element('div', 'important-item-controls');
     const primaryActions = element('div', 'important-item-actions');
     const actions = element('div', 'important-item-actions');
@@ -144,7 +141,7 @@ if (panel) {
     article.append(top, contacts, progress, controls, body);
     const node = { article, timing, title, subtitle, notes, timeBox, timeValue, timeCaption, progress, progressFill,
       metric, metricValue, metricLabel, controls, primaryActions, actions, toggle, toggleText, checkCount,
-      contacts, contactLabel, contactList, body, actionKey: '', contactKey: '', detailRevision: '' };
+      contacts, body, actionKey: '', contactKey: '', detailRevision: '' };
     toggle.addEventListener('click', () => {
       body.hidden = !body.hidden; toggle.setAttribute('aria-expanded', String(!body.hidden));
       if (!body.hidden) loadDetails(key, true);
@@ -152,29 +149,59 @@ if (panel) {
     nodes.set(key, node); return node;
   }
 
-  function renderMentors(node, mentors = []) {
-    const contactKey = JSON.stringify(mentors);
+  function telegramIcon() {
+    const namespace = 'http://www.w3.org/2000/svg';
+    const icon = document.createElementNS(namespace, 'svg');
+    icon.setAttribute('viewBox', '0 0 24 24');
+    icon.setAttribute('class', 'important-telegram-icon');
+    icon.setAttribute('aria-hidden', 'true');
+    icon.setAttribute('focusable', 'false');
+    const disc = document.createElementNS(namespace, 'circle');
+    disc.setAttribute('cx', '12');
+    disc.setAttribute('cy', '12');
+    disc.setAttribute('r', '12');
+    disc.setAttribute('fill', '#1684c6');
+    const plane = document.createElementNS(namespace, 'path');
+    plane.setAttribute('fill', '#fff');
+    plane.setAttribute('d', 'M5.1 11.7 17.5 6.9c.6-.2.9.1.8.8l-2.1 9.1c-.1.6-.5.7-.9.4l-4.4-3.2-2.2 2.1c-.3 0-.4-.2-.4-.4l.4-3.4 6.3-4c.2-.1.1-.3-.1-.2l-7.8 3.7-2.4-.8c-.5-.2-.5-.5.4-.8Z');
+    icon.append(disc, plane);
+    return icon;
+  }
+
+  function renderContacts(node, contacts = {}) {
+    const contactKey = JSON.stringify(contacts);
     if (node.contactKey === contactKey) return;
     node.contactKey = contactKey;
-    node.contacts.hidden = !mentors.length;
-    text(node.contactLabel, mentors.length === 1 ? 'Наставник' : 'Наставники');
-    node.contactList.replaceChildren(...mentors.map(mentor => {
-      const row = element('li');
-      if (mentor.classNames.length) {
-        row.append(element('span', 'important-mentor-classes', mentor.classNames.join(', ')));
+    const groups = [];
+    for (const [role, singular, plural] of [['mentor', 'Наставник', 'Наставники'], ['tutor', 'Тьютор', 'Тьюторы']]) {
+      const people = contacts[role] ?? [];
+      if (!people.length) continue;
+      const label = people.length === 1 ? singular : plural;
+      const group = element('div', 'important-contact-group');
+      group.setAttribute('role', 'group');
+      group.setAttribute('aria-label', label);
+      const list = element('ul');
+      for (const person of people) {
+        const row = element('li');
+        if (/^https:\/\/t\.me\/[a-z][a-z0-9_]{3,31}$/i.test(person.href ?? '')) {
+          const link = element('a');
+          link.href = person.href;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.setAttribute('aria-label', `${person.name} в Telegram`);
+          link.append(telegramIcon(), element('span', '', person.name));
+          row.append(link);
+        } else {
+          row.append(element('span', '', person.name));
+        }
+        if (person.classNames.length) row.append(element('span', 'important-contact-classes', person.classNames.join(', ')));
+        list.append(row);
       }
-      if (/^https:\/\/t\.me\/[a-z][a-z0-9_]{3,31}$/i.test(mentor.href ?? '')) {
-        const link = element('a', '', mentor.name);
-        link.href = mentor.href;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.setAttribute('aria-label', `${mentor.name} в Telegram`);
-        row.append(link);
-      } else {
-        row.append(element('span', '', mentor.name), element('small', '', 'Telegram не указан'));
-      }
-      return row;
-    }));
+      group.append(element('span', 'important-contact-label', label), list);
+      groups.push(group);
+    }
+    node.contacts.hidden = !groups.length;
+    node.contacts.replaceChildren(...groups);
   }
 
   function render() {
@@ -217,7 +244,7 @@ if (panel) {
       const subtitle = school && item.kind === 'attendance' && item.recordCount != null ? `Записей: ${item.recordCount}` : item.subtitle;
       text(node.subtitle, subtitle);
       node.subtitle.hidden = !subtitle || (school && count > 0 && subtitle === `Записей: ${count}` && item.kind !== 'attendance');
-      renderMentors(node, item.mentors);
+      renderContacts(node, item.contacts);
       node.metric.hidden = !school || !(count > 0);
       text(node.metricValue, count);
       text(node.metricLabel, item.kind === 'attendance' ? 'Ученики' : 'Записи');

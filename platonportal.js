@@ -1036,7 +1036,7 @@ function isNoisyIntroInfo(card) {
 
 const importantService = createImportantService({
   getRights: db.get_user_rights,
-  getClassMentors: db.getClassMentors,
+  getClassContactContext: db.getClassContactContext,
   canUseVcall: async session => await canUseVcallAction(session, '#lesson') ? 'host'
     : await canUseVcallAction(session, '#room') ? 'join' : false,
 });

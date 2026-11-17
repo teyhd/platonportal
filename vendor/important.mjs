@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { contactsForClasses } from './important-class-contacts.mjs';
 
 const schoolDate = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Moscow' });
 const clock = new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
@@ -165,44 +166,34 @@ function validateQuery(query) {
   return { context, childId };
 }
 
-async function addLessonMentors(items, schedule, getClassMentors) {
+async function addLessonContacts(items, schedule, loadContactContext) {
+  const lessonItems = items.filter(item => item.kind === 'lesson');
+  if (!lessonItems.length) return;
+  const { classes = [], staffNames = [] } = await loadContactContext() ?? {};
+  const namesById = new Map(classes.map(row => [Number(row.classId), row.name]));
   const lessons = new Map((schedule.lessons ?? []).map(lesson => [`lesson:${lesson.key}`, lesson]));
   const roles = schedule.roles ?? [];
   const canUsePlannedClasses = !roles.includes('student') && roles.some(role => ['teacher', 'mentor', 'tutor', 'admin', 'staff'].includes(role));
-  const scopes = new Map();
-  for (const item of items) {
-    if (item.kind !== 'lesson') continue;
+  for (const item of lessonItems) {
     const lesson = lessons.get(item.key);
     if (!lesson) continue;
-    const classIds = new Set((lesson.students ?? []).map(student => Number(student.classId)).filter(value => Number.isSafeInteger(value) && value > 0));
-    const classNames = new Set(canUsePlannedClasses && lesson.own ? lesson.classes ?? [] : []);
-    scopes.set(item, { classIds, classNames });
-  }
-  const classIds = unique([...scopes.values()].flatMap(scope => [...scope.classIds]));
-  const classNames = unique([...scopes.values()].flatMap(scope => [...scope.classNames]));
-  if (!classIds.length && !classNames.length) return;
-
-  const rows = await getClassMentors({ classIds, classNames });
-  for (const [item, scope] of scopes) {
-    const mentors = new Map();
-    for (const row of rows) {
-      if (!scope.classIds.has(Number(row.classId)) && !scope.classNames.has(row.className)) continue;
-      const name = String(row.name ?? '').trim();
-      if (!name) continue;
-      if (!mentors.has(row.mentorId)) {
-        const username = String(row.username ?? '').trim().replace(/^@/, '');
-        const href = /^[a-z][a-z0-9_]{3,31}$/i.test(username) ? `https://t.me/${username}` : '';
-        mentors.set(row.mentorId, { name, classNames: [], ...(href ? { href } : {}) });
-      }
-      const mentor = mentors.get(row.mentorId);
-      if (row.className && !mentor.classNames.includes(row.className)) mentor.classNames.push(row.className);
-    }
-    if (mentors.size) item.mentors = [...mentors.values()];
+    const classNames = (lesson.students ?? []).map(student => namesById.get(Number(student.classId)));
+    if (canUsePlannedClasses && lesson.own) classNames.push(...(lesson.classes ?? []));
+    const contacts = contactsForClasses(classNames, staffNames);
+    if (Object.keys(contacts).length) item.contacts = contacts;
   }
 }
 
-export function createImportantService({ env=process.env, fetchImpl=fetch, now=()=>new Date(), getRights, getClassMentors, canUseVcall=async()=>false }={}) {
+export function createImportantService({ env=process.env, fetchImpl=fetch, now=()=>new Date(), getRights, getClassContactContext, canUseVcall=async()=>false }={}) {
   const cache = new Map();
+  let contactContext;
+  function loadContactContext() {
+    if (!contactContext || +now() >= contactContext.expires) {
+      const value = Promise.resolve().then(getClassContactContext).catch(() => ({}));
+      contactContext = { value, expires: +now() + 60_000 };
+    }
+    return contactContext.value;
+  }
   async function sourceRequest(source, actorId, rightsKey, context, childId, studentIds=[], detail=null, offset=0) {
     const date = schoolDate.format(now());
     const base = source==='schedule' ? env.MAINPORTAL_SCHEDULE_URL || 'http://127.0.0.1:3011' : env.MAINPORTAL_ATTENDANCE_URL || 'http://127.0.0.1:789';
@@ -282,12 +273,8 @@ export function createImportantService({ env=process.env, fetchImpl=fetch, now=(
     enabled:()=>enabled(env),
     async summary(session,query) {
       const {view,schedule}=await load(session,query);
-      if (schedule && getClassMentors && view.context === 'personal') {
-        try {
-          await addLessonMentors(view.items, schedule, getClassMentors);
-        } catch {
-          // Mentor contacts are optional when their directory is unavailable.
-        }
+      if (schedule && view.context === 'personal') {
+        await addLessonContacts(view.items, schedule, loadContactContext);
       }
       return {...view,items:view.items.map(({rows,remoteDetail,remoteScheduleDetail,...item})=>({...item,remoteDetails:Boolean(remoteDetail||remoteScheduleDetail),detailRevision:crypto.createHash('sha256').update(JSON.stringify(rows??[])).digest('hex')}))};
     },

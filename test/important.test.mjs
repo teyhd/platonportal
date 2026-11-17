@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { attendanceRow, buildImportantView, createImportantService, registerImportantRoutes } from '../vendor/important.mjs';
+import { contactsForClasses } from '../vendor/important-class-contacts.mjs';
 
 const now = new Date('2026-11-17T09:05:00+03:00');
 const sources = {schedule:{status:'ready'},attendance:{status:'ready'}};
@@ -94,51 +95,58 @@ test('schedule drill-down ends on an empty page even when a source total has cha
   assert.ok(calls.some(call=>call.url.includes('detail=reports&offset=50')));
 });
 
-function setup({rights=[{srv_id:8,role_id:2},{srv_id:13,role_id:2}],sourceSchedule=schedule,sourceAttendance=attendance,getClassMentors}={}){
+function setup({rights=[{srv_id:8,role_id:2},{srv_id:13,role_id:2}],sourceSchedule=schedule,sourceAttendance=attendance,getClassContactContext}={}){
   let time=+now;
   const calls=[];
-  const service=createImportantService({env:{IMPORTANT_ENABLED:'1',MAINPORTAL_SCHEDULE_TOKEN:'test-schedule',ATTENDANCE_MAINPORTAL_SERVICE_KEY:'test-attendance'},now:()=>new Date(time),getRights:async()=>rights,getClassMentors,fetchImpl:async(url,options)=>{
+  const service=createImportantService({env:{IMPORTANT_ENABLED:'1',MAINPORTAL_SCHEDULE_TOKEN:'test-schedule',ATTENDANCE_MAINPORTAL_SERVICE_KEY:'test-attendance'},now:()=>new Date(time),getRights:async()=>rights,getClassContactContext,fetchImpl:async(url,options)=>{
     calls.push({url:String(url),options});
     const body=String(url).includes('/integrations/')?sourceSchedule:sourceAttendance;
     return new Response(JSON.stringify(body),{status:200,headers:{'Content-Type':'application/json',ETag:'"version"'}});
   }});
   return {service,calls,advance:ms=>{time+=ms;}};
 }
-const mentors = [
-  { classId: 7, className: '7-1', mentorId: 50, name: 'Модельный Наставник Первый', username: '@mentor_example' },
-  { classId: 8, className: '8-1', mentorId: 50, name: 'Модельный Наставник Первый', username: '@mentor_example' },
-  { classId: 9, className: '9-1', mentorId: 60, name: 'Модельный Наставник Второй', username: 'example.com/other' },
-  { classId: 99, className: 'Другой класс', mentorId: 70, name: 'Посторонний' },
-];
+const contactDirectory = {
+  classes: [{classId:7,name:'7-1'},{classId:8,name:'8-1'},{classId:9,name:'9-1'},{classId:99,name:'4'}],
+  staffNames: ['Примеров Семён Семёнович','Примерова Мария Владимировна'],
+};
 
-test('teacher gets a single contact per mentor with the covered classes and only safe Telegram links', async () => {
+test('teacher receives separate mentor and tutor contacts for the covered classes', async () => {
   const group = {...lesson, classes:['7-1','8-1','9-1'], students:[child,{...child,id:12,classId:8}]};
-  const {service} = setup({sourceSchedule:{...schedule,lessons:[group]},getClassMentors:async scope=>{
-    assert.deepEqual(scope,{classIds:[7,8],classNames:['7-1','8-1','9-1']});
-    return mentors;
-  }});
+  const {service} = setup({sourceSchedule:{...schedule,lessons:[group]},getClassContactContext:async()=>contactDirectory});
   const payload = await service.summary({uid:42},{classIds:[99]});
-  assert.deepEqual(payload.items[0].mentors,[
-    {name:mentors[0].name,classNames:['7-1','8-1'],href:'https://t.me/mentor_example'},
-    {name:mentors[2].name,classNames:['9-1']},
+  const {mentor,tutor} = payload.items[0].contacts;
+  assert.deepEqual(mentor.map(person=>[person.href,person.classNames]),[
+    ['https://t.me/semachos',['7-1','8-1']],
+    ['https://t.me/marina_yunikova',['9-1']],
+  ]);
+  assert.equal(mentor[0].name, 'Примеров Семён Семёнович');
+  assert.deepEqual(tutor.map(person=>[person.href,person.classNames]),[
+    ['https://t.me/mariatsay',['7-1']],
+    ['https://t.me/d120833',['8-1']],
   ]);
 });
 
 test('parent sees only contacts from the selected child roster even when the timetable includes several classes', async () => {
   const family = {...lesson, own:false, contexts:['child'], classes:['7-1','8-1','9-1'], students:[child]};
-  const {service} = setup({sourceSchedule:{...schedule,roles:['parent'],lessons:[family]},getClassMentors:async scope=>{
-    assert.deepEqual(scope,{classIds:[7],classNames:[]});
-    return mentors;
-  }});
+  const {service} = setup({sourceSchedule:{...schedule,roles:['parent'],lessons:[family]},getClassContactContext:async()=>contactDirectory});
   const payload = await service.summary({uid:42},{});
-  assert.deepEqual(payload.items[0].mentors.map(mentor=>mentor.classNames),[['7-1']]);
+  assert.deepEqual(Object.values(payload.items[0].contacts).flat().map(person=>person.classNames),[['7-1'],['7-1']]);
 });
 
-test('contact directory availability does not affect the lesson summary', async () => {
-  const {service} = setup({getClassMentors:async ()=>{throw new Error('unavailable');}});
+test('primary classes keep both mentor assignments while exact class assignments do not spill into parallel classes', () => {
+  const primary = contactsForClasses(['1','2','3','4']);
+  assert.deepEqual(primary.mentor.map(person=>person.classNames),[['1','2'],['3'],['4'],['1','2','3','4']]);
+  assert.deepEqual(primary.tutor[0].classNames,['1','2','3','4']);
+  const mixed = contactsForClasses(['8-1','8-2','10-1','10-2']);
+  assert.deepEqual(mixed.mentor.map(person=>person.classNames),[['8-1','8-2'],['10-1']]);
+  assert.deepEqual(mixed.tutor.map(person=>person.classNames),[['8-1']]);
+  assert.deepEqual(contactsForClasses(['10-2','11']), {});
+});
+
+test('planned class contacts remain available without the directory', async () => {
+  const {service} = setup({getClassContactContext:async ()=>{throw new Error('unavailable');}});
   const result = await service.summary({uid:42},{});
-  assert.equal(result.items[0].kind,'lesson');
-  assert.equal(result.items[0].mentors,undefined);
+  assert.equal(result.items[0].contacts.mentor[0].name, 'Семен Семенович');
 });
 
 test('actor comes only from the session and browser cannot choose queried students',async()=>{
