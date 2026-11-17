@@ -18,6 +18,14 @@ const safeLink = (value, origin) => {
   return parsed.origin === new URL(origin).origin ? parsed.href : origin;
 };
 
+function releaseIntervals(person) {
+  if (person.releaseIntervals?.length) return person.releaseIntervals;
+  if (person.participation === 'partial' && Number.isFinite(ms(person.releaseStart)) && ms(person.releaseEnd) > ms(person.releaseStart)) {
+    return [{ start:person.releaseStart,end:person.releaseEnd }];
+  }
+  return [];
+}
+
 export function attendanceRow(person, fact, lesson, now) {
   const row = { id: id(person.id), name: person.name || 'Ученик', className: fact?.className || '', description: 'Нет данных о посещаемости', needsAttention: false, annotations: [] };
   if (!fact) return row;
@@ -25,7 +33,7 @@ export function attendanceRow(person, fact, lesson, now) {
   const end = lesson?.end ?? `${schoolDate.format(now)}T23:59:59+03:00`;
   const at = lesson ? Math.max(+now, ms(lesson.start)) : +now;
   const absences = (fact.absences ?? []).filter(absence => ms(absence.start) < ms(end) && (!absence.end || ms(absence.end) > at));
-  const scheduleRelease = person.participation === 'partial' && ms(person.releaseStart) <= at && ms(person.releaseEnd) > at;
+  const scheduleRelease = releaseIntervals(person).some(period=>ms(period.start)<=at&&ms(period.end)>at);
   const currentAbsence = scheduleRelease || absences.some(absence => ms(absence.start) <= at && (!absence.end || ms(absence.end) > at));
   const last = fact.lastEvent;
   row.description = last?.type === 'arrival' ? `Приход отмечен в ${timeLabel(last.at)}` : last?.type === 'departure' ? `Уход отмечен в ${timeLabel(last.at)}` : 'Приход пока не отмечен';
@@ -58,8 +66,8 @@ function lessonItem(lesson, facts, now, canVcall, allowAttendance) {
     lesson.online ? 'Онлайн' : roomLabel || (lesson.format === 'mixed' ? '' : 'Кабинет не указан')].filter(Boolean).join(' · ');
   const notes = [];
   for (const [index, person] of (lesson.students ?? []).entries()) {
-    if (person.participation === 'partial' && timeLabel(person.releaseStart) && timeLabel(person.releaseEnd)) {
-      rows[index].annotations.push(`Участие снято с ${timeLabel(person.releaseStart)} до ${timeLabel(person.releaseEnd)}`);
+    for (const period of releaseIntervals(person)) {
+      rows[index].annotations.push(`Участие снято с ${timeLabel(period.start)} до ${timeLabel(period.end)}`);
     }
   }
   if (!lesson.rosterComplete) notes.push('Состав участников уточняется');
@@ -74,7 +82,7 @@ function lessonItem(lesson, facts, now, canVcall, allowAttendance) {
     metadata: [(lesson.teachers ?? []).join(', '), `${timeLabel(lesson.start)}–${timeLabel(lesson.end)}`].filter(Boolean) };
 }
 
-export function buildImportantView({ schedule, attendance, sources = {}, context = 'personal', canVcall = false, now = new Date() }) {
+export function buildImportantView({ schedule, attendance, sources = {}, context = 'personal', canVcall = false, now = new Date(), expanded = false }) {
   const data = { schema: 1, serverTime: now.toISOString(), date: schoolDate.format(now), context,
     schoolAllowed: Boolean(schedule?.schoolAllowed || attendance?.schoolAllowed),
     children: schedule?.children ?? [], selectedChildId: schedule?.selectedChildId ?? null,
@@ -91,7 +99,8 @@ export function buildImportantView({ schedule, attendance, sources = {}, context
     const future = primary.filter(lesson => ms(lesson.start) > +now).sort((a,b) => ms(a.start)-ms(b.start));
     const next = future.filter(lesson => !future.some(other => sameAudience(lesson, other) && ms(other.start) < ms(lesson.start)));
     for (const lesson of [...current, ...next]) {
-      const item = lessonItem(lesson, facts, now, canVcall, staff && scheduleUsable && (lesson.own || lesson.contexts?.includes('assigned')));
+      const roomAction = expanded && !lesson.own && lesson.contexts?.includes('child') ? false : canVcall;
+      const item = lessonItem(lesson, facts, now, roomAction, staff && scheduleUsable && (lesson.own || lesson.contexts?.includes('assigned')));
       if (scheduleUsable && primary.some(other => other.key !== lesson.key && sameAudience(lesson, other) && overlaps(lesson, other))) {
         item.notes.unshift('В расписании есть пересекающееся занятие'); item.tone = 'attention';
       }
@@ -284,7 +293,7 @@ export function createImportantService({
     const at=Math.max(ms(lesson.start),+now());
     if (roles.includes('student') && lesson.own && lesson.students?.some(student => Number(student.id) === actorId &&
       (student.mode === 'online' || lesson.online && student.mode !== 'onsite') &&
-      !(student.releaseIntervals ?? []).some(period => ms(period.start) <= at && ms(period.end) > at))) return 'participant';
+      !releaseIntervals(student).some(period => ms(period.start) <= at && ms(period.end) > at))) return 'participant';
     return null;
   }
   async function load(session, query={}, { rooms = false } = {}) {
@@ -313,7 +322,7 @@ export function createImportantService({
     const extra = expanded ? Object.fromEntries(['calendar','progress'].map(source => [source,
       extraContext(source,actorId,rightsKey,context,childId ?? scheduleData?.selectedChildId ?? null,options)])) : {};
     const [attendance, capability, extraResponses] = await Promise.all([
-      attendanceRequest, canUseVcall({...session,right:rights}),
+      attendanceRequest, canUseVcall({...session,right:rights},{expanded}),
       Promise.all(Object.entries(extra).map(async ([source, result]) => [source, await result]))
     ]);
     if (context==='school' && schedule.status==='forbidden' && attendance.status==='forbidden' &&
@@ -348,7 +357,7 @@ export function createImportantService({
         value.data?.partial === true || value.data?.unavailableFeatures?.some(feature=>feature!=='history_truncated') ||
         value.data?.coverage?.complete===false),
     }]));
-    const view=buildImportantView({schedule:scheduleData,attendance:attendanceData,sources,context,now:viewNow,canVcall:capability});
+    const view=buildImportantView({schedule:scheduleData,attendance:attendanceData,sources,context,now:viewNow,canVcall:capability,expanded});
     if(schedule.status==='forbidden'&&attendance.status==='forbidden')view.visible=false;
     if (expanded) {
       const integrated=Object.fromEntries(Object.entries(sourceResults).filter(([key,value])=>key!=='schedule' && value.status==='ready')
@@ -368,7 +377,7 @@ export function createImportantService({
       const rights=await getRights(actorId);
       const [response, capability]=await Promise.all([
         sourceRequest('schedule',actorId,rightsCacheKey(rights),'personal',null,[],null,0,{expanded:true,fresh:true}),
-        canUseVcall({...session,right:rights}),
+        canUseVcall({...session,right:rights},{expanded:true}),
       ]);
       if (!['ready','forbidden'].includes(response.status)) throw Object.assign(new Error('schedule_unavailable'),{status:503});
       const lesson=response.data?.lessons?.find(item=>item.key===key);

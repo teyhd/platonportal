@@ -144,7 +144,7 @@ function familyDay(view, schedule) {
   const child = (schedule.children ?? []).find(person => Number(person.id) === childId);
   const lessons = (schedule.lessons ?? []).filter(lesson => lesson.contexts?.includes('child') &&
     hasInterval(lesson) && lesson.students?.some(person => Number(person.id) === childId));
-  const flex = (schedule.events ?? []).filter(event => event.kind === 'flex' && event.status === 'assigned' &&
+  const flex = [...(schedule.familyFlex ?? []), ...(schedule.events ?? [])].filter(event => event.kind === 'flex' && event.status === 'assigned' &&
     Number(event.studentId) === childId && hasInterval(event) && schoolDate.format(new Date(event.start)) === view.date);
   const end = [...lessons, ...flex].reduce((latest, item) => Math.max(latest, instant(item.end)), -Infinity);
   if (Number.isFinite(end)) {

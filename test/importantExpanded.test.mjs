@@ -164,3 +164,22 @@ test('room creation is per lesson and validates live occurrence and owner', asyn
   rooms.values().next().value.room_info.owner = 99;
   assert.equal(await service.status(lesson), 'unavailable');
 });
+
+test('scheduled room uses expanded capabilities and denies family-only or released participation', async () => {
+  const released = { ...lesson, own:true, students:[{ ...lesson.students[0], releaseIntervals:[{start:at('08:50'),end:at('09:05')}] }] };
+  let actorRoles = ['teacher','parent'];
+  let activeLesson = lesson;
+  const service = createImportantService({
+    env:{ IMPORTANT_ENABLED:'1', IMPORTANT_EXPANDED_ENABLED:'1', MAINPORTAL_SCHEDULE_TOKEN:'schedule' },
+    now:()=>new Date(at('08:52')), getRights:async()=>[],
+    canUseVcall:async (_, capabilities)=>capabilities.expanded ? 'host' : false,
+    fetchImpl:async()=>Response.json({schema:1,date,roles:actorRoles,lessons:[activeLesson]}),
+  });
+  assert.equal((await service.vcallLesson({uid:42},lesson.key)).kind,'host');
+  actorRoles = ['parent'];
+  activeLesson = { ...lesson, own:false, contexts:['child'] };
+  await assert.rejects(service.vcallLesson({uid:21},lesson.key), {status:403});
+  actorRoles = ['student'];
+  activeLesson = released;
+  await assert.rejects(service.vcallLesson({uid:11},lesson.key), {status:403});
+});

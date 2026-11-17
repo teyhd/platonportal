@@ -200,7 +200,7 @@ app.use(async function (req, res, next) {
     res.locals.isSignedIn = Number.isSafeInteger(Number(req.session.uid)) && Number(req.session.uid) > 0;
     //console.log('Cookie:', req.headers);
     //.log('Session:', req.session);
-     if (page !== '/api/important' && page !== '/api/important/details') {
+     if (page !== '/api/important' && !page?.startsWith('/api/important/')) {
        mlog(page,req.session.uid,req.session.name,req.session.info,req.headers['nip'],hlp.getcurip(req.socket.remoteAddress),req.query)
      }
      next();
@@ -1039,8 +1039,15 @@ const importantLessonRooms = createImportantVcall(vcall);
 const importantService = createImportantService({
   getRights: db.get_user_rights,
   getClassContactContext: db.getClassContactContext,
-  canUseVcall: async session => await canUseVcallAction(session, '#lesson') ? 'host'
-    : await canUseVcallAction(session, '#room') ? 'join' : false,
+  canUseVcall: async (session, {expanded} = {}) => {
+    if (!expanded) return await canUseVcallAction(session, '#lesson') ? 'host'
+      : await canUseVcallAction(session, '#room') ? 'join' : false;
+    const roles = [...new Set(getSessionPortalRoles(session.right).filter(role => role > 0).map(getPortalCatalogRole))];
+    const cards = (await Promise.all(roles.map(role => db.get_cards(role)))).flat()
+      .filter(card => Number(card.type) === 0);
+    const actions = new Set(cards.map(card => String(card.cont ?? '').trim()));
+    return actions.has('#lesson') ? 'host' : actions.has('#room') ? 'join' : false;
+  },
   getVcallLessonStatus: importantLessonRooms.status,
 });
 registerImportantRoutes(app, importantService);
