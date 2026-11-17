@@ -199,7 +199,9 @@ app.use(async function (req, res, next) {
     res.locals.isSignedIn = Number.isSafeInteger(Number(req.session.uid)) && Number(req.session.uid) > 0;
     //console.log('Cookie:', req.headers);
     //.log('Session:', req.session);
-     mlog(page,req.session.uid,req.session.name,req.session.info,req.headers['nip'],hlp.getcurip(req.socket.remoteAddress),req.query)
+     if (page !== '/api/important' && page !== '/api/important/details') {
+       mlog(page,req.session.uid,req.session.name,req.session.info,req.headers['nip'],hlp.getcurip(req.socket.remoteAddress),req.query)
+     }
      next();
 })
 
