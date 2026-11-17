@@ -68,6 +68,8 @@ test('different publication content is detected without a publication ID change'
 test('school aggregates count pupils separately from records',()=>{
   const result=view(schedule,{...attendance,schoolAllowed:true,summary:[{kind:'conflicts',count:2,records:3}]},{context:'school'});
   assert.equal(result.items[0].subtitle,'Учеников: 2 · записей: 3');
+  assert.equal(result.items[0].detailCount, 2);
+  assert.equal(result.items[0].recordCount, 3);
 });
 
 test('simultaneous own and family lessons are separate contexts, not a conflict',()=>{

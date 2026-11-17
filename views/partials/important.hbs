@@ -7,20 +7,22 @@
         <button type="button" data-context="school" aria-pressed="false">Школа</button>
       </div>
     </div>
-    <div class="important-clock" data-important-clock></div>
+    <div class="important-heading-side">
+      <div class="important-clock" data-important-clock hidden></div>
+      <button type="button" class="important-refresh" data-important-refresh aria-label="Обновить важную информацию">Обновить</button>
+    </div>
   </div>
   <div class="important-toolbar">
     <label data-important-family hidden>Ребёнок <select data-important-child aria-label="Выбрать ребёнка"></select></label>
-    <p data-important-sources role="status">Загружаем вашу сводку…</p>
-    <button type="button" class="important-refresh" data-important-refresh aria-label="Обновить важную информацию">Обновить</button>
+    <p class="important-source-status" data-important-sources role="status">Загружаем вашу сводку…</p>
   </div>
   <p class="important-update" data-important-update role="status" hidden>Расписание обновлено</p>
-  <div class="important-items" data-important-items></div>
+  <div class="important-items" id="important-items" data-important-items></div>
   <div class="important-footer">
-    <button type="button" data-important-more aria-expanded="false" hidden></button>
     <p data-important-day></p>
+    <button type="button" data-important-more aria-expanded="false" aria-controls="important-items" hidden></button>
   </div>
   <noscript>Для обновления сводки включите JavaScript. Расписание и посещаемость доступны в каталоге сервисов.</noscript>
 </section>
-<link rel="stylesheet" href="/css/important.css">
-<script type="module" src="/js/important.js"></script>
+<link rel="stylesheet" href="/css/important.css?v=2">
+<script type="module" src="/js/important.js?v=2"></script>

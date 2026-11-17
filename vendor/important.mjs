@@ -49,8 +49,11 @@ function lessonItem(lesson, facts, now, canVcall, allowAttendance) {
   const attention = rows.filter(row => row.needsAttention).length;
   const current = ms(lesson.start) <= +now && ms(lesson.end) > +now;
   const child = lesson.contexts?.includes('child') && !lesson.own;
+  const rooms = lesson.rooms ?? [];
+  const roomLabel = rooms.length ? `${rooms.length > 1 ? 'Кабинеты' : 'Кабинет'} ${rooms.join(', ')}` : '';
   const subtitle = [child ? 'У ребёнка' : '', lesson.individual ? 'Индивидуальное занятие' : (lesson.classes ?? []).join(', '),
-    lesson.format === 'mixed' ? 'Смешанный формат' : lesson.online ? 'Онлайн' : (lesson.rooms?.length ? `Кабинет ${lesson.rooms.join(', ')}` : 'Кабинет не указан')].filter(Boolean).join(' · ');
+    lesson.format === 'mixed' ? 'Смешанный формат' : '',
+    lesson.online ? 'Онлайн' : roomLabel || (lesson.format === 'mixed' ? '' : 'Кабинет не указан')].filter(Boolean).join(' · ');
   const notes = [];
   if (!lesson.rosterComplete) notes.push('Состав участников уточняется');
   if (attention && lesson.individual && !lesson.online && rows[0]?.physicalStatus === 'none') notes.push('Приход в школу пока не отмечен. Уточните, подключится ли ученик онлайн.');
@@ -137,13 +140,14 @@ export function buildImportantView({ schedule, attendance, sources = {}, context
       data.items.push({key:'shift',kind:'shift',title:shift.status==='scheduled'?'Ваша смена':shift.status==='unpublished'?'График смен ещё не опубликован':'Сегодня смена не назначена',subtitle:shift.start?`${timeLabel(shift.start)}–${timeLabel(shift.end)}`:'',start:shift.start,end:shift.end,priority:60,tone:'neutral',actions:[{label:'Мой график',href:'https://stud.platoniks.ru/attendance/mentor-schedule?view=me'}]});
     }
   } else if (attendanceUsable) {
-    for (const summary of attendance?.summary ?? []) if (summary.count > 0) data.items.push({key:`attendance:${summary.kind}`,kind:'attendance',title:summary.kind==='conflicts'?'Противоречащие отметки посещаемости':'Отсутствия требуют уточнения',subtitle:`Учеников: ${summary.count} · записей: ${summary.records}`,priority:20,tone:'attention',detailCount:summary.count,detailLabel:'Посмотреть',remoteDetail:summary.kind,actions:[{label:'Посещаемость',href:'https://stud.platoniks.ru/attendance'}]});
+    for (const summary of attendance?.summary ?? []) if (summary.count > 0) data.items.push({key:`attendance:${summary.kind}`,kind:'attendance',title:summary.kind==='conflicts'?'Противоречащие отметки посещаемости':'Отсутствия требуют уточнения',subtitle:`Учеников: ${summary.count} · записей: ${summary.records}`,recordCount:summary.records,priority:20,tone:'attention',detailCount:summary.count,detailLabel:'Посмотреть',remoteDetail:summary.kind,actions:[{label:'Посещаемость',href:'https://stud.platoniks.ru/attendance'}]});
   }
   for (const event of scheduleUsable ? schedule?.events ?? [] : []) {
     if (event.end && ms(event.end) <= +now) continue;
     const {detailKey,...publicEvent}=event;
     if(event.key?.startsWith('flex:teacher:') && ms(event.start)<=+now && ms(event.end)>+now)publicEvent.priority=0;
-    data.items.push({...publicEvent,remoteScheduleDetail:detailKey,detailLabel:'Подробнее',subtitle:event.detail || (event.count ? `Записей: ${event.count}` : ''),tone:event.priority<=30?'attention':'neutral',actions:[{label:'Открыть',href:safeLink(event.href,'https://rasp.platoniks.ru')}],rows:undefined});
+    const informationalFlex = context === 'personal' && (event.key?.startsWith('flex:teacher:') || event.priority === 25 && event.kind === 'flex');
+    data.items.push({...publicEvent,remoteScheduleDetail:detailKey,detailLabel:'Подробнее',subtitle:event.detail || (event.count ? `Записей: ${event.count}` : ''),tone:event.priority<=30&&!informationalFlex?'attention':'neutral',actions:[{label:'Открыть',href:safeLink(event.href,'https://rasp.platoniks.ru')}],rows:undefined});
   }
   const deduplicated = new Map();
   for (const item of data.items) if (!deduplicated.has(item.key)) deduplicated.set(item.key,item);
