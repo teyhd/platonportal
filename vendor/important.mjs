@@ -165,7 +165,43 @@ function validateQuery(query) {
   return { context, childId };
 }
 
-export function createImportantService({ env=process.env, fetchImpl=fetch, now=()=>new Date(), getRights, canUseVcall=async()=>false }={}) {
+async function addLessonMentors(items, schedule, getClassMentors) {
+  const lessons = new Map((schedule.lessons ?? []).map(lesson => [`lesson:${lesson.key}`, lesson]));
+  const roles = schedule.roles ?? [];
+  const canUsePlannedClasses = !roles.includes('student') && roles.some(role => ['teacher', 'mentor', 'tutor', 'admin', 'staff'].includes(role));
+  const scopes = new Map();
+  for (const item of items) {
+    if (item.kind !== 'lesson') continue;
+    const lesson = lessons.get(item.key);
+    if (!lesson) continue;
+    const classIds = new Set((lesson.students ?? []).map(student => Number(student.classId)).filter(value => Number.isSafeInteger(value) && value > 0));
+    const classNames = new Set(canUsePlannedClasses && lesson.own ? lesson.classes ?? [] : []);
+    scopes.set(item, { classIds, classNames });
+  }
+  const classIds = unique([...scopes.values()].flatMap(scope => [...scope.classIds]));
+  const classNames = unique([...scopes.values()].flatMap(scope => [...scope.classNames]));
+  if (!classIds.length && !classNames.length) return;
+
+  const rows = await getClassMentors({ classIds, classNames });
+  for (const [item, scope] of scopes) {
+    const mentors = new Map();
+    for (const row of rows) {
+      if (!scope.classIds.has(Number(row.classId)) && !scope.classNames.has(row.className)) continue;
+      const name = String(row.name ?? '').trim();
+      if (!name) continue;
+      if (!mentors.has(row.mentorId)) {
+        const username = String(row.username ?? '').trim().replace(/^@/, '');
+        const href = /^[a-z][a-z0-9_]{3,31}$/i.test(username) ? `https://t.me/${username}` : '';
+        mentors.set(row.mentorId, { name, classNames: [], ...(href ? { href } : {}) });
+      }
+      const mentor = mentors.get(row.mentorId);
+      if (row.className && !mentor.classNames.includes(row.className)) mentor.classNames.push(row.className);
+    }
+    if (mentors.size) item.mentors = [...mentors.values()];
+  }
+}
+
+export function createImportantService({ env=process.env, fetchImpl=fetch, now=()=>new Date(), getRights, getClassMentors, canUseVcall=async()=>false }={}) {
   const cache = new Map();
   async function sourceRequest(source, actorId, rightsKey, context, childId, studentIds=[], detail=null, offset=0) {
     const date = schoolDate.format(now());
@@ -240,12 +276,19 @@ export function createImportantService({ env=process.env, fetchImpl=fetch, now=(
     const sources=Object.fromEntries(Object.entries({schedule,attendance}).map(([key,value])=>[key,{status:value.status,checkedAt:value.checkedAt,label:sourceTitles[key],partial:Boolean(value.data?.unavailableFeatures?.length)}]));
     const view=buildImportantView({schedule:scheduleData,attendance:attendance.data,sources,context,now:now(),canVcall:await canUseVcall({...session,right:rights})});
     if(schedule.status==='forbidden'&&attendance.status==='forbidden')view.visible=false;
-    return {view,actorId,rightsKey,allowed};
+    return {view,actorId,rightsKey,schedule: schedule.status === 'ready' ? scheduleData : null};
   }
   return {
     enabled:()=>enabled(env),
     async summary(session,query) {
-      const {view}=await load(session,query);
+      const {view,schedule}=await load(session,query);
+      if (schedule && getClassMentors && view.context === 'personal') {
+        try {
+          await addLessonMentors(view.items, schedule, getClassMentors);
+        } catch {
+          // Mentor contacts are optional when their directory is unavailable.
+        }
+      }
       return {...view,items:view.items.map(({rows,remoteDetail,remoteScheduleDetail,...item})=>({...item,remoteDetails:Boolean(remoteDetail||remoteScheduleDetail),detailRevision:crypto.createHash('sha256').update(JSON.stringify(rows??[])).digest('hex')}))};
     },
     async details(session,query) {

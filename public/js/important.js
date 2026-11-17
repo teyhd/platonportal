@@ -116,6 +116,11 @@ if (panel) {
     progress.hidden = true;
     progress.setAttribute('aria-hidden', 'true');
     progress.append(progressFill);
+    const contacts = element('div', 'important-mentors');
+    const contactLabel = element('span', 'important-mentor-label');
+    const contactList = element('ul');
+    contacts.hidden = true;
+    contacts.append(contactLabel, contactList);
     const controls = element('div', 'important-item-controls');
     const primaryActions = element('div', 'important-item-actions');
     const actions = element('div', 'important-item-actions');
@@ -136,15 +141,40 @@ if (panel) {
     content.append(timing, title, subtitle, notes);
     top.append(content, timeBox, metric);
     controls.append(primaryActions, toggle, actions);
-    article.append(top, progress, controls, body);
+    article.append(top, contacts, progress, controls, body);
     const node = { article, timing, title, subtitle, notes, timeBox, timeValue, timeCaption, progress, progressFill,
       metric, metricValue, metricLabel, controls, primaryActions, actions, toggle, toggleText, checkCount,
-      body, actionKey: '', detailRevision: '' };
+      contacts, contactLabel, contactList, body, actionKey: '', contactKey: '', detailRevision: '' };
     toggle.addEventListener('click', () => {
       body.hidden = !body.hidden; toggle.setAttribute('aria-expanded', String(!body.hidden));
       if (!body.hidden) loadDetails(key, true);
     });
     nodes.set(key, node); return node;
+  }
+
+  function renderMentors(node, mentors = []) {
+    const contactKey = JSON.stringify(mentors);
+    if (node.contactKey === contactKey) return;
+    node.contactKey = contactKey;
+    node.contacts.hidden = !mentors.length;
+    text(node.contactLabel, mentors.length === 1 ? 'Наставник' : 'Наставники');
+    node.contactList.replaceChildren(...mentors.map(mentor => {
+      const row = element('li');
+      if (mentor.classNames.length) {
+        row.append(element('span', 'important-mentor-classes', mentor.classNames.join(', ')));
+      }
+      if (/^https:\/\/t\.me\/[a-z][a-z0-9_]{3,31}$/i.test(mentor.href ?? '')) {
+        const link = element('a', '', mentor.name);
+        link.href = mentor.href;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.setAttribute('aria-label', `${mentor.name} в Telegram`);
+        row.append(link);
+      } else {
+        row.append(element('span', '', mentor.name), element('small', '', 'Telegram не указан'));
+      }
+      return row;
+    }));
   }
 
   function render() {
@@ -187,6 +217,7 @@ if (panel) {
       const subtitle = school && item.kind === 'attendance' && item.recordCount != null ? `Записей: ${item.recordCount}` : item.subtitle;
       text(node.subtitle, subtitle);
       node.subtitle.hidden = !subtitle || (school && count > 0 && subtitle === `Записей: ${count}` && item.kind !== 'attendance');
+      renderMentors(node, item.mentors);
       node.metric.hidden = !school || !(count > 0);
       text(node.metricValue, count);
       text(node.metricLabel, item.kind === 'attendance' ? 'Ученики' : 'Записи');

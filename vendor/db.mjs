@@ -1037,6 +1037,49 @@ export async function get_user_rights(userId, pool = usr) {
   return rows;
 }
 
+export async function getClassMentors({ classIds, classNames }, pool = usr) {
+  const conditions = [];
+  const values = [];
+  if (classIds.length) {
+    conditions.push('k.id IN (?)');
+    values.push(classIds);
+  }
+  if (classNames.length) {
+    conditions.push(`(k.name IN (?) AND (
+      SELECT COUNT(*) FROM sso.kaf_name other WHERE other.type = 1 AND other.name = k.name
+    ) = 1)`);
+    values.push(classNames);
+  }
+  if (!conditions.length) return [];
+
+  const botDB = String(process.env.TELEGRAM_MINI_APP_BOT_DATABASE ?? '').trim();
+  const botUsers = /^[A-Za-z0-9_]+$/.test(botDB) ? `${mysql.escapeId(botDB)}.users` : '';
+  const telegramLookup = botUsers ? `(
+    SELECT CASE WHEN COUNT(*) = 1 THEN MAX(TRIM(b.login)) END
+      FROM ${botUsers} b
+     WHERE CAST(b.truename AS UNSIGNED) = u.id
+       AND b.truename REGEXP '^[1-9][0-9]*$'
+       AND b.role IN (1, 2) AND b.tgid > 0
+       AND (u.tg_id IS NULL OR u.tg_id = b.id)
+       AND (SELECT COUNT(*) FROM ${botUsers} peer WHERE peer.tgid = b.tgid) = 1
+       AND NOT EXISTS (
+         SELECT 1 FROM ${botUsers} peer WHERE peer.id <> b.id AND LOWER(TRIM(peer.login)) = LOWER(TRIM(b.login))
+       )
+  )` : 'NULL';
+  const [rows] = await pool.query(
+    `SELECT DISTINCT k.id AS classId, k.name AS className, u.id AS mentorId, u.name,
+            ${telegramLookup} AS username
+       FROM school_local.info_class_tutor ct
+       JOIN sso.kaf_name k ON k.id = ct.class_id AND k.type = 1
+       JOIN sso.users u ON u.id = ct.tutor_id AND u.status = 1 AND u.lifecycle_state = 'active'
+                       AND u.type IN (2, 3, 4, 5)
+      WHERE (${conditions.join(' OR ')})
+      ORDER BY k.name, u.name, u.id`,
+    values,
+  );
+  return rows;
+}
+
 export async function replace_user_rights(userId, pairs, pool = usr, { moderatorOnly = false } = {}) {
   const conn = await pool.getConnection();
   let transactionStarted = false;
