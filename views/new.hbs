@@ -1,135 +1,137 @@
-<main class="min-h-screen bg-[#f5f5f7] text-slate-950">
-  <div class="mx-auto max-w-[1500px] px-[16px] pb-10 pt-14 sm:pt-16 md:px-6 xl:pt-16">
-    <header class="max-w-4xl">
-      {{#unless isGuestHome}}
-        <h1 class="text-3xl font-semibold leading-tight tracking-tight text-slate-950 md:text-4xl xl:text-5xl">
-          {{homeTitle}}
-        </h1>
-      {{/unless}}
-    </header>
-
-    {{#if canManageCards}}
-      <div class="mt-4 flex flex-wrap items-center gap-3">
-        <button type="button" data-card-admin-open aria-haspopup="dialog" aria-controls="cards-admin-drawer"
-                class="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-slate-950/15 transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20">
-          Управлять карточками
-        </button>
-        <a href="/users" class="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20">
-          <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#users"></use></svg>
-          Пользователи
-        </a>
-        <a href="/conf" class="inline-flex min-h-[40px] items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700">
-          Файлы портала
-        </a>
-        <a href="/" data-catalog-refresh class="hidden text-sm font-semibold text-blue-700 underline">
-          Обновить каталог
-        </a>
-      </div>
-    {{/if}}
-
-    {{#if showImportant}}
-      {{> important}}
-    {{/if}}
-
-    {{#if operationMenu.length}}
-      <section id="lesson-room-panel" data-lesson-room-panel data-auth="{{auth}}"
-               class="mt-5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/5 sm:mt-6 md:p-5">
-        <div class="flex items-start justify-between gap-4">
-          <div class="min-w-0">
-            <p class="text-base font-semibold text-blue-700 md:text-lg">Уроки и комнаты</p>
-            <h2 class="mt-2 text-2xl font-semibold leading-tight tracking-tight text-slate-950 md:text-3xl">
-              Быстро подключиться к уроку
-            </h2>
+<link rel="stylesheet" href="/css/home.css?v=1">
+<main class="portal-home">
+  <div class="home-shell">
+    {{#unless isGuestHome}}
+      <header class="home-header">
+        <h1>{{homeTitle}}</h1>
+        {{#if canManageCards}}
+          <div class="home-admin">
+            <button type="button" data-card-admin-open aria-haspopup="dialog" aria-controls="cards-admin-drawer"
+                    class="home-action home-action-primary">Управлять карточками</button>
+            <a href="/users" class="home-action">Пользователи</a>
+            <a href="/conf" class="home-action">Файлы портала</a>
+            <a href="/" data-catalog-refresh class="hidden text-sm font-semibold text-blue-700 underline">Обновить каталог</a>
           </div>
-          <div class="shrink-0 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-center text-emerald-950 md:px-4 md:py-3">
-            <div class="text-xs font-semibold text-emerald-700 md:text-sm">сейчас</div>
-            <div data-lesson-time class="mt-1 text-base font-semibold md:text-lg">--:--</div>
-          </div>
-        </div>
+        {{/if}}
+      </header>
+    {{/unless}}
 
-        <div class="mt-4 grid gap-3 md:mt-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_14rem]">
-          {{#each operationMenu}}
-            <a href="{{this.cont}}"
-               class="group flex min-h-[112px] items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-white hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 md:min-h-[132px] md:gap-5 md:p-5">
-              <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-slate-950 p-2 shadow-sm shadow-slate-950/20 md:h-16 md:w-16">
-                <img src="{{this.imageSrc}}" alt="" class="h-full w-full object-contain" loading="lazy" />
+    {{#if (or showImportant operationMenu.length)}}
+      <div class="home-overview">
+        {{#if showImportant}}
+          {{> important}}
+        {{/if}}
+
+        {{#if operationMenu.length}}
+          <section id="lesson-room-panel" class="home-rooms" aria-labelledby="home-rooms-title"
+                   data-lesson-room-panel data-auth="{{auth}}">
+            <div class="home-rooms-heading">
+              <h2 class="home-rooms-title" id="home-rooms-title">Уроки и комнаты</h2>
+              <span class="home-rooms-clock">
+                <span class="sr-only">Текущее время</span>
+                <span data-lesson-time>--:--</span>
               </span>
-              <span class="min-w-0">
-                <span class="block text-sm font-semibold text-blue-700">{{this.kindLabel}}</span>
-                <span class="mt-1 block text-lg font-semibold leading-6 text-slate-950 line-clamp-2 md:text-2xl md:leading-8">{{this.title}}</span>
-                <span class="mt-2 block text-sm leading-6 text-slate-600 line-clamp-2 md:text-base md:leading-7">{{this.summary}}</span>
-              </span>
-            </a>
-          {{/each}}
+            </div>
 
-          <div data-open-rooms-summary class="hidden rounded-lg border border-slate-200 bg-white p-4 lg:min-h-[132px]">
-            <div class="text-sm font-semibold text-slate-500">Открытые комнаты</div>
-            <div data-open-rooms-count class="mt-3 text-3xl font-semibold leading-none text-slate-950" aria-live="polite">—</div>
-            <p data-open-rooms-status class="mt-2 text-sm text-slate-600">Загружаем…</p>
-          </div>
-        </div>
-      </section>
-    {{/if}}
+            <div class="home-room-links">
+              {{#each operationMenu}}
+                <a href="{{this.cont}}" class="home-tile">
+                  <span class="home-tile-icon">
+                    <img src="{{this.imageSrc}}" alt="" width="30" height="30" />
+                  </span>
+                  <span class="home-tile-text">
+                    <span class="home-tile-title">{{this.title}}</span>
+                    <span class="home-tile-description">
+                      {{#if (eq this.cont '#lesson')}}
+                        Проверить или открыть свою комнату
+                      {{else if (eq this.cont '#room')}}
+                        Выбрать открытую комнату
+                      {{else}}
+                        {{this.summary}}
+                      {{/if}}
+                    </span>
+                  </span>
+                  <svg class="home-tile-arrow" aria-hidden="true"><use href="/icons/lucide.svg#arrow-right"></use></svg>
+                </a>
+              {{/each}}
+            </div>
 
-    <section class="mt-6" data-catalog aria-labelledby="services-title">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="services-title" class="text-2xl font-semibold tracking-tight text-slate-950 md:text-3xl">
-          Приложения и сервисы
-        </h2>
-        {{#if showManualLink}}
-          <a href="/manual" data-catalog-card data-catalog-description="Документы и видео для учителей и учеников" class="text-sm font-semibold text-blue-700 underline">Инструкции</a>
+            <div data-open-rooms-summary class="home-rooms-summary hidden">
+              <div class="home-rooms-count">
+                <span>Открытые комнаты</span>
+                <strong data-open-rooms-count aria-live="polite">—</strong>
+              </div>
+              <p data-open-rooms-status class="home-rooms-status">Загружаем…</p>
+            </div>
+          </section>
         {{/if}}
       </div>
+    {{/if}}
 
-      <div data-catalog-controls class="mt-3 hidden max-w-md items-center gap-2">
-        <label class="relative min-w-0 flex-1">
-          <span class="sr-only">Поиск сервисов</span>
-          <input type="text" role="searchbox" inputmode="search" autocomplete="off" data-catalog-search placeholder="Название, домен или описание"
-                 class="w-full rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-10 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10" />
-          <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        </label>
-        <button type="button" data-catalog-clear class="hidden rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:border-blue-300">Очистить</button>
+    <section class="home-catalog" data-catalog aria-labelledby="services-title">
+      <div class="home-catalog-header">
+        {{#if isGuestHome}}
+          <h1 id="services-title" class="home-section-title">Приложения и сервисы</h1>
+        {{else}}
+          <h2 id="services-title" class="home-section-title">Приложения и сервисы</h2>
+        {{/if}}
+
+        <div class="home-search hidden" data-catalog-controls>
+          <label for="home-catalog-search" class="sr-only">Поиск сервисов</label>
+          <input id="home-catalog-search" type="text" role="searchbox" inputmode="search" autocomplete="off"
+                 data-catalog-search placeholder="Название, домен или описание" />
+          <svg class="home-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <button type="button" data-catalog-clear class="home-search-clear hidden">Очистить</button>
+        </div>
       </div>
 
-      <p data-catalog-status class="mt-2 text-sm text-slate-600" role="status"></p>
+      <p class="home-search-status" data-catalog-status role="status"></p>
 
-      <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+      <div class="home-catalog-grid">
         {{#if isGuestHome}}
-          <button type="button" data-open-login
-                  class="group flex min-h-[148px] flex-col items-center justify-center rounded-lg border border-blue-200 bg-white p-3 text-center shadow-sm shadow-blue-950/5 transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 sm:min-h-[156px] md:min-h-[168px] md:p-4 xl:min-h-[176px]">
-            <span class="flex h-[76px] w-[76px] items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm shadow-blue-950/20 sm:h-20 sm:w-20 md:h-24 md:w-24 xl:h-28 xl:w-28">
-              <svg class="h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 xl:h-14 xl:w-14" aria-hidden="true"><use href="/icons/lucide.svg#log-in"></use></svg>
+          <button type="button" data-open-login class="home-tile">
+            <span class="home-tile-icon">
+              <svg class="h-5 w-5" aria-hidden="true"><use href="/icons/lucide.svg#log-in"></use></svg>
             </span>
-            <span class="mt-3 block text-base font-semibold leading-6 text-slate-950">Войти по PIN</span>
-            <span class="mt-1.5 inline-flex items-center gap-1 text-sm font-semibold text-blue-600">
-              Открыть
-              <svg class="h-4 w-4 transition group-hover:translate-x-0.5" aria-hidden="true"><use href="/icons/lucide.svg#arrow-right"></use></svg>
-            </span>
+            <span class="home-tile-text home-tile-title">Войти по PIN</span>
+            <svg class="home-tile-arrow" aria-hidden="true"><use href="/icons/lucide.svg#arrow-right"></use></svg>
           </button>
         {{/if}}
 
         {{#each catalogServices}}
           {{#unless (and @root.canManageCards (eq this.cont '/users'))}}
-            <a href="{{this.cont}}" title="{{this.serviceDescription}}" data-catalog-card data-catalog-domain="{{this.catalogDomain}}" data-catalog-description="{{this.summary}}"
-               class="group flex min-h-[148px] flex-col items-center justify-center rounded-lg border border-slate-200 bg-white p-3 text-center shadow-sm shadow-slate-950/5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 sm:min-h-[156px] md:min-h-[168px] md:p-4 xl:min-h-[176px]">
-              <span class="flex h-[76px] w-[76px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-3 sm:h-20 sm:w-20 md:h-24 md:w-24 md:p-4 xl:h-28 xl:w-28">
-                <img src="{{this.imageSrc}}" alt="" class="h-full w-full object-contain" loading="lazy" />
+            <a href="{{this.cont}}" class="home-tile"
+               data-catalog-card data-catalog-domain="{{this.catalogDomain}}" data-catalog-description="{{this.summary}}">
+              <span class="home-tile-icon">
+                <img src="{{this.imageSrc}}" alt="" width="30" height="30" loading="lazy" />
               </span>
-              <span class="mt-3 block text-base font-semibold leading-6 text-slate-950 line-clamp-2">{{this.title}}</span>
-              {{#if (eq this.role 7)}}
-                <span class="mt-1 text-xs leading-5 text-slate-500">{{this.serviceDescription}}</span>
-              {{/if}}
+              <span class="home-tile-text">
+                <span class="home-tile-title">{{this.title}}</span>
+                {{#if this.serviceDescription}}
+                  <span class="home-tile-description">{{this.serviceDescription}}</span>
+                {{/if}}
+              </span>
+              <svg class="home-tile-arrow" aria-hidden="true"><use href="/icons/lucide.svg#arrow-right"></use></svg>
             </a>
           {{/unless}}
         {{/each}}
+
+        {{#if showManualLink}}
+          <a href="/manual" class="home-tile" data-catalog-card data-catalog-description="Документы и видео для учителей и учеников">
+            <span class="home-tile-icon">
+              <svg class="h-5 w-5" aria-hidden="true"><use href="/icons/lucide.svg#info"></use></svg>
+            </span>
+            <span class="home-tile-text home-tile-title">Инструкции</span>
+            <svg class="home-tile-arrow" aria-hidden="true"><use href="/icons/lucide.svg#arrow-right"></use></svg>
+          </a>
+        {{/if}}
       </div>
     </section>
 
     {{#if infoGroup.hasItems}}
-      <section class="mt-8" aria-labelledby="info-title">
+      <section class="home-school" aria-labelledby="info-title">
         <div class="max-w-3xl">
-          <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">Для родителей</p>
-          <h2 id="info-title" class="mt-1 text-2xl font-semibold tracking-tight text-slate-950 md:text-3xl">
+          <h2 id="info-title" class="home-section-title">
             Важное о школе
           </h2>
           <p class="mt-2 text-sm leading-6 text-slate-600 md:text-base">
@@ -893,7 +895,6 @@
   }
 
   controls.classList.remove('hidden');
-  controls.classList.add('flex');
   input.addEventListener('input', filterCatalog);
   clear.addEventListener('click', () => {
     input.value = '';
