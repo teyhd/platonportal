@@ -129,6 +129,15 @@ function deadline(item) {
   return instant(item.dueAt) || instant(item.start) || Infinity;
 }
 
+function deadlineNote(value, now) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value ?? '')) return `Срок до ${shortDate.format(new Date(`${value}T12:00:00+03:00`))}`;
+  if (!Number.isFinite(instant(value))) return '';
+  const day = schoolDate.format(new Date(value));
+  const tomorrow = schoolDate.format(new Date(+now + 24 * 60 * minute));
+  const dateLabel = day === schoolDate.format(now) ? 'сегодня' : day === tomorrow ? 'завтра' : shortDate.format(new Date(value));
+  return `Срок ${dateLabel} в ${time(value)}`;
+}
+
 function familyDay(view, schedule) {
   const childId = Number(schedule?.selectedChildId);
   if (!childId) return;
@@ -172,6 +181,9 @@ function scheduleHistory(view, schedule) {
     item.detailCount=item.rows.length;
     item.detailLabel='Изменения';
     if (Number.isFinite(instant(event.changedAt))) item.subtitle=`Обновлено ${shortDate.format(new Date(event.changedAt))} в ${time(event.changedAt)}`;
+    if (schedule.historyLegacyGap || schedule.unavailableFeatures?.includes('history_truncated')) {
+      item.metadata=['Показана доступная часть истории изменений'];
+    }
     if (before.length !== 1 || after.length !== 1) continue;
     const [previous] = before;
     const [current] = after;
@@ -311,7 +323,9 @@ export function expandImportantView(view, { schedule, attendance, integrated, no
       const publishedDate = published
         ? shortDate.format(new Date(value.publishedAt))
         : '';
-      const subtitle = [text(value.subtitle, 300), publishedDate].filter(Boolean).join(' · ');
+      const sourceSubtitle=text(value.subtitle, 300);
+      const dueNote = source === 'progress' ? deadlineNote(value.dueAt, now) : '';
+      const subtitle = [sourceSubtitle, publishedDate, dueNote].filter(Boolean).join(' · ');
       if (source === 'progress' && view.context === 'personal' && /return/.test(kind) && Number(value.studentId) > 0) {
         const matching = (schedule?.lessons ?? []).find(lesson => lesson.own && lesson.individual && instant(lesson.end) > +now &&
           lesson.students?.some(student => Number(student.id) === Number(value.studentId)));
@@ -324,8 +338,8 @@ export function expandImportantView(view, { schedule, attendance, integrated, no
       }
       view.items.push({
         key: `${source}:${key}`, kind, title, subtitle, actions, rows,
-        detailCount: rows.length, tone: kind.includes('published') ? 'neutral' : 'attention',
-        priority: kind.includes('published') ? 45 : 22,
+        detailCount: rows.length, tone: kind.includes('published') || kind==='weekly_attendance' ? 'neutral' : 'attention',
+        priority: kind.includes('published') || kind==='weekly_attendance' ? 45 : 22,
         start: text(value.start, 48), end: text(value.end, 48), dueAt: text(value.dueAt, 48),
       });
     }

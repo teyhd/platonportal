@@ -266,6 +266,17 @@ export function createImportantService({
   }
   const rightsCacheKey = rights => JSON.stringify(rights.map(row => [Number(row.srv_id), Number(row.role_id)])
     .sort((a,b)=>a[0]-b[0]||a[1]-b[1]));
+  async function extraContext(source, actorId, rightsKey, context, childId, options) {
+    const response = await sourceRequest(source,actorId,rightsKey,context,childId,[],null,0,options);
+    if (!childId || response.status !== 'forbidden' || context !== 'personal') return response;
+    const fallback = await sourceRequest(source,actorId,rightsKey,context,null,[],null,0,options);
+    if (fallback.status !== 'ready') return fallback;
+    const data = fallback.data;
+    return {...fallback,data:{...data,partial:true,
+      events:(data.events ?? []).filter(event=>event.studentId==null),
+      items:(data.items ?? []).filter(item=>item.audience!=='child' && item.kind!=='progress_published'),
+    }};
+  }
   function roomRole(lesson, actorId, capability, roles) {
     const online = lesson?.online || lesson?.format === 'mixed';
     if (!online || new Date(lesson.start).getTime() - +now() > 5 * minute || ms(lesson.end) <= +now()) return null;
@@ -300,7 +311,7 @@ export function createImportantService({
       ? sourceRequest('attendance',actorId,rightsKey,context,null,requestedIds,null,0,{...options,scheduleScope:scope})
       : denied;
     const extra = expanded ? Object.fromEntries(['calendar','progress'].map(source => [source,
-      sourceRequest(source,actorId,rightsKey,context,childId ?? scheduleData?.selectedChildId ?? null,[],null,0,options)])) : {};
+      extraContext(source,actorId,rightsKey,context,childId ?? scheduleData?.selectedChildId ?? null,options)])) : {};
     const [attendance, capability, extraResponses] = await Promise.all([
       attendanceRequest, canUseVcall({...session,right:rights}),
       Promise.all(Object.entries(extra).map(async ([source, result]) => [source, await result]))
@@ -333,7 +344,9 @@ export function createImportantService({
     ]);
     const sourceResults={schedule,attendance,...Object.fromEntries(extraResponses),...(diary?{diary}:{})};
     const sources=Object.fromEntries(Object.entries(sourceResults).map(([key,value])=>[key,{
-      status:value.status,checkedAt:value.checkedAt,label:sourceTitles[key],partial:Boolean(value.data?.unavailableFeatures?.length || value.data?.coverage?.complete===false),
+      status:value.status,checkedAt:value.checkedAt,label:sourceTitles[key],partial:Boolean(
+        value.data?.partial === true || value.data?.unavailableFeatures?.some(feature=>feature!=='history_truncated') ||
+        value.data?.coverage?.complete===false),
     }]));
     const view=buildImportantView({schedule:scheduleData,attendance:attendanceData,sources,context,now:viewNow,canVcall:capability});
     if(schedule.status==='forbidden'&&attendance.status==='forbidden')view.visible=false;

@@ -116,6 +116,27 @@ test('expanded sources sign exact JSON and remain off outside configured pilot I
   assert.deepEqual(detail.actions, [{ label:'Материал', href:'https://diary.platoniks.ru/learning/homework' }]);
 });
 
+test('an unavailable linked child in Progress preserves employee tasks with a partial status', async () => {
+  const service = createImportantService({
+    env: { IMPORTANT_ENABLED:'1', IMPORTANT_EXPANDED_ENABLED:'1', MAINPORTAL_SCHEDULE_TOKEN:'schedule',
+      MAINPORTAL_PROGRESS_URL:'http://progress', MAINPORTAL_PROGRESS_KEY:'progress' },
+    now:()=>now, getRights:async()=>[],
+    fetchImpl:async (url, options) => {
+      if (url.hostname !== 'progress') return Response.json({schema:1,date,roles:['teacher','parent'],
+        selectedChildId:11,children:[{id:11,name:'Выбранный ребёнок'}],lessons:[],state:'published'});
+      if (JSON.parse(options.body).childId) return Response.json({}, { status:403 });
+      return Response.json({ schema:1, date, items:[
+        {key:'task1',kind:'progress_returned',title:'Свой отчёт',studentId:12},
+        {key:'family2',kind:'progress_published',title:'Другой ребёнок',studentId:30},
+      ] });
+    },
+  });
+  const response=await service.summary({ uid:42 },{ childId:11 });
+  assert.equal(response.sources.progress.status,'ready');
+  assert.equal(response.sources.progress.partial,true);
+  assert.deepEqual(response.items.map(item=>item.title),['Свой отчёт']);
+});
+
 test('room creation is per lesson and validates live occurrence and owner', async () => {
   const rooms = new Map();
   const joins = [];
