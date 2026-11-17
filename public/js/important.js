@@ -508,6 +508,14 @@ if (panel) {
         const response = await fetch(`/api/important/details?${query({ key, offset: String(offset), filter: state.filter, q: state.q })}`, { credentials:'same-origin', cache:'no-cache', signal:requestController.signal });
         if (scope !== generation || request !== state.request) return;
         if ([401,403].includes(response.status)) { clearPrivateData(); return; }
+        if (response.status === 404) {
+          renderRows(state, [], true);
+          state.actions.replaceChildren(); state.actions.hidden = true; state.actions.dataset.value = '';
+          state.more.hidden = true;
+          text(state.message, 'Сведения изменились. Обновляем сводку.');
+          schedule(0);
+          return;
+        }
         if (!response.ok) throw new Error('details_unavailable');
         payload = await response.json();
         if (scope !== generation || request !== state.request) return;

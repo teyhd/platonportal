@@ -44,6 +44,23 @@ test('Diary input distinguishes incomplete and empty roster', () => {
   assert.equal(unknown.studentIds, undefined);
 });
 
+test('schedule history shows verified room change without exposing source snapshots', () => {
+  const before = { slotId:1, date, start:lesson.start, end:lesson.end, roomId:100, roomName:'204',
+    teacherId:42, subjectId:5, studentIds:[11] };
+  const after = { ...before, roomId:200, roomName:'318' };
+  const schedule = { schema:1, date, state:'published', roles:['teacher'], lessons:[lesson],
+    events:[{ key:'history:1', kind:'schedule_change', title:'Расписание изменено', changedAt:at('07:30'),
+      before:[before], after:[after], href:'/schedule/my', priority:30 }] };
+  const view = buildImportantView({ schedule, now, sources:{ schedule:{ status:'ready' } } });
+  expandImportantView(view, { schedule, integrated:{}, now });
+  const history = view.items.find(item => item.key === 'history:1');
+  assert.equal(history.before, undefined);
+  assert.equal(history.after, undefined);
+  assert.match(history.notes[0], /204 → 318/);
+  assert.equal(view.items[0].notes[0], 'Кабинет 204 → 318');
+  assert.deepEqual(history.rows.map(row => row.name), ['Было', 'Стало']);
+});
+
 test('family Flex counts only for the selected child and family Calendar never occupies the adult', () => {
   const family = { ...lesson, key: 'child-lesson', own: false, contexts: ['child'],
     start: at('12:00'), end: at('13:00') };

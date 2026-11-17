@@ -151,7 +151,7 @@ export function buildImportantView({ schedule, attendance, sources = {}, context
   }
   for (const event of scheduleUsable ? schedule?.events ?? [] : []) {
     if (event.end && ms(event.end) <= +now) continue;
-    const {detailKey,...publicEvent}=event;
+    const {detailKey,before,after,studentId,...publicEvent}=event;
     if(event.key?.startsWith('flex:teacher:') && ms(event.start)<=+now && ms(event.end)>+now)publicEvent.priority=0;
     const informationalFlex = context === 'personal' && (event.key?.startsWith('flex:teacher:') || event.priority === 25 && event.kind === 'flex');
     data.items.push({...publicEvent,remoteScheduleDetail:detailKey,detailLabel:'Подробнее',subtitle:event.detail || (event.count ? `Записей: ${event.count}` : ''),tone:event.priority<=30&&!informationalFlex?'attention':'neutral',actions:[{label:'Открыть',href:safeLink(event.href,'https://rasp.platoniks.ru')}],rows:undefined});

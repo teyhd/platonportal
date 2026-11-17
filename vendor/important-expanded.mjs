@@ -8,6 +8,7 @@ export const expandedSources = {
 
 export const schoolDate = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Moscow' });
 const schoolClock = new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
+const shortDate = new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Moscow', day:'numeric', month:'long' });
 const minute = 60_000;
 const instant = value => Date.parse(value);
 const time = value => schoolClock.format(new Date(value));
@@ -146,6 +147,60 @@ function familyDay(view, schedule) {
   }
 }
 
+function scheduleHistory(view, schedule) {
+  const eventMap = new Map((schedule?.events ?? []).filter(event => event.kind === 'schedule_change')
+    .map(event => [event.key,event]));
+  for (const item of view.items) {
+    const event = eventMap.get(item.key);
+    if (!event) continue;
+    const before=Array.isArray(event.before) ? event.before : [];
+    const after=Array.isArray(event.after) ? event.after : [];
+    const dateText = date => /^\d{4}-\d{2}-\d{2}$/.test(date ?? '')
+      ? shortDate.format(new Date(`${date}T12:00:00+03:00`)) : '';
+    const room = value => text(value.roomName ?? value.room, 100);
+    const descriptor = value => [
+      dateText(value.date),
+      hasInterval(value) ? `${time(value.start)}–${time(value.end)}` : '',
+      value.online ? 'Онлайн' : room(value) ? `Кабинет ${room(value)}` : '',
+      text(value.teacherName, 180),
+    ].filter(Boolean).join(' · ');
+    item.rows = [['Было',before],['Стало',after]].flatMap(([label, snapshots]) =>
+      snapshots.map((value, index) => ({
+        id:`${label}:${index}`, name:`${label}${value.subject ? ' · ' + text(value.subject, 160) : ''}`,
+        description:descriptor(value),
+      })));
+    item.detailCount=item.rows.length;
+    item.detailLabel='Изменения';
+    if (Number.isFinite(instant(event.changedAt))) item.subtitle=`Обновлено ${shortDate.format(new Date(event.changedAt))} в ${time(event.changedAt)}`;
+    if (before.length !== 1 || after.length !== 1) continue;
+    const [previous] = before;
+    const [current] = after;
+    const sameLesson = previous.teacherId > 0 && previous.subjectId > 0 &&
+      previous.teacherId === current.teacherId && previous.subjectId === current.subjectId &&
+      (previous.slotId === current.slotId || event.status === 'move');
+    if (!sameLesson) continue;
+    const labels=[];
+    if (room(previous) && room(current) && room(previous) !== room(current)) labels.push(`Кабинет ${room(previous)} → ${room(current)}`);
+    if (hasInterval(previous) && hasInterval(current) &&
+        (previous.start !== current.start || previous.end !== current.end)) {
+      labels.push(`${descriptor({date:previous.date,start:previous.start,end:previous.end})} → ${descriptor({date:current.date,start:current.start,end:current.end})}`);
+    }
+    if (previous.online !== current.online) labels.push(current.online ? 'Теперь онлайн' : 'Теперь очно');
+    if (!labels.length) continue;
+    item.notes=labels;
+    const matches=(schedule?.lessons ?? []).filter(lesson => msEquals(lesson.start,current.start) && msEquals(lesson.end,current.end) &&
+      lesson.teacherIds?.map(Number).includes(Number(current.teacherId)) &&
+      lesson.subjectIds?.map(Number).includes(Number(current.subjectId)));
+    const lesson=matches.length===1 && view.items.find(card=>card.key===`lesson:${matches[0].key}`);
+    if (lesson) lesson.notes.push(...labels);
+  }
+}
+
+function msEquals(left, right) {
+  const value = instant(left);
+  return Number.isFinite(value) && value === instant(right);
+}
+
 function calendarConflicts(view, events, schedule, now) {
   const childId = Number(schedule?.selectedChildId);
   const child = (schedule?.children ?? []).find(person => Number(person.id) === childId);
@@ -178,6 +233,7 @@ function calendarConflicts(view, events, schedule, now) {
 export function expandImportantView(view, { schedule, attendance, integrated, now, vcallRooms = {} }) {
   if (view.context === 'personal') {
     familyDay(view, schedule);
+    scheduleHistory(view, schedule);
     view.workday = workdayPreview(schedule, attendance, now);
     if (view.workday.some(day => day.entries.some(entry => entry.kind === 'shift') || day.pending.some(entry => entry.kind === 'shift'))) {
       view.items = view.items.filter(item => item.key !== 'shift');
@@ -253,7 +309,7 @@ export function expandImportantView(view, { schedule, attendance, integrated, no
       const kind = text(value.kind, 80) || source;
       const published = kind.endsWith('_published') && Number.isFinite(instant(value.publishedAt));
       const publishedDate = published
-        ? new Intl.DateTimeFormat('ru-RU', { timeZone:'Europe/Moscow', dateStyle:'medium' }).format(new Date(value.publishedAt))
+        ? shortDate.format(new Date(value.publishedAt))
         : '';
       const subtitle = [text(value.subtitle, 300), publishedDate].filter(Boolean).join(' · ');
       if (source === 'progress' && view.context === 'personal' && /return/.test(kind) && Number(value.studentId) > 0) {
