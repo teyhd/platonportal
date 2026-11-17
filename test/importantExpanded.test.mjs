@@ -38,6 +38,15 @@ test('workday preserves unknown and ignores a wrongly dated source fact', () => 
   assert.deepEqual(next.entries, []);
 });
 
+test('weekly attendance renders known coverage without inferring lateness', () => {
+  const view=buildImportantView({ now });
+  const attendance={ weeklyCoverage:{ arrivalDays:63,coveredDays:0,complete:false } };
+  expandImportantView(view,{ attendance,integrated:{ attendance },now });
+  const weekly=view.items.find(item => item.kind==='weekly_attendance');
+  assert.match(weekly.subtitle,/0 из 63/);
+  assert.doesNotMatch(weekly.subtitle,/опоздан/);
+});
+
 test('Diary input distinguishes incomplete and empty roster', () => {
   const [known, unknown] = lessonReferences({ lessons: [{ ...lesson, students: [] }, { ...lesson, rosterComplete: false }] });
   assert.deepEqual(known.studentIds, []);

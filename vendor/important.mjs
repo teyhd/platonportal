@@ -354,7 +354,7 @@ export function createImportantService({
     const sourceResults={schedule,attendance,...Object.fromEntries(extraResponses),...(diary?{diary}:{})};
     const sources=Object.fromEntries(Object.entries(sourceResults).map(([key,value])=>[key,{
       status:value.status,checkedAt:value.checkedAt,label:sourceTitles[key],partial:Boolean(
-        value.data?.partial === true || value.data?.unavailableFeatures?.some(feature=>feature!=='history_truncated') ||
+        value.data?.partial === true || value.data?.unavailableFeatures?.some(feature=>!['history_truncated','weekly_coverage'].includes(feature)) ||
         value.data?.coverage?.complete===false),
     }]));
     const view=buildImportantView({schedule:scheduleData,attendance:attendanceData,sources,context,now:viewNow,canVcall:capability,expanded});

@@ -270,6 +270,13 @@ export function expandImportantView(view, { schedule, attendance, integrated, no
         rows: open?.rows ?? [], detailCount: open?.detailCount ?? 0,
         actions: shift.href ? [{ label: 'График смен', href: shift.href }] : [] });
     }
+    const coverage=attendance?.weeklyCoverage;
+    if (coverage?.arrivalDays > 0 && coverage.coveredDays < coverage.arrivalDays &&
+        !attendance.items?.some(item => item.kind==='weekly_attendance')) {
+      view.items.push({ key:'attendance:weekly-coverage',kind:'weekly_attendance',priority:45,tone:'neutral',
+        title:'Посещаемость за неделю',subtitle:`Сверено с расписанием дней с отметками прихода: ${coverage.coveredDays} из ${coverage.arrivalDays}`,
+        actions:[] });
+    }
     calendarConflicts(view, integrated.calendar?.events, schedule, now);
 
     const lessons = new Map((schedule?.lessons ?? []).map(lesson => [String(lesson.key), lesson]));
