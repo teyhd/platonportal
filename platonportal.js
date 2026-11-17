@@ -6,6 +6,7 @@ import 'dotenv/config'
 
 import bcrypt from 'bcrypt';
 import * as db from './vendor/db.mjs';
+import { createImportantService, registerImportantRoutes } from './vendor/important.mjs';
 import * as hlp from './vendor/hlp.mjs';
 import { getRegisteredService } from './vendor/nginxServices.mjs';
 import * as vcall from './vendor/vcall.mjs';
@@ -1031,6 +1032,13 @@ function isNoisyIntroInfo(card) {
   return /сервисы платоникса/i.test(title) && /добро пожаловать|коллекция ссылок|ключевые ресурсы/i.test(text);
 }
 
+const importantService = createImportantService({
+  getRights: db.get_user_rights,
+  canUseVcall: async session => await canUseVcallAction(session, '#lesson') ? 'host'
+    : await canUseVcallAction(session, '#room') ? 'join' : false,
+});
+registerImportantRoutes(app, importantService);
+
 app.get('/',async (req,res)=>{
    
     let rolen = 0
@@ -1079,6 +1087,7 @@ app.get('/',async (req,res)=>{
       infoCount: infoCards.length,
       auth: rolen,
       canManageCards,
+      showImportant: Boolean(req.session.uid) && importantService.enabled(),
       showManualLink,
       isGuestHome: !res.locals.isSignedIn && homeCatalog.homeRoleMode === 'guest',
       isAdminHome: homeCatalog.homeRoleMode === 'admin',

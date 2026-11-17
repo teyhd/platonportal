@@ -1,0 +1,26 @@
+<section class="important-panel" data-important aria-labelledby="important-title" hidden>
+  <div class="important-heading">
+    <div class="important-heading-main">
+      <h2 id="important-title">Важно</h2>
+      <div class="important-contexts" data-important-contexts hidden role="group" aria-label="Область сводки">
+        <button type="button" data-context="personal" aria-pressed="true">Личное</button>
+        <button type="button" data-context="school" aria-pressed="false">Школа</button>
+      </div>
+    </div>
+    <div class="important-clock" data-important-clock></div>
+  </div>
+  <div class="important-toolbar">
+    <label data-important-family hidden>Ребёнок <select data-important-child aria-label="Выбрать ребёнка"></select></label>
+    <p data-important-sources role="status">Загружаем вашу сводку…</p>
+    <button type="button" class="important-refresh" data-important-refresh aria-label="Обновить важную информацию">Обновить</button>
+  </div>
+  <p class="important-update" data-important-update role="status" hidden>Расписание обновлено</p>
+  <div class="important-items" data-important-items></div>
+  <div class="important-footer">
+    <button type="button" data-important-more aria-expanded="false" hidden></button>
+    <p data-important-day></p>
+  </div>
+  <noscript>Для обновления сводки включите JavaScript. Расписание и посещаемость доступны в каталоге сервисов.</noscript>
+</section>
+<link rel="stylesheet" href="/css/important.css">
+<script type="module" src="/js/important.js"></script>
