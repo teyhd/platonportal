@@ -126,8 +126,8 @@
     </section>
 
     {{#if infoGroup.hasItems}}
-      <link rel="stylesheet" href="/css/school-info.css?v=1">
-      <section class="mt-8" aria-labelledby="info-title">
+      <link rel="stylesheet" href="/css/school-info.css?v=2">
+      <section class="school-info mt-8" aria-labelledby="info-title">
         <div class="max-w-3xl">
           <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">Для родителей</p>
           <h2 id="info-title" class="mt-1 text-2xl font-semibold tracking-tight text-slate-950 md:text-3xl">
@@ -139,7 +139,7 @@
         </div>
 
         {{#if infoGroup.hasPrimaryItems}}
-          <div class="mt-4 grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div class="school-card-grid mt-4">
             {{#each infoGroup.primaryItems}}
               {{> schoolInfoCard}}
             {{/each}}
@@ -154,7 +154,7 @@
             </div>
           </div>
 
-          <div class="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div class="school-card-grid mt-3">
             {{#each infoGroup.secondaryItems}}
               {{> schoolInfoCard}}
             {{/each}}
