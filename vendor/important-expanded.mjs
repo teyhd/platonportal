@@ -25,9 +25,14 @@ export function importantLink(value, origin) {
   }
 }
 
-export function lessonReferences(schedule) {
+export function lessonReferences(schedule, now = new Date()) {
   return (schedule?.lessons ?? []).filter(lesson => Number(lesson.entryId) > 0 &&
     Number(lesson.versionId ?? schedule.versionId ?? schedule.weekVersionId) > 0 && hasInterval(lesson))
+    .sort((a,b) => {
+      const rank = lesson => lesson.own ? 0 : lesson.contexts?.includes('child') ? 1 : 2;
+      const distance = lesson => Math.max(0, instant(lesson.start) - +now, +now - instant(lesson.end));
+      return rank(a) - rank(b) || distance(a) - distance(b);
+    })
     .slice(0, 40).map(lesson => ({
       key: lesson.key,
       entryId: Number(lesson.entryId),
@@ -89,7 +94,7 @@ function sourceActions(actions, origin) {
 
 function sourceRows(rows, origin) {
   if (!Array.isArray(rows)) return [];
-  return rows.slice(0, 150).flatMap((row, index) => {
+  return rows.slice(0, 200).flatMap((row, index) => {
     const name = text(row?.name ?? row?.title, 240);
     if (!name) return [];
     return [{
@@ -126,7 +131,49 @@ function returnCheckRows(schedule, attendance, now) {
 
 function deadline(item) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(item.dueAt ?? '')) return instant(`${item.dueAt}T23:59:59+03:00`);
-  return instant(item.dueAt) || instant(item.start) || Infinity;
+  return instant(item.dueAt) || instant(item.start) || instant(item.end) || Infinity;
+}
+
+function groupProgressDrafts(items, origin) {
+  const groups = new Map();
+  const rest = [];
+  for (const item of items) {
+    const href = sourceActions(item.actions, origin)[0]?.href;
+    if (item.kind !== 'progress_draft' || !item.key || !href) {
+      rest.push(item);
+      continue;
+    }
+    const due = text(item.dueAt, 48);
+    if (!groups.has(due)) groups.set(due, new Map());
+    groups.get(due).set(item.key, { item, href });
+  }
+  for (const [dueAt, group] of groups) {
+    const cards = [...group.values()];
+    if (cards.length === 1) {
+      rest.push(cards[0].item);
+      continue;
+    }
+    rest.push({
+      key: `drafts:${dueAt || 'undated'}`, kind: 'progress_draft_group', dueAt,
+      title: 'Отчёты ждут заполнения', subtitle: `Карточек: ${cards.length}`,
+      rows: cards.map(({item,href}) => ({ id:item.key, name:text(item.subtitle,240) || item.title, href })),
+    });
+  }
+  return rest;
+}
+
+function prioritizePersonalItems(ordered, now) {
+  const lessons = ordered.filter(item => item.kind === 'lesson');
+  const own = lessons.filter(item => item.audience === 'self');
+  const primary = own.length ? own : lessons;
+  const current = primary.find(item => instant(item.start) <= +now && instant(item.end) > +now);
+  const next = primary.find(item => instant(item.start) > +now);
+  const leading = [...new Set([current,next,...lessons].filter(Boolean))].slice(0,2);
+  const action = ordered.find(item => item.kind !== 'lesson' && item.priority < 40 &&
+    (item.actions?.length || item.detailCount));
+  if (action) leading.push(action);
+  const pinned = new Set(leading);
+  return [...leading, ...ordered.filter(item => !pinned.has(item))];
 }
 
 function deadlineNote(value, now) {
@@ -319,7 +366,8 @@ export function expandImportantView(view, { schedule, attendance, integrated, no
   }
   for (const [source, payload] of Object.entries(integrated)) {
     const origin = expandedSources[source]?.origin ?? attendanceOrigin;
-    for (const value of payload?.items ?? []) {
+    const items = payload?.items ?? [];
+    for (const value of source === 'progress' && view.context === 'personal' ? groupProgressDrafts(items,origin) : items) {
       const key = text(value.key, 300);
       const title = text(value.title, 240);
       if (!key || !title) continue;
@@ -345,6 +393,7 @@ export function expandImportantView(view, { schedule, attendance, integrated, no
       }
       view.items.push({
         key: `${source}:${key}`, kind, title, subtitle, actions, rows,
+        ...(kind === 'progress_draft_group' ? { detailLabel:'Карточки' } : {}),
         detailCount: rows.length, tone: kind.includes('published') || kind==='weekly_attendance' ? 'neutral' : 'attention',
         priority: kind.includes('published') || kind==='weekly_attendance' ? 45 : 22,
         start: text(value.start, 48), end: text(value.end, 48), dueAt: text(value.dueAt, 48),
@@ -362,6 +411,7 @@ export function expandImportantView(view, { schedule, attendance, integrated, no
     if (rank(a) !== 1) return a.priority - b.priority || deadline(a) - deadline(b) || a.key.localeCompare(b.key);
     return deadline(a) - deadline(b) || a.priority - b.priority || a.key.localeCompare(b.key);
   });
+  if (view.context === 'personal') view.items = prioritizePersonalItems(view.items,now);
   if (view.workday?.some(day => day.entries.length) || view.items.length) view.visible = true;
   return view;
 }

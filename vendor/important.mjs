@@ -75,7 +75,8 @@ function lessonItem(lesson, facts, now, canVcall, allowAttendance) {
   else if (attention) notes.push(`Требуют проверки: ${attention}`);
   const actions = [{ label: 'Расписание', href: safeLink(lesson.href, 'https://rasp.platoniks.ru') }];
   if (canVcall && (lesson.online || lesson.format === 'mixed' || attention && lesson.individual)) actions.unshift(canVcall === 'join' ? { label:'Открыть комнаты',href:'#room' } : { label: 'Открыть V.CALL', href: '#lesson' });
-  return { key: `lesson:${lesson.key}`, kind: 'lesson', title: lesson.subject || 'Занятие', subtitle, notes,
+  return { key: `lesson:${lesson.key}`, kind: 'lesson', audience: child ? 'child' : 'self',
+    title: lesson.subject || 'Занятие', subtitle, notes,
     priority: current && lesson.own ? 0 : current ? 5 : 15, tone: attention ? 'attention' : current ? 'current' : 'neutral',
     start: lesson.start, end: lesson.end, displayNumber: lesson.displayNumber ?? null, segment: lesson.segment,
     attentionCount: attention, detailCount: rows.length, detailLabel: 'Дети и подробности', actions, rows,
@@ -339,7 +340,7 @@ export function createImportantService({
     const readyAttendance=attendance.status === 'ready' ? attendanceData : null;
     const requestDiary=expanded && context==='personal'
       ? sourceRequest('diary',actorId,rightsKey,context,childId ?? scheduleData?.selectedChildId ?? null,[],null,0,{
-        ...options, lessonRefs:lessonReferences(readySchedule),returns:returnPeriods(readySchedule,readyAttendance,viewNow),
+        ...options, lessonRefs:lessonReferences(readySchedule,viewNow),returns:returnPeriods(readySchedule,readyAttendance,viewNow),
       }) : null;
     const vcallTargets=expanded && rooms && context==='personal' && getVcallLessonStatus
       ? (readySchedule?.lessons ?? []).flatMap(lesson => {

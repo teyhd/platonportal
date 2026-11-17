@@ -53,6 +53,46 @@ test('Diary input distinguishes incomplete and empty roster', () => {
   assert.equal(unknown.studentIds, undefined);
 });
 
+test('Diary lesson budget is reserved for own and family lessons before mentee timetables', () => {
+  const assigned = Array.from({ length:45 }, (_,index) => ({
+    ...lesson, key:`assigned:${index}`, entryId:100+index, own:false, contexts:['assigned'],
+  }));
+  const family = { ...lesson, key:'family', own:false, contexts:['child'] };
+  const refs = lessonReferences({ lessons:[...assigned,family,lesson] },now);
+  assert.equal(refs.length,40);
+  assert.deepEqual(refs.slice(0,2).map(ref=>ref.key),[lesson.key,family.key]);
+});
+
+test('own current and next lessons leave the third place for the most urgent action', () => {
+  const own = { ...lesson, start:at('07:50'), end:at('08:40') };
+  const ownNext = { ...lesson, key:'next', start:at('09:00'), end:at('09:45') };
+  const family = { ...own, key:'family', own:false, contexts:['child'] };
+  const familyNext = { ...ownNext, key:'family-next', own:false, contexts:['child'] };
+  const schedule = { lessons:[own,family,ownNext,familyNext], state:'published' };
+  const result=buildImportantView({ schedule, now, sources:{ schedule:{ status:'ready' } } });
+  expandImportantView(result,{ schedule,now,integrated:{ progress:{ items:[
+    { key:'tomorrow',kind:'progress_returned',title:'Доработать завтра',dueAt:at('12:00',tomorrow),actions:[{label:'Открыть',href:'/feedback?cardId=2'}] },
+    { key:'today',kind:'progress_returned',title:'Доработать сегодня',dueAt:at('11:00'),actions:[{label:'Открыть',href:'/feedback?cardId=1'}] },
+  ] } } });
+  assert.deepEqual(result.items.slice(0,3).map(item=>item.key),[`lesson:${own.key}`,'lesson:next','progress:today']);
+  assert.equal(result.items.find(item=>item.key==='lesson:family').audience,'child');
+});
+
+test('Progress groups drafts by exact due time with a direct link per report', () => {
+  const drafts=Array.from({ length:160 }, (_,index)=>({
+    key:`card:${index}`,kind:'progress_draft',title:'Ваш отчёт ждёт заполнения',
+    subtitle:`Карточка ${index}`,dueAt:at('17:00'),actions:[{label:'Открыть',href:`/feedback?cardId=${index+1}`}],
+  }));
+  const separate={ ...drafts[0],key:'different',dueAt:at('18:00') };
+  const result=buildImportantView({now});
+  expandImportantView(result,{now,integrated:{progress:{items:[...drafts,drafts[0],separate]}}});
+  const group = result.items.find(item=>item.kind==='progress_draft_group');
+  assert.equal(group.detailCount,160);
+  assert.equal(group.rows.at(-1).href,'https://rep.platoniks.ru/feedback?cardId=160');
+  assert.match(group.subtitle,/17:00/);
+  assert.equal(result.items.filter(item=>item.kind==='progress_draft').length,1);
+});
+
 test('schedule history shows verified room change without exposing source snapshots', () => {
   const before = { slotId:1, date, start:lesson.start, end:lesson.end, roomId:100, roomName:'204',
     teacherId:42, subjectId:5, studentIds:[11] };

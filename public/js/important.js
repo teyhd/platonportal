@@ -550,12 +550,22 @@ if (panel) {
     finally { clearTimeout(timeout); if (request === state.request) state.more.disabled = false; }
   }
 
-  function clearPrivateData() {
+  function cancelScopeRequests() {
     generation++; controller?.abort(); controller = null; clearTimeout(pollTimer);
     for (const state of details.values()) state.controller?.abort();
+  }
+  function clearPrivateData() {
+    cancelScopeRequests();
     list.replaceChildren(); nodes.clear(); details.clear(); data = null; etag = ''; panel.hidden = true;
     $('[data-important-clock]').hidden = true;
-    if (workday) { workday.hidden = true; workday.open = false; }
+    if (workday) {
+      workday.hidden = true; workday.open = false;
+      text($('[data-important-workday-title]'), '');
+      text($('[data-important-workday-time]'), '');
+      const preview = $('[data-important-workday-details]');
+      preview.replaceChildren();
+      delete preview.dataset.value;
+    }
     $('[data-important-more]').hidden = true;
     $('[data-important-day]').hidden = true;
     $('[data-important-update]').hidden = true;
@@ -606,12 +616,27 @@ if (panel) {
     // Let the cancelled request release its controller before starting the new scope.
     schedule(0);
   }
+  function changeChild(nextChild) {
+    childId = nextChild;
+    if (!data || context !== 'personal') {
+      changeScope();
+      return;
+    }
+    cancelScopeRequests();
+    data = { ...data, selectedChildId:childId, daySummary:'', scheduleFingerprint:'',
+      items:data.items.filter(item => item.kind === 'lesson' && item.audience === 'self') };
+    etag = ''; boundary = ''; noticeUntil = 0;
+    render();
+    status.dataset.state = 'loading';
+    text(status, 'Обновляем сведения о ребёнке…');
+    schedule(0);
+  }
   for (const button of panel.querySelectorAll('[data-context]')) button.addEventListener('click', () => {
     if (context === button.dataset.context) return;
     context = button.dataset.context;
     changeScope();
   });
-  $('[data-important-child]').addEventListener('change', event => { childId = event.target.value; changeScope(); });
+  $('[data-important-child]').addEventListener('change', event => changeChild(event.target.value));
   $('[data-important-more]').addEventListener('click', () => { expanded = !expanded; render(); });
   $('[data-important-refresh]').addEventListener('click', () => {
     if (controller) return;
