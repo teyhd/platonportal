@@ -472,6 +472,28 @@
   font-weight: 650;
 }
 .important-panel[data-offline="true"] :is(.important-note, .important-check-count, .important-timebox, .important-lesson-timeline) { display: none; }
+.important-workday {
+  margin: 0 0 12px;
+  border: 1px solid var(--important-border, #dae4f0);
+  border-radius: 9px;
+  background: #f7f9fc;
+  color: var(--important-ink, #102544);
+  font-size: 14px;
+}
+.important-workday summary { padding: 10px 13px; cursor: pointer; }
+[data-important-workday-title] { font-weight: 650; }
+[data-important-workday-time] { display: inline-block; color: var(--important-muted); margin-inline-start: 8px; }
+[data-important-workday-time]:empty { display: none; }
+[data-important-workday-details] { display: grid; gap: 7px; padding: 0 13px 11px; }
+.important-workday-day { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 12px; }
+.important-workday-day a { color: var(--important-blue); text-underline-offset: 3px; }
+.important-workday-day span { color: var(--important-muted); }
+.important-detail-links:not([hidden]) { margin-bottom: 8px; }
+.important-item-actions button[data-primary] {
+  border: 1px solid #205ad7; border-radius: 7px; min-height: 40px;
+  padding: 6px 11px; color: white; background: #205ad7; font-weight: 650;
+}
+.important-item-actions button[disabled] { opacity: .6; }
 
 @media (min-width: 730px) {
   .important-items[data-paired="true"] { grid-template-columns: minmax(0, 1.14fr) minmax(0, 1fr); align-items: start; }

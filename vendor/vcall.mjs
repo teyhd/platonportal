@@ -31,7 +31,9 @@ export function readRoomAccess(roomInfo) {
             // Legacy room metadata did not capture edits made after creation.
             return { pub: false, need_auth: true, owner: null };
         }
-        return { pub, need_auth: needAuth, owner };
+        const occurrence = access?.portal_occurrence;
+        return { pub, need_auth: needAuth, owner,
+            ...(typeof occurrence === 'string' && /^[a-f0-9]{64}$/.test(occurrence) ? { occurrence } : {}) };
     } catch {
         return null;
     }

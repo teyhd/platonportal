@@ -7,6 +7,7 @@ import 'dotenv/config'
 import bcrypt from 'bcrypt';
 import * as db from './vendor/db.mjs';
 import { createImportantService, registerImportantRoutes } from './vendor/important.mjs';
+import { createImportantVcall, lessonRoomPrefix, registerImportantVcallRoutes } from './vendor/important-vcall.mjs';
 import * as hlp from './vendor/hlp.mjs';
 import { getRegisteredService } from './vendor/nginxServices.mjs';
 import * as vcall from './vendor/vcall.mjs';
@@ -1034,13 +1035,16 @@ function isNoisyIntroInfo(card) {
   return /сервисы платоникса/i.test(title) && /добро пожаловать|коллекция ссылок|ключевые ресурсы/i.test(text);
 }
 
+const importantLessonRooms = createImportantVcall(vcall);
 const importantService = createImportantService({
   getRights: db.get_user_rights,
   getClassContactContext: db.getClassContactContext,
   canUseVcall: async session => await canUseVcallAction(session, '#lesson') ? 'host'
     : await canUseVcallAction(session, '#room') ? 'join' : false,
+  getVcallLessonStatus: importantLessonRooms.status,
 });
 registerImportantRoutes(app, importantService);
+registerImportantVcallRoutes(app, { importantService, lessonRooms: importantLessonRooms, getUser: getVcallUser });
 
 app.get('/',async (req,res)=>{
    
@@ -1636,6 +1640,9 @@ app.get('/jointo', async (req, res) => {
   if (!isVcallRoomId(roomId)) {
     return renderError(400, 'Некорректное приглашение', 'Попросите ведущего отправить ссылку заново.');
   }
+  if (roomId.startsWith(lessonRoomPrefix)) {
+    return renderError(403, 'Комната урока', 'Подключитесь к занятию из блока «Актуально».');
+  }
   const hostRequested = req.query.host === '1';
   const invite = getVcallInvite(roomId, hostRequested);
 
@@ -1645,7 +1652,7 @@ app.get('/jointo', async (req, res) => {
       return renderError(404, 'Комната сейчас не открыта', 'Уточните у ведущего, начался ли урок, и попробуйте снова.', invite);
     }
     const access = vcall.readRoomAccess(room.room_info);
-    if (!access) {
+    if (!access || access.occurrence) {
       return renderError(403, 'Не удалось проверить доступ', 'Попросите ведущего проверить настройки комнаты и прислать приглашение.');
     }
 

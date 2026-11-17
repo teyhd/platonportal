@@ -1,7 +1,6 @@
 import crypto from 'node:crypto';
 import { contactsForClasses } from './important-class-contacts.mjs';
-
-const schoolDate = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Moscow' });
+import { expandImportantView, expandedSources, lessonReferences, returnPeriods, schoolDate } from './important-expanded.mjs';
 const clock = new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
 const minute = 60_000;
 const id = value => String(value ?? '');
@@ -11,7 +10,8 @@ const timeLabel = value => Number.isFinite(ms(value)) ? clock.format(new Date(va
 const overlaps = (a, b) => ms(a.start) < ms(b.end) && ms(b.start) < ms(a.end);
 const sameAudience = (a, b) => a.own && b.own || !a.own && !b.own && a.contexts?.includes('child') && b.contexts?.includes('child');
 const enabled = env => env.IMPORTANT_ENABLED === '1';
-const sourceTitles = { schedule: 'Расписание', attendance: 'Посещаемость' };
+const sourceTitles = { schedule: 'Расписание', attendance: 'Посещаемость',
+  ...Object.fromEntries(Object.entries(expandedSources).map(([key, source]) => [key, source.label])) };
 const safeLink = (value, origin) => {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return origin;
   const parsed = new URL(value, origin);
@@ -25,7 +25,8 @@ export function attendanceRow(person, fact, lesson, now) {
   const end = lesson?.end ?? `${schoolDate.format(now)}T23:59:59+03:00`;
   const at = lesson ? Math.max(+now, ms(lesson.start)) : +now;
   const absences = (fact.absences ?? []).filter(absence => ms(absence.start) < ms(end) && (!absence.end || ms(absence.end) > at));
-  const currentAbsence = absences.some(absence => ms(absence.start) <= at && (!absence.end || ms(absence.end) > at));
+  const scheduleRelease = person.participation === 'partial' && ms(person.releaseStart) <= at && ms(person.releaseEnd) > at;
+  const currentAbsence = scheduleRelease || absences.some(absence => ms(absence.start) <= at && (!absence.end || ms(absence.end) > at));
   const last = fact.lastEvent;
   row.description = last?.type === 'arrival' ? `Приход отмечен в ${timeLabel(last.at)}` : last?.type === 'departure' ? `Уход отмечен в ${timeLabel(last.at)}` : 'Приход пока не отмечен';
   row.physicalStatus = last?.type === 'arrival' ? 'arrival' : last?.type === 'departure' ? 'departure' : 'none';
@@ -56,6 +57,11 @@ function lessonItem(lesson, facts, now, canVcall, allowAttendance) {
     lesson.format === 'mixed' ? 'Смешанный формат' : '',
     lesson.online ? 'Онлайн' : roomLabel || (lesson.format === 'mixed' ? '' : 'Кабинет не указан')].filter(Boolean).join(' · ');
   const notes = [];
+  for (const [index, person] of (lesson.students ?? []).entries()) {
+    if (person.participation === 'partial' && timeLabel(person.releaseStart) && timeLabel(person.releaseEnd)) {
+      rows[index].annotations.push(`Участие снято с ${timeLabel(person.releaseStart)} до ${timeLabel(person.releaseEnd)}`);
+    }
+  }
   if (!lesson.rosterComplete) notes.push('Состав участников уточняется');
   if (attention && lesson.individual && !lesson.online && rows[0]?.physicalStatus === 'none') notes.push('Приход в школу пока не отмечен. Уточните, подключится ли ученик онлайн.');
   else if (attention) notes.push(`Требуют проверки: ${attention}`);
@@ -184,8 +190,13 @@ async function addLessonContacts(items, schedule, loadContactContext) {
   }
 }
 
-export function createImportantService({ env=process.env, fetchImpl=fetch, now=()=>new Date(), getRights, getClassContactContext, canUseVcall=async()=>false }={}) {
+export function createImportantService({
+  env=process.env, fetchImpl=fetch, now=()=>new Date(), getRights, getClassContactContext,
+  canUseVcall=async()=>false, getVcallLessonStatus,
+}={}) {
   const cache = new Map();
+  const pilotIds = new Set(String(env.IMPORTANT_EXPANDED_PILOT_IDS ?? '').split(',').map(value => value.trim()).filter(Boolean));
+  const expandedFor = actorId => env.IMPORTANT_EXPANDED_ENABLED === '1' || pilotIds.has(String(actorId));
   let contactContext;
   function loadContactContext() {
     if (!contactContext || +now() >= contactContext.expires) {
@@ -194,33 +205,42 @@ export function createImportantService({ env=process.env, fetchImpl=fetch, now=(
     }
     return contactContext.value;
   }
-  async function sourceRequest(source, actorId, rightsKey, context, childId, studentIds=[], detail=null, offset=0) {
-    const date = schoolDate.format(now());
-    const base = source==='schedule' ? env.MAINPORTAL_SCHEDULE_URL || 'http://127.0.0.1:3011' : env.MAINPORTAL_ATTENDANCE_URL || 'http://127.0.0.1:789';
-    const secret = source==='schedule' ? env.MAINPORTAL_SCHEDULE_TOKEN : env.ATTENDANCE_MAINPORTAL_SERVICE_KEY;
-    if (!secret) return {status:'unconfigured',data:null,checkedAt:null};
-    const key = JSON.stringify([source,actorId,rightsKey,date,context,childId,studentIds,detail,offset]);
-    const entry = cache.get(key);
+  async function sourceRequest(source, actorId, rightsKey, context, childId, studentIds=[], detail=null, offset=0, options={}) {
+    const date = options.date ?? schoolDate.format(now());
+    const sourceName = source.toUpperCase();
+    const base = source==='schedule' ? env.MAINPORTAL_SCHEDULE_URL || 'http://127.0.0.1:3011'
+      : source==='attendance' ? env.MAINPORTAL_ATTENDANCE_URL || 'http://127.0.0.1:789'
+      : env[`MAINPORTAL_${sourceName}_URL`];
+    const secret = source==='schedule' ? env.MAINPORTAL_SCHEDULE_TOKEN
+      : source==='attendance' ? env.ATTENDANCE_MAINPORTAL_SERVICE_KEY : env[`MAINPORTAL_${sourceName}_KEY`];
+    if (!secret || !base) return {status:'unconfigured',data:null,checkedAt:null};
+    const { expanded, fresh, scheduleScope, lessonRefs, returns } = options;
+    const key = JSON.stringify([source,actorId,rightsKey,date,context,childId,studentIds,detail,offset,
+      Boolean(expanded),scheduleScope ?? null,lessonRefs ?? null,returns ?? null]);
+    const entry = fresh ? null : cache.get(key);
     if (entry?.pending) return entry.pending;
     if (entry && +now()-entry.checked<5000) return entry.value;
     const pending = (async()=>{
       const headers = {Accept:'application/json'};
-      let url, body;
-      if (source==='schedule') {
-        url = new URL('/internal/integrations/mainportal/v1/context',base);
-        url.search = new URLSearchParams({actor_id:String(actorId),date,context,...(childId?{child_id:String(childId)}:{}),...(detail?{detail,offset:String(offset)}:{})}).toString();
-        headers.Authorization=`Bearer ${secret}`;
-      } else {
-        url = new URL('/internal/v1/mainportal/context',base);
-        body=JSON.stringify({actorId,date,context,studentIds,...(detail?{detail,offset}:{})});
-        const timestamp=String(+now());
-        headers['Content-Type']='application/json';headers['x-service-name']='mainportal';headers['x-service-timestamp']=timestamp;
-        headers['x-service-signature']=crypto.createHmac('sha256',secret).update(`${timestamp}\n${body}`).digest('hex');
-      }
       if (entry?.etag && entry.value?.data) headers['If-None-Match']=entry.etag;
       let value, etag=entry?.etag;
       try {
-        const response=await fetchImpl(url,{method:body?'POST':'GET',headers,body,signal:AbortSignal.timeout(6000),redirect:'error'});
+        let url, body;
+        if (source==='schedule') {
+          url = new URL('/internal/integrations/mainportal/v1/context',base);
+          url.search = new URLSearchParams({actor_id:String(actorId),date,context,...(childId?{child_id:String(childId)}:{}),
+            ...(detail?{detail,offset:String(offset)}:{}),...(expanded?{expanded:'1'}:{})}).toString();
+          headers.Authorization=`Bearer ${secret}`;
+        } else {
+          url = new URL('/internal/v1/mainportal/context',base);
+          body=JSON.stringify(source==='attendance'
+            ? {actorId,date,context,studentIds,...(detail?{detail,offset}:{}),...(expanded?{expanded:true,scheduleScope}: {})}
+            : {schema:1,actorId,date,context,childId,lessonRefs:lessonRefs ?? [],returns:returns ?? []});
+          const timestamp=String(+now());
+          headers['Content-Type']='application/json';headers['x-service-name']='mainportal';headers['x-service-timestamp']=timestamp;
+          headers['x-service-signature']=crypto.createHmac('sha256',secret).update(`${timestamp}\n${body}`).digest('hex');
+        }
+        const response=await fetchImpl(url,{method:body?'POST':'GET',headers,body,signal:AbortSignal.timeout(expanded?3000:6000),redirect:'error'});
         const checkedAt=now().toISOString();
         if (response.status===304 && entry?.value?.data) value={status:'ready',data:entry.value.data,checkedAt};
         else if ([401,403].includes(response.status)) {value={status:'forbidden',data:null,checkedAt};etag=null;}
@@ -232,66 +252,138 @@ export function createImportantService({ env=process.env, fetchImpl=fetch, now=(
         }
       } catch {
         const previous=entry?.value;
-        const stillRecent=previous?.checkedAt && +now()-ms(previous.checkedAt)<=120000;
+        const stillRecent=!expanded && previous?.checkedAt && +now()-ms(previous.checkedAt)<=120000;
         value={status:'unavailable',data:stillRecent?previous.data:null,checkedAt:previous?.checkedAt ?? null};
       }
-      if (cache.size>=250) cache.delete(cache.keys().next().value);
-      cache.set(key,{value,etag,checked:+now()});
+      if (!fresh) {
+        if (cache.size>=250) cache.delete(cache.keys().next().value);
+        cache.set(key,{value,etag,checked:+now()});
+      }
       return value;
     })();
-    cache.set(key,{...entry,pending});
+    if (!fresh) cache.set(key,{...entry,pending});
     return pending;
   }
-  async function load(session, query={}) {
+  const rightsCacheKey = rights => JSON.stringify(rights.map(row => [Number(row.srv_id), Number(row.role_id)])
+    .sort((a,b)=>a[0]-b[0]||a[1]-b[1]));
+  function roomRole(lesson, actorId, capability, roles) {
+    const online = lesson?.online || lesson?.format === 'mixed';
+    if (!online || new Date(lesson.start).getTime() - +now() > 5 * minute || ms(lesson.end) <= +now()) return null;
+    if (capability === 'host' && roles.includes('teacher') && lesson.own && lesson.teacherIds?.map(Number).includes(actorId)) return 'host';
+    const at=Math.max(ms(lesson.start),+now());
+    if (roles.includes('student') && lesson.own && lesson.students?.some(student => Number(student.id) === actorId &&
+      (student.mode === 'online' || lesson.online && student.mode !== 'onsite') &&
+      !(student.releaseIntervals ?? []).some(period => ms(period.start) <= at && ms(period.end) > at))) return 'participant';
+    return null;
+  }
+  async function load(session, query={}, { rooms = false } = {}) {
     if (!enabled(env)) throw Object.assign(new Error('disabled'),{status:404});
     const actorId=Number(session?.uid);
     if (!Number.isSafeInteger(actorId)||actorId<=0) throw Object.assign(new Error('authentication_required'),{status:401});
     const {context,childId}=validateQuery(query);
     const rights=await getRights(actorId);
-    const rightsKey=JSON.stringify(rights.map(row=>[Number(row.srv_id),Number(row.role_id)]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]));
-    const schedule=await sourceRequest('schedule',actorId,rightsKey,context,childId);
+    const rightsKey=rightsCacheKey(rights);
+    const expanded=expandedFor(actorId);
+    const date=schoolDate.format(now());
+    const options={expanded,date};
+    const schedule=await sourceRequest('schedule',actorId,rightsKey,context,childId,[],null,0,options);
     if (childId && schedule.status==='forbidden') throw Object.assign(new Error('child_forbidden'),{status:403});
     const scheduleData=schedule.data;
     const staff=(scheduleData?.roles??[]).some(role=>['teacher','mentor','tutor','admin','staff'].includes(role));
     const allowed = new Set((staff ? scheduleData?.lessons??[]:[]).filter(lesson=>lesson.own||lesson.contexts?.includes('assigned')).flatMap(lesson=>(lesson.students??[]).map(person=>id(person.id))));
     for (const person of scheduleData?.assignedStudents??[]) allowed.add(id(person.id));
     const attendanceRoles=rights.filter(row=>Number(row.srv_id)===Number(env.ATTENDANCE_SSO_SERVICE_ID||13)).map(row=>Number(row.role_id));
-    const attendance=attendanceRoles.some(role=>[2,3,4,5].includes(role))
-      ? await sourceRequest('attendance',actorId,rightsKey,context,null,[...allowed].sort().map(Number))
-      : {status:'forbidden',data:null,checkedAt:null};
-    if (context==='school' && schedule.status==='forbidden' && attendance.status==='forbidden') throw Object.assign(new Error('school_forbidden'),{status:403});
+    const denied={status:'forbidden',data:null,checkedAt:null};
+    const scope=scheduleData?.attendanceScope;
+    const requestedIds=expanded && !scope ? [] : [...allowed].sort().map(Number);
+    const attendanceRequest=attendanceRoles.some(role=>[2,3,4,5].includes(role))
+      ? sourceRequest('attendance',actorId,rightsKey,context,null,requestedIds,null,0,{...options,scheduleScope:scope})
+      : denied;
+    const extra = expanded ? Object.fromEntries(['calendar','progress'].map(source => [source,
+      sourceRequest(source,actorId,rightsKey,context,childId ?? scheduleData?.selectedChildId ?? null,[],null,0,options)])) : {};
+    const [attendance, capability, extraResponses] = await Promise.all([
+      attendanceRequest, canUseVcall({...session,right:rights}),
+      Promise.all(Object.entries(extra).map(async ([source, result]) => [source, await result]))
+    ]);
+    if (context==='school' && schedule.status==='forbidden' && attendance.status==='forbidden' &&
+        !extraResponses.some(([, result]) => result.data?.schoolAllowed === true && result.status === 'ready')) {
+      throw Object.assign(new Error('school_forbidden'),{status:403});
+    }
+    let attendanceData = attendance.data;
     if (context==='personal' && attendance.data) {
       const sourceAssigned=new Set((attendance.data.assignedIds??[]).map(id));
-      attendance.data={...attendance.data,students:(attendance.data.students??[]).filter(person=>allowed.has(id(person.id))||sourceAssigned.has(id(person.id)))};
+      attendanceData={...attendance.data,students:(attendance.data.students??[]).filter(person=>allowed.has(id(person.id))||sourceAssigned.has(id(person.id)))};
     }
-    const sources=Object.fromEntries(Object.entries({schedule,attendance}).map(([key,value])=>[key,{status:value.status,checkedAt:value.checkedAt,label:sourceTitles[key],partial:Boolean(value.data?.unavailableFeatures?.length)}]));
-    const view=buildImportantView({schedule:scheduleData,attendance:attendance.data,sources,context,now:now(),canVcall:await canUseVcall({...session,right:rights})});
+    const viewNow=now();
+    const readySchedule=schedule.status === 'ready' ? scheduleData : null;
+    const readyAttendance=attendance.status === 'ready' ? attendanceData : null;
+    const requestDiary=expanded && context==='personal'
+      ? sourceRequest('diary',actorId,rightsKey,context,childId ?? scheduleData?.selectedChildId ?? null,[],null,0,{
+        ...options, lessonRefs:lessonReferences(readySchedule),returns:returnPeriods(readySchedule,readyAttendance,viewNow),
+      }) : null;
+    const vcallTargets=expanded && rooms && context==='personal' && getVcallLessonStatus
+      ? (readySchedule?.lessons ?? []).flatMap(lesson => {
+        const kind=roomRole(lesson,actorId,capability,readySchedule.roles ?? []);
+        return kind ? [{lesson,kind}] : [];
+      }).slice(0,6) : [];
+    const [diary, roomEntries] = await Promise.all([
+      requestDiary, Promise.all(vcallTargets.map(async ({lesson,kind}) => [
+        lesson.key, { key:lesson.key,kind,status:await getVcallLessonStatus(lesson).catch(()=>'unavailable') },
+      ])),
+    ]);
+    const sourceResults={schedule,attendance,...Object.fromEntries(extraResponses),...(diary?{diary}:{})};
+    const sources=Object.fromEntries(Object.entries(sourceResults).map(([key,value])=>[key,{
+      status:value.status,checkedAt:value.checkedAt,label:sourceTitles[key],partial:Boolean(value.data?.unavailableFeatures?.length || value.data?.coverage?.complete===false),
+    }]));
+    const view=buildImportantView({schedule:scheduleData,attendance:attendanceData,sources,context,now:viewNow,canVcall:capability});
     if(schedule.status==='forbidden'&&attendance.status==='forbidden')view.visible=false;
-    return {view,actorId,rightsKey,schedule: schedule.status === 'ready' ? scheduleData : null};
+    if (expanded) {
+      const integrated=Object.fromEntries(Object.entries(sourceResults).filter(([key,value])=>key!=='schedule' && value.status==='ready')
+        .map(([key,value])=>[key,value.data]));
+      view.schoolAllowed ||= Object.values(integrated).some(source=>source?.schoolAllowed===true);
+      expandImportantView(view,{schedule:readySchedule,attendance:readyAttendance,integrated,now:viewNow,vcallRooms:Object.fromEntries(roomEntries)});
+    }
+    return {view,actorId,rightsKey,schedule:readySchedule,options,scope};
   }
   return {
     enabled:()=>enabled(env),
+    async vcallLesson(session,key) {
+      const actorId=Number(session?.uid);
+      if (!Number.isSafeInteger(actorId)||actorId<=0) throw Object.assign(new Error('authentication_required'),{status:401});
+      if (!enabled(env)||!expandedFor(actorId)) throw Object.assign(new Error('disabled'),{status:404});
+      if (typeof key!=='string'||!key||key.length>500) throw Object.assign(new Error('invalid_lesson'),{status:400});
+      const rights=await getRights(actorId);
+      const [response, capability]=await Promise.all([
+        sourceRequest('schedule',actorId,rightsCacheKey(rights),'personal',null,[],null,0,{expanded:true,fresh:true}),
+        canUseVcall({...session,right:rights}),
+      ]);
+      if (!['ready','forbidden'].includes(response.status)) throw Object.assign(new Error('schedule_unavailable'),{status:503});
+      const lesson=response.data?.lessons?.find(item=>item.key===key);
+      const kind=lesson && roomRole(lesson,actorId,capability,response.data.roles ?? []);
+      if (!kind) throw Object.assign(new Error('lesson_forbidden'),{status:403});
+      return {lesson,kind,actorId};
+    },
     async summary(session,query) {
-      const {view,schedule}=await load(session,query);
+      const {view,schedule}=await load(session,query,{rooms:true});
       if (schedule && view.context === 'personal') {
         await addLessonContacts(view.items, schedule, loadContactContext);
       }
-      return {...view,items:view.items.map(({rows,remoteDetail,remoteScheduleDetail,...item})=>({...item,remoteDetails:Boolean(remoteDetail||remoteScheduleDetail),detailRevision:crypto.createHash('sha256').update(JSON.stringify(rows??[])).digest('hex')}))};
+      return {...view,items:view.items.map(({rows,detailActions,remoteDetail,remoteScheduleDetail,...item})=>({...item,remoteDetails:Boolean(remoteDetail||remoteScheduleDetail),detailRevision:crypto.createHash('sha256').update(JSON.stringify([rows??[],detailActions??[]])).digest('hex')}))};
     },
     async details(session,query) {
       const offset=Number(query.offset??0);
       if (!Number.isSafeInteger(offset)||offset<0||offset>100000||typeof query.key!=='string'||query.key.length>1000) throw Object.assign(new Error('invalid_details'),{status:400});
-      const {view,actorId,rightsKey}=await load(session,query);
+      const {view,actorId,rightsKey,options,scope}=await load(session,query);
       const item=view.items.find(item=>item.key===query.key);
       if (!item) throw Object.assign(new Error('item_not_found'),{status:404});
       let rows=item.rows??[],total;
       if (item.remoteScheduleDetail) {
         const {context,childId}=validateQuery(query);
-        const source=await sourceRequest('schedule',actorId,rightsKey,context,childId,[],item.remoteScheduleDetail,offset);
+        const source=await sourceRequest('schedule',actorId,rightsKey,context,childId,[],item.remoteScheduleDetail,offset,options);
         if(source.status!=='ready') throw Object.assign(new Error('details_unavailable'),{status:503});
         rows=(source.data.detailRows??[]).map(row=>({...row,href:safeLink(row.href,'https://rasp.platoniks.ru')}));total=source.data.detailTotal??0;
       } else if (item.remoteDetail) {
-        const source=await sourceRequest('attendance',actorId,rightsKey,'school',null,[],item.remoteDetail,offset);
+        const source=await sourceRequest('attendance',actorId,rightsKey,'school',null,[],item.remoteDetail,offset,{...options,scheduleScope:scope});
         if(source.status!=='ready') throw Object.assign(new Error('details_unavailable'),{status:503});
         rows=(source.data.students??[]).map(person=>attendanceRow(person,person,null,now()));total=source.data.total;
       } else {
@@ -301,7 +393,8 @@ export function createImportantService({ env=process.env, fetchImpl=fetch, now=(
         rows.sort((a,b)=>Number(b.needsAttention)-Number(a.needsAttention)||a.name.localeCompare(b.name,'ru'));
         total=rows.length;rows=rows.slice(offset,offset+50);
       }
-      return {key:item.key,metadata:item.metadata??[],rows,total,offset,nextOffset:rows.length===50 && offset+rows.length<total?offset+rows.length:null,serverTime:now().toISOString()};
+      return {key:item.key,metadata:item.metadata??[],...(item.detailActions?.length?{actions:item.detailActions}:{}),
+        rows,total,offset,nextOffset:rows.length===50 && offset+rows.length<total?offset+rows.length:null,serverTime:now().toISOString()};
     },
   };
 }

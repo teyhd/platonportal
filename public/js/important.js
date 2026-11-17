@@ -14,6 +14,8 @@ if (panel) {
     publication: 'Расписание',
     reports: 'Обращения',
     flex: 'Flex',
+    calendar: 'Календарь',
+    calendar_approval: 'Календарь',
   };
   let data = null, etag = '', context = 'personal', childId = '', generation = 0, controller, pollTimer;
   let baseTime = Date.now(), basePerformance = performance.now(), lastSuccess = 0, failures = 0, expanded = false;
@@ -27,6 +29,79 @@ if (panel) {
   const remaining = duration => duration < 60_000 ? 'меньше минуты' : `${Math.ceil(duration / 60_000)} мин`;
   const setClock = value => { const parsed = Date.parse(value); if (Number.isFinite(parsed)) { baseTime = parsed; basePerformance = performance.now(); } };
   const query = extra => new URLSearchParams({ context, ...(childId ? { childId } : {}), ...extra });
+  const workday = $('[data-important-workday]');
+
+  function beginningDuration(duration) {
+    if (duration < 60_000) return `${Math.ceil(duration / 1000)} сек`;
+    const minutes = Math.ceil(duration / 60_000);
+    const hours = Math.floor(minutes / 60);
+    return [hours ? `${hours} ч` : '', minutes % 60 ? `${minutes % 60} мин` : ''].filter(Boolean).join(' ');
+  }
+
+  function renderWorkday(now) {
+    if (!workday) return;
+    const [today, tomorrow] = data.workday ?? [];
+    const hasData = context === 'personal' && [today, tomorrow].some(day => day?.entries.length || day?.pending.length);
+    workday.hidden = !hasData;
+    if (!hasData) return;
+    const title = $('[data-important-workday-title]');
+    const caption = $('[data-important-workday-time]');
+    const day = dateFormat.format(new Date(now));
+    if (networkFailed || today?.date !== day) {
+      text(title, 'Обновляем рабочий график');
+      text(caption, '');
+    } else {
+      const first = today.entries[0];
+      const current = today.entries.find(entry => when(entry.start) <= now && when(entry.end) > now);
+      const upcoming = today.entries.filter(entry => when(entry.start) > now);
+      const next = upcoming[0];
+      const following = tomorrow?.entries[0];
+      if (first && now < when(first.start)) {
+        text(title, `${first.kind === 'shift' ? 'До начала рабочего дня' : 'До первого урока'} ${beginningDuration(when(first.start) - now)}`);
+        text(caption, `Начало в ${formatTime(first.start)}`);
+      } else if (current) {
+        text(title, current.kind === 'shift' ? 'Ваша смена' : 'Ваши занятия сегодня');
+        text(caption, `${formatTime(current.start)}–${formatTime(current.end)}`);
+      } else if (next) {
+        text(title, next.kind === 'shift' ? 'Ваша смена сегодня' : 'Ваши занятия сегодня');
+        text(caption, `С ${formatTime(next.start)}`);
+      } else if (following) {
+        text(title, `Завтра ${following.kind === 'shift' ? 'вам на работу к' : 'первый урок в'} ${formatTime(following.start)}`);
+        text(caption, '');
+      } else {
+        const pending = [today, tomorrow].flatMap(item => item?.pending ?? []);
+        text(title, pending.some(item => item.status === 'unpublished') ? 'Рабочий график ещё не опубликован'
+          : pending.some(item => item.status === 'unavailable') ? 'Рабочий график временно недоступен'
+            : 'Предстоящих смен и уроков в графике нет');
+        text(caption, '');
+      }
+    }
+    const preview = $('[data-important-workday-details]');
+    const signature = JSON.stringify([today, tomorrow, networkFailed, day]);
+    if (preview.dataset.value === signature) return;
+    preview.dataset.value = signature;
+    preview.replaceChildren();
+    if (networkFailed || today?.date !== day) return;
+    for (const [index, previewDay] of [today, tomorrow].entries()) {
+      if (!previewDay?.entries.length && !previewDay?.pending.length) continue;
+      const group = element('div', 'important-workday-day');
+      group.append(element('strong', '', index ? 'Завтра' : 'Сегодня'));
+      for (const entry of previewDay.entries) {
+        const label = entry.kind === 'shift' ? `Смена ${formatTime(entry.start)}–${formatTime(entry.end)}`
+          : `Первый урок в ${formatTime(entry.start)}`;
+        const link = element(entry.href ? 'a' : 'span', '', label);
+        if (entry.href) link.href = entry.href;
+        group.append(link);
+      }
+      for (const item of previewDay.pending) {
+        const label = item.status === 'unpublished' ? 'График ещё не опубликован'
+          : item.status === 'unavailable' ? 'График временно недоступен'
+            : item.kind === 'shift' ? 'Смена не назначена' : 'Уроков по расписанию нет';
+        group.append(element('span', '', label));
+      }
+      preview.append(group);
+    }
+  }
 
   function timing(item, now) {
     const start = when(item.start), end = when(item.end);
@@ -87,6 +162,7 @@ if (panel) {
   function tick() {
     if (!data) return;
     const now = currentTime();
+    renderWorkday(now);
     let hasCurrentLesson = false;
     for (const item of data.items) {
       const node = nodes.get(item.key); if (!node) continue;
@@ -297,11 +373,20 @@ if (panel) {
         node.actions.replaceChildren();
         node.primaryActions.replaceChildren();
         for (const action of item.actions ?? []) {
-          const link = element('a', '', action.label);
-          link.href = action.href;
-          const primary = ['#lesson', '#room'].includes(action.href);
+          const startsRoom = action.method === 'POST' && action.href === '/api/important/vcall/start';
+          const link = element(startsRoom ? 'button' : 'a', '', action.label);
+          if (startsRoom) {
+            link.type = 'button';
+            link.addEventListener('click', () => openLessonRoom(link, action, node));
+          } else {
+            link.href = action.href;
+          }
+          const existingRoomAction = ['#lesson', '#room'].includes(action.href);
+          const primary = startsRoom || existingRoomAction || action.href.startsWith('/api/important/vcall/join?');
           if (primary) {
             link.dataset.primary = 'true';
+          }
+          if (existingRoomAction) {
             link.addEventListener('click', event => {
               const existing = document.querySelector(`[data-lesson-room-panel] a[href="${action.href}"]`);
               if (existing) { event.preventDefault(); existing.click(); }
@@ -326,7 +411,7 @@ if (panel) {
     });
     const more = $('[data-important-more]');
     more.hidden = data.items.length <= 3;
-    text(more, expanded ? 'Свернуть' : `Показать ещё ${Math.max(0, data.items.length - 3)}`);
+    text(more, expanded ? 'Свернуть' : `Ещё сегодня · ${Math.max(0, data.items.length - 3)}`);
     more.setAttribute('aria-expanded', String(expanded));
     const emptyMessage = issues.length ? 'Нет доступных сведений' : context === 'school' ? 'Нет событий, требующих внимания' : 'Сейчас нет важных событий';
     const footer = $('[data-important-day]');
@@ -335,10 +420,42 @@ if (panel) {
     tick();
   }
 
+  async function openLessonRoom(button, action, node) {
+    const scope = generation;
+    button.disabled = true;
+    const message = node.article.querySelector('[data-room-status]') ?? element('p', 'important-detail-status');
+    message.dataset.roomStatus = '';
+    message.setAttribute('role', 'status');
+    if (!message.isConnected) node.controls.after(message);
+    text(message, 'Открываем комнату…');
+    try {
+      const response = await fetch(action.href, {
+        method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lessonKey: action.lessonKey }), signal: AbortSignal.timeout(12_000),
+      });
+      if (scope !== generation) return;
+      if (!response.ok) throw new Error('room_unavailable');
+      const result = await response.json();
+      if (scope !== generation) return;
+      const join = new URL(result.href, location.origin);
+      if (join.origin !== location.origin || join.pathname !== '/api/important/vcall/join') throw new Error('invalid_room_link');
+      location.assign(join.href);
+    } catch {
+      if (scope === generation) {
+        text(message, 'Комнату открыть не удалось. Обновляем данные урока.');
+        schedule(0);
+      }
+    } finally {
+      button.disabled = false;
+    }
+  }
+
   function detailState(key) {
     if (details.has(key)) return details.get(key);
     const node = nodes.get(key);
     const metadata = element('p', 'important-detail-metadata');
+    const actions = element('div', 'important-item-actions important-detail-links');
+    actions.hidden = true;
     const tools = element('div', 'important-detail-tools');
     const filters = element('div');
     const all = element('button', '', 'Все'); all.type = 'button'; all.setAttribute('aria-pressed', 'true');
@@ -348,8 +465,8 @@ if (panel) {
     const message = element('p', 'important-detail-status'); message.setAttribute('role', 'status');
     const students = element('ul', 'important-students');
     const more = element('button', 'important-more-rows', 'Показать ещё'); more.type = 'button'; more.hidden = true;
-    node.body.append(metadata, tools, message, students, more);
-    const state = { metadata, tools, filters, all, attention, search, message, students, more, rows: new Map(), filter: 'all', q: '', nextOffset: null, request: 0 };
+    node.body.append(metadata, actions, tools, message, students, more);
+    const state = { metadata, actions, tools, filters, all, attention, search, message, students, more, rows: new Map(), filter: 'all', q: '', nextOffset: null, request: 0 };
     let searchTimer;
     search.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.q = search.value; loadDetails(key, true); }, 250); });
     for (const [button, filter] of [[all, 'all'], [attention, 'attention']]) button.addEventListener('click', () => { state.filter = filter; loadDetails(key, true); });
@@ -400,6 +517,16 @@ if (panel) {
       } while (automatic && offset != null && rows.length < wanted);
       payload.rows = rows;
       renderRows(state, payload.rows, reset);
+      const actionKey = JSON.stringify(payload.actions ?? []);
+      if (state.actions.dataset.value !== actionKey) {
+        state.actions.replaceChildren(...(payload.actions ?? []).map(action => {
+          const anchor = element('a', '', action.label);
+          anchor.href = action.href;
+          return anchor;
+        }));
+        state.actions.dataset.value = actionKey;
+      }
+      state.actions.hidden = !payload.actions?.length;
       state.nextOffset = payload.nextOffset;
       state.more.hidden = payload.nextOffset == null;
       state.search.hidden = payload.total <= 12 && !state.q;
@@ -420,6 +547,7 @@ if (panel) {
     for (const state of details.values()) state.controller?.abort();
     list.replaceChildren(); nodes.clear(); details.clear(); data = null; etag = ''; panel.hidden = true;
     $('[data-important-clock]').hidden = true;
+    if (workday) { workday.hidden = true; workday.open = false; }
     $('[data-important-more]').hidden = true;
     $('[data-important-day]').hidden = true;
     $('[data-important-update]').hidden = true;

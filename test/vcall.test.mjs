@@ -4,6 +4,7 @@ import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 import { randomUUID } from 'node:crypto';
 import { readRoomAccess } from '../vendor/vcall.mjs';
+import { lessonRoomPrefix } from '../vendor/important-vcall.mjs';
 
 // Exercise the real handlers while isolating the main app's DB, auth and conference SDK.
 const appSource = await readFile(new URL('../platonportal.js', import.meta.url), 'utf8');
@@ -52,7 +53,7 @@ function setup({ active = room(), listed = [room()], actions = ['#lesson', '#roo
         return { rooms: listed };
       },
     },
-    crypto: { randomUUID }, URLSearchParams,
+    crypto: { randomUUID }, URLSearchParams, lessonRoomPrefix,
   });
 
   return {
@@ -130,6 +131,16 @@ test('invalid or inactive invites never mint a token or create a room', async ()
   assert.equal(service.calls.joined.length + service.calls.created.length, 0);
   const failed = await setup({ fail: true }).request('GET', '/jointo', { query: { roomid: 'testhost' } });
   assert.equal(failed.status, 502);
+});
+
+test('lesson-scoped rooms require the current schedule link rather than the generic invite', async () => {
+  const service = setup();
+  const response = await service.request('GET', '/jointo', {
+    session: host, query: { roomid: lessonRoomPrefix + 'a'.repeat(64) },
+  });
+  assert.equal(response.status, 403);
+  assert.equal(service.calls.lookups.length, 0);
+  assert.equal(service.calls.joined.length, 0);
 });
 
 test('room list only returns public metadata and requires the list action', async () => {
