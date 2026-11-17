@@ -1,0 +1,119 @@
+.school-card {
+  --school-line: #dbe3ec;
+  --school-muted: #475569;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.school-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 14px 16px;
+}
+
+.school-card-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  place-items: center;
+  border-width: 1px;
+  border-radius: 8px;
+}
+
+.school-card-heading { min-width: 0; }
+.school-card-category {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .08em;
+  line-height: 1.35;
+}
+
+.school-card-heading h3 {
+  margin-top: 3px;
+  color: #0f172a;
+  font-size: 19px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.school-card-summary {
+  margin-top: 5px;
+  color: var(--school-muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.school-card-list {
+  border-top: 1px solid var(--school-line);
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.school-card-list > li { padding: 9px 16px; }
+.school-card-list > li + li { border-top: 1px solid var(--school-line); }
+.school-card-list > .school-card-section {
+  padding-block: 7px;
+  color: var(--school-muted);
+  background: #ffffff80;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.school-card-contact-name {
+  display: block;
+  color: #0f172a;
+  font-weight: 650;
+}
+
+.school-card-contact-role {
+  display: block;
+  margin-top: 2px;
+  color: var(--school-muted);
+  font-size: 13px;
+}
+
+.school-card-disclosure {
+  border-top: 1px solid var(--school-line);
+  padding: 8px 12px;
+}
+
+.school-card-disclosure button {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid #d4deeb;
+  border-radius: 7px;
+  color: #1747a3;
+  background: #fff;
+  text-align: start;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.school-card-disclosure button:hover,
+.school-card-disclosure button[aria-expanded="true"] { background: #f0f5ff; }
+.school-card-disclosure button:focus-visible,
+.school-card-list a:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.school-card-disclosure svg { flex: none; margin-inline-start: auto; }
+.school-card-disclosure button[aria-expanded="true"] svg { transform: rotate(180deg); }
+.school-card-disclosure button[aria-expanded="true"] .school-card-more { display: none; }
+
+.school-card-more {
+  padding: 1px 6px;
+  border-radius: 5px;
+  color: var(--school-muted);
+  background: #edf2f8;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 420px) {
+  .school-card-head { padding: 12px; }
+  .school-card-list > li { padding-inline: 12px; }
+}

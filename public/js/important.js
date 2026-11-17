@@ -43,7 +43,12 @@ if (panel) {
   function updateLessonTime(item, node, now) {
     const start = when(item.start);
     const end = when(item.end);
-    if (!Number.isFinite(start) || !(end > start)) return false;
+    if (!Number.isFinite(start) || !(end > start)) {
+      node.article.dataset.current = 'false';
+      node.article.dataset.imminent = 'false';
+      node.timing.hidden = node.timeBox.hidden = node.timeline.hidden = true;
+      return false;
+    }
     const current = start <= now && now < end;
     const upcoming = now < start;
     const imminent = upcoming && start - now <= 300_000;
@@ -56,12 +61,26 @@ if (panel) {
     text(node.timing, [stage, number, half].filter(Boolean).join(' · '));
     node.timing.hidden = false;
     node.timeBox.hidden = false;
-    text(node.timeValue, current ? remaining(end - now) : formatTime(upcoming ? item.start : item.end));
-    text(node.timeCaption, current ? 'до конца'
-      : upcoming && start - now <= 600_000 ? `через ${remaining(start - now)}`
-        : upcoming ? 'начало' : 'завершилось');
-    node.progress.hidden = !current;
-    if (current) node.progressFill.style.width = `${100 * (now - start) / (end - start)}%`;
+    const startTime = formatTime(item.start);
+    const endTime = formatTime(item.end);
+    const active = current || upcoming;
+    const showClock = node.timeMode.getAttribute('aria-pressed') === 'true';
+    const duration = (upcoming ? start : end) - now;
+    const countdown = duration < 60_000 ? `${Math.ceil(duration / 1000)} сек` : remaining(duration);
+    text(node.timeValue, active && !showClock ? countdown : upcoming ? startTime : endTime);
+    text(node.timeCaption, current ? (showClock ? 'конец' : 'до конца')
+      : upcoming ? (showClock ? 'начало' : 'до начала') : 'завершилось');
+    node.timeMode.hidden = !active;
+    node.timeline.hidden = !active;
+    if (active) {
+      text(node.timelineStart, `Начало ${startTime}`);
+      text(node.timelineEnd, `Конец ${endTime}`);
+    }
+    const progress = current ? (now - start) / (end - start) : 0;
+    const percent = String(Math.floor(100 * progress));
+    node.progress.setAttribute('aria-hidden', String(!current));
+    if (node.progress.getAttribute('aria-valuenow') !== percent) node.progress.setAttribute('aria-valuenow', percent);
+    node.progressFill.style.transform = `scaleX(${progress})`;
     return current;
   }
 
@@ -109,13 +128,24 @@ if (panel) {
     const timeBox = element('div', 'important-timebox');
     const timeValue = element('span', 'important-time-value');
     const timeCaption = element('span', 'important-time-caption');
+    const timeMode = element('button', 'important-time-mode', 'По часам');
+    timeMode.type = 'button';
+    timeMode.title = 'Переключить между временем по расписанию и таймером';
+    timeMode.setAttribute('aria-pressed', 'false');
     timeBox.hidden = true;
-    timeBox.append(timeValue, timeCaption);
+    timeBox.append(timeValue, timeCaption, timeMode);
+    const timeline = element('div', 'important-lesson-timeline');
+    timeline.hidden = true;
+    const timelineLabels = element('div', 'important-timeline-labels');
+    const timelineStart = element('span');
+    const timelineEnd = element('span');
+    timelineLabels.append(timelineStart, timelineEnd);
     const progress = element('div', 'important-progress');
     const progressFill = element('span');
-    progress.hidden = true;
-    progress.setAttribute('aria-hidden', 'true');
+    progress.setAttribute('role', 'progressbar');
+    progress.setAttribute('aria-label', 'Ход урока');
     progress.append(progressFill);
+    timeline.append(progress, timelineLabels);
     const contacts = element('div', 'important-contacts');
     contacts.hidden = true;
     const controls = element('div', 'important-item-controls');
@@ -138,10 +168,17 @@ if (panel) {
     content.append(timing, title, subtitle, notes);
     top.append(content, timeBox, metric);
     controls.append(primaryActions, toggle, actions);
-    article.append(top, contacts, progress, controls, body);
-    const node = { article, timing, title, subtitle, notes, timeBox, timeValue, timeCaption, progress, progressFill,
+    article.append(top, timeline, contacts, controls, body);
+    const node = { article, timing, title, subtitle, notes, timeBox, timeValue, timeCaption, timeMode,
+      timeline, timelineStart, timelineEnd, progress, progressFill,
       metric, metricValue, metricLabel, controls, primaryActions, actions, toggle, toggleText, checkCount,
       contacts, body, actionKey: '', contactKey: '', detailRevision: '' };
+    timeMode.addEventListener('click', () => {
+      const item = data?.items.find(item => item.key === key);
+      if (!item) return;
+      timeMode.setAttribute('aria-pressed', String(timeMode.getAttribute('aria-pressed') !== 'true'));
+      updateLessonTime(item, node, currentTime());
+    });
     toggle.addEventListener('click', () => {
       body.hidden = !body.hidden; toggle.setAttribute('aria-expanded', String(!body.hidden));
       if (!body.hidden) loadDetails(key, true);

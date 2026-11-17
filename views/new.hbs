@@ -126,6 +126,7 @@
     </section>
 
     {{#if infoGroup.hasItems}}
+      <link rel="stylesheet" href="/css/school-info.css?v=1">
       <section class="mt-8" aria-labelledby="info-title">
         <div class="max-w-3xl">
           <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">Для родителей</p>
@@ -140,43 +141,7 @@
         {{#if infoGroup.hasPrimaryItems}}
           <div class="mt-4 grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
             {{#each infoGroup.primaryItems}}
-              <article class="flex h-full min-h-[272px] flex-col overflow-hidden rounded-lg border shadow-sm {{this.cardClass}}" data-info-card>
-                <div class="p-4 sm:p-5">
-                  <div class="flex items-start gap-3">
-                    <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border {{this.iconClass}}">
-                      <svg class="h-5 w-5" aria-hidden="true"><use href="/icons/lucide.svg#{{this.iconName}}"></use></svg>
-                    </span>
-                    <div class="min-w-0">
-                      <p class="text-xs font-semibold uppercase tracking-[0.14em] {{this.badgeClass}}">{{this.audienceLabel}}</p>
-                      <h3 class="mt-1 text-lg font-semibold leading-6 text-slate-950 line-clamp-2 md:text-xl">{{this.title}}</h3>
-                      <p class="mt-2 text-sm leading-6 text-slate-600 line-clamp-2">{{this.parentSummary}}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <ul class="flex-1 divide-y divide-slate-200/70 border-t border-slate-200/70 text-sm leading-6 text-slate-700" data-info-preview>
-                  {{#each this.previewLines}}
-                    <li class="{{#if this.isSection}}bg-white/45 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 sm:px-5{{else}}px-4 py-2.5 sm:px-5{{/if}}">{{{this.html}}}</li>
-                  {{/each}}
-                </ul>
-                {{#if this.hasMoreLines}}
-                  <div class="hidden flex-1 border-t border-slate-200/70" data-info-full>
-                    <ul class="divide-y divide-slate-200/70 text-sm leading-6 text-slate-700">
-                      {{#each this.fullLines}}
-                        <li class="{{#if this.isSection}}bg-white/45 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 sm:px-5{{else}}px-4 py-2.5 sm:px-5{{/if}}">{{{this.html}}}</li>
-                      {{/each}}
-                    </ul>
-                  </div>
-                  <div class="mt-auto border-t border-slate-200/70 bg-white/45 px-4 py-3 sm:px-5">
-                    <button type="button" data-info-toggle aria-expanded="false"
-                            class="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white/90 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30">
-                      <span data-info-toggle-label>Показать полностью</span>
-                      <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">+{{this.moreLinesCount}}</span>
-                      <svg data-info-toggle-icon class="h-4 w-4 transition-transform" aria-hidden="true"><use href="/icons/lucide.svg#chevron-down"></use></svg>
-                    </button>
-                  </div>
-                {{/if}}
-              </article>
+              {{> schoolInfoCard}}
             {{/each}}
           </div>
         {{/if}}
@@ -191,42 +156,7 @@
 
           <div class="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {{#each infoGroup.secondaryItems}}
-              <article class="flex h-full flex-col overflow-hidden rounded-lg border shadow-sm transition hover:border-slate-300 hover:shadow-md {{this.cardClass}}" data-info-card>
-                <div class="p-4">
-                  <div class="flex items-start gap-3">
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border {{this.iconClass}}">
-                      <svg class="h-5 w-5" aria-hidden="true"><use href="/icons/lucide.svg#{{this.iconName}}"></use></svg>
-                    </span>
-                    <div class="min-w-0">
-                      <p class="text-xs font-semibold uppercase tracking-[0.14em] {{this.badgeClass}}">{{this.audienceLabel}}</p>
-                      <h3 class="mt-1 text-lg font-semibold leading-6 text-slate-950 line-clamp-2">{{this.title}}</h3>
-                    </div>
-                  </div>
-                </div>
-
-                <ul class="flex-1 divide-y divide-slate-200/70 border-t border-slate-200/70 text-sm leading-6 text-slate-600" data-info-preview>
-                  {{#each this.previewLines}}
-                    <li class="{{#if this.isSection}}bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500{{else}}px-4 py-2.5{{/if}}">{{{this.html}}}</li>
-                  {{/each}}
-                </ul>
-                {{#if this.hasMoreLines}}
-                  <div class="hidden flex-1 border-t border-slate-200" data-info-full>
-                    <ul class="divide-y divide-slate-200/70 text-sm leading-6 text-slate-600">
-                      {{#each this.fullLines}}
-                        <li class="{{#if this.isSection}}bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500{{else}}px-4 py-2.5{{/if}}">{{{this.html}}}</li>
-                      {{/each}}
-                    </ul>
-                  </div>
-                  <div class="mt-auto border-t border-slate-200 bg-slate-50/80 px-4 py-3">
-                    <button type="button" data-info-toggle aria-expanded="false"
-                            class="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30">
-                      <span data-info-toggle-label>Показать полностью</span>
-                      <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">+{{this.moreLinesCount}}</span>
-                      <svg data-info-toggle-icon class="h-4 w-4 transition-transform" aria-hidden="true"><use href="/icons/lucide.svg#chevron-down"></use></svg>
-                    </button>
-                  </div>
-                {{/if}}
-              </article>
+              {{> schoolInfoCard}}
             {{/each}}
           </div>
         {{/if}}
@@ -906,22 +836,36 @@
 
 <script>
 (() => {
-  document.querySelectorAll('[data-info-toggle]').forEach((button) => {
-    const card = button.closest('[data-info-card]');
-    const preview = card?.querySelector('[data-info-preview]');
-    const full = card?.querySelector('[data-info-full]');
-    const label = button.querySelector('[data-info-toggle-label]');
-    const icon = button.querySelector('[data-info-toggle-icon]');
+  const separator = /\s+[–—]\s+/u;
+  document.querySelectorAll('[data-info-contacts] .school-card-list > li:not(.school-card-section)').forEach(line => {
+    const parts = line.textContent.trim().split(separator);
+    const prefix = line.firstChild;
+    if (parts.length !== 2 || !parts[0] || !parts[1] || prefix?.nodeType !== Node.TEXT_NODE) return;
 
-    if (!card || !preview || !full || !label) return;
+    const split = separator.exec(prefix.data);
+    if (!split) return;
+
+    const role = document.createElement('span');
+    role.className = 'school-card-contact-role';
+    role.textContent = prefix.data.slice(0, split.index).trim();
+    prefix.deleteData(0, split.index + split[0].length);
+
+    const name = document.createElement('span');
+    name.className = 'school-card-contact-name';
+    name.append(...line.childNodes);
+    line.append(name, role);
+  });
+
+  document.querySelectorAll('[data-info-toggle]').forEach(button => {
+    const full = document.getElementById(button.getAttribute('aria-controls'));
+    const label = button.querySelector('[data-info-toggle-label]');
+    if (!full || !label) return;
 
     button.addEventListener('click', () => {
-      const shouldExpand = button.getAttribute('aria-expanded') !== 'true';
-      button.setAttribute('aria-expanded', String(shouldExpand));
-      preview.classList.toggle('hidden', shouldExpand);
-      full.classList.toggle('hidden', !shouldExpand);
-      label.textContent = shouldExpand ? 'Свернуть' : 'Показать полностью';
-      icon?.classList.toggle('rotate-180', shouldExpand);
+      const open = full.hidden;
+      full.hidden = !open;
+      button.setAttribute('aria-expanded', String(open));
+      label.textContent = open ? 'Свернуть' : 'Показать полностью';
     });
   });
 })();

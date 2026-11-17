@@ -1,0 +1,36 @@
+<article class="school-card rounded-lg border shadow-sm {{cardClass}}" data-info-card
+         {{#if (or (eq iconName 'house') (eq iconName 'users'))}}data-info-contacts{{/if}}>
+  <header class="school-card-head">
+    <span class="school-card-icon {{iconClass}}">
+      <svg class="h-5 w-5" aria-hidden="true"><use href="/icons/lucide.svg#{{iconName}}"></use></svg>
+    </span>
+    <div class="school-card-heading">
+      <p class="school-card-category {{badgeClass}}">{{audienceLabel}}</p>
+      <h3>{{title}}</h3>
+      {{#if isPrimaryInfo}}<p class="school-card-summary">{{parentSummary}}</p>{{/if}}
+    </div>
+  </header>
+  {{#if previewLines.length}}
+    <ul class="school-card-list">
+      {{#each previewLines}}
+        <li{{#if isSection}} class="school-card-section"{{/if}}>{{{html}}}</li>
+      {{/each}}
+    </ul>
+  {{/if}}
+  {{#if hasMoreLines}}
+    <div class="school-card-disclosure">
+      <button type="button" data-info-toggle aria-expanded="false" aria-controls="school-info-{{id}}">
+        <span data-info-toggle-label>Показать полностью</span>
+        <span class="school-card-more">+{{moreLinesCount}}</span>
+        <svg class="h-4 w-4" aria-hidden="true"><use href="/icons/lucide.svg#chevron-down"></use></svg>
+      </button>
+    </div>
+    <ul class="school-card-list" id="school-info-{{id}}" data-info-full hidden>
+      {{#each fullLines}}
+        {{#unless (lt @index ../previewLines.length)}}
+          <li{{#if isSection}} class="school-card-section"{{/if}}>{{{html}}}</li>
+        {{/unless}}
+      {{/each}}
+    </ul>
+  {{/if}}
+</article>
