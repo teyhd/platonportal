@@ -38,6 +38,13 @@ if (panel) {
     return [hours ? `${hours} ч` : '', minutes % 60 ? `${minutes % 60} мин` : ''].filter(Boolean).join(' ');
   }
 
+  function firstLessonDetails(lesson) {
+    const rooms = lesson.rooms.map(room => /^каб(?:инет)?[.\s]/iu.test(room) ? room : `каб. ${room}`);
+    const location = lesson.format === 'online' ? 'онлайн' : rooms.join(', ');
+    return [lesson.subject, lesson.studentName || lesson.classes.join(', '),
+      lesson.studentName ? 'индив.' : '', location].filter(Boolean).join(' · ');
+  }
+
   function renderWorkday(now) {
     if (!workday) return;
     const [today, tomorrow] = data.workday ?? [];
@@ -56,18 +63,27 @@ if (panel) {
       const upcoming = today.entries.filter(entry => when(entry.start) > now);
       const next = upcoming[0];
       const following = tomorrow?.entries[0];
+      const firstLessons = tomorrow?.entries.find(entry => entry.kind === 'lesson')?.firstLessons ?? [];
+      const lesson = firstLessons[0];
+      const details = lesson ? firstLessonDetails(lesson) : '';
+      const simultaneous = firstLessons.length > 1 ? `ещё ${firstLessons.length - 1} в это время` : '';
+      const lessonSummary = [details, simultaneous].filter(Boolean).join(' · ');
+      const previewTomorrow = lesson ? [`Завтра ${formatTime(lesson.start)}`, lessonSummary].filter(Boolean).join(' · ') : '';
       if (first && now < when(first.start)) {
         text(title, `${first.kind === 'shift' ? 'До начала рабочего дня' : 'До первого урока'} ${beginningDuration(when(first.start) - now)}`);
-        text(caption, `Начало в ${formatTime(first.start)}`);
+        text(caption, [`Начало в ${formatTime(first.start)}`, previewTomorrow].filter(Boolean).join(' · '));
       } else if (current) {
         text(title, current.kind === 'shift' ? 'Ваша смена' : 'Ваши занятия сегодня');
-        text(caption, `${formatTime(current.start)}–${formatTime(current.end)}`);
+        text(caption, [`${formatTime(current.start)}–${formatTime(current.end)}`, previewTomorrow].filter(Boolean).join(' · '));
       } else if (next) {
         text(title, next.kind === 'shift' ? 'Ваша смена сегодня' : 'Ваши занятия сегодня');
-        text(caption, `С ${formatTime(next.start)}`);
+        text(caption, [`С ${formatTime(next.start)}`, previewTomorrow].filter(Boolean).join(' · '));
       } else if (following) {
-        text(title, `Завтра ${following.kind === 'shift' ? 'вам на работу к' : 'первый урок в'} ${formatTime(following.start)}`);
-        text(caption, '');
+        const earlierActivity = following.kind === 'lesson' && lesson && when(following.start) < when(lesson.start);
+        const label = following.kind === 'shift' ? 'вам на работу к' : earlierActivity ? 'занятия с' : 'первый урок в';
+        text(title, `Завтра ${label} ${formatTime(following.start)}`);
+        const lessonTime = lesson && (earlierActivity || following.kind === 'shift') ? `Первый урок в ${formatTime(lesson.start)}` : '';
+        text(caption, [lessonTime, lessonSummary].filter(Boolean).join(' · '));
       } else {
         const pending = [today, tomorrow].flatMap(item => item?.pending ?? []);
         text(title, pending.some(item => item.status === 'unpublished') ? 'Рабочий график ещё не опубликован'
@@ -87,6 +103,21 @@ if (panel) {
       const group = element('div', 'important-workday-day');
       group.append(element('strong', '', index ? 'Завтра' : 'Сегодня'));
       for (const entry of previewDay.entries) {
+        const lessons = entry.firstLessons ?? [];
+        if (lessons.length) {
+          if (when(entry.start) < when(lessons[0].start)) {
+            const dayLink = element(entry.href ? 'a' : 'span', '', `Занятия с ${formatTime(entry.start)}`);
+            if (entry.href) dayLink.href = entry.href;
+            group.append(dayLink);
+          }
+          for (const lesson of lessons) {
+            const label = [formatTime(lesson.start), firstLessonDetails(lesson)].filter(Boolean).join(' · ');
+            const link = element(lesson.href ? 'a' : 'span', '', label);
+            if (lesson.href) link.href = lesson.href;
+            group.append(link);
+          }
+          continue;
+        }
         const label = entry.kind === 'shift' ? `Смена ${formatTime(entry.start)}–${formatTime(entry.end)}`
           : `Первый урок в ${formatTime(entry.start)}`;
         const link = element(entry.href ? 'a' : 'span', '', label);

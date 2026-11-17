@@ -38,6 +38,23 @@ test('workday preserves unknown and ignores a wrongly dated source fact', () => 
   assert.deepEqual(next.entries, []);
 });
 
+test('the first lesson uses its own time and links even when a shift or Flex starts earlier', () => {
+  const firstLesson = {
+    start: at('10:00',tomorrow), subject:'Математика', format:'onsite',
+    classes:['5-1'], rooms:['204'], studentName:'Иванов Иван Иванович',
+    href:'/schedule/my?date=2026-11-18&entry_id=17',
+  };
+  const schedule = { workday:[{ ...planned(tomorrow,'09:15','15:00'),
+    firstLessons:[firstLesson,{ ...firstLesson,start:at('16:00',tomorrow) }] }] };
+  const attendance = { workday:[planned(tomorrow,'09:00','17:00','/attendance/mentor-schedule')] };
+  const [,next] = workdayPreview(schedule,attendance,now);
+  assert.deepEqual(next.entries.map(item=>item.kind), ['shift','lesson']);
+  assert.equal(next.entries[1].start,at('09:15',tomorrow));
+  assert.deepEqual(next.entries[1].firstLessons,[{
+    ...firstLesson, href:'https://rasp.platoniks.ru/schedule/my?date=2026-11-18&entry_id=17',
+  }]);
+});
+
 test('weekly attendance renders known coverage without inferring lateness', () => {
   const view=buildImportantView({ now });
   const attendance={ weeklyCoverage:{ arrivalDays:63,coveredDays:0,complete:false } };

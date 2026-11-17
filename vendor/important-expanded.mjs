@@ -74,7 +74,18 @@ export function workdayPreview(schedule, attendance, now) {
       const row = rows?.find?.(item => item.date === date);
       if (!row || row.status !== 'scheduled' || !hasInterval(row) ||
           schoolDate.format(new Date(row.start)) !== date) return [];
-      return [{ kind, start: row.start, end: row.end, href: importantLink(row.href, origin) }];
+      const entry = { kind, start: row.start, end: row.end, href: importantLink(row.href, origin) };
+      if (kind === 'lesson' && Array.isArray(row.firstLessons)) {
+        entry.firstLessons = row.firstLessons.filter(lesson =>
+          instant(lesson?.start) >= instant(row.start) && instant(lesson?.start) < instant(row.end))
+          .map(lesson => ({
+            start: lesson.start, subject: text(lesson.subject, 180), format: text(lesson.format, 20),
+            classes: Array.isArray(lesson.classes) ? lesson.classes.map(value => text(value, 45)).filter(Boolean) : [],
+            rooms: Array.isArray(lesson.rooms) ? lesson.rooms.map(value => text(value, 100)).filter(Boolean) : [],
+            studentName: text(lesson.studentName, 200), href: importantLink(lesson.href, origin),
+          }));
+      }
+      return [entry];
     }).sort((a, b) => instant(a.start) - instant(b.start) || Number(b.kind === 'shift') - Number(a.kind === 'shift'));
     const pending = sources.flatMap(([kind, rows]) => (rows ?? [])
       .filter(row => row.date === date && ['unpublished', 'unavailable', 'unassigned'].includes(row.status))

@@ -482,7 +482,8 @@
 }
 .important-workday summary { padding: 10px 13px; cursor: pointer; }
 [data-important-workday-title] { font-weight: 650; }
-[data-important-workday-time] { display: inline-block; color: var(--important-muted); margin-inline-start: 8px; }
+[data-important-workday-time] { color: var(--important-muted); overflow-wrap: anywhere; }
+[data-important-workday-time]:not(:empty)::before { content: " · "; }
 [data-important-workday-time]:empty { display: none; }
 [data-important-workday-details] { display: grid; gap: 7px; padding: 0 13px 11px; }
 .important-workday-day { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 12px; }
