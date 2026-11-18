@@ -489,6 +489,20 @@
 .important-workday-day { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 12px; }
 .important-workday-day a { color: var(--important-blue); text-underline-offset: 3px; }
 .important-workday-day span { color: var(--important-muted); }
+.important-workday-lessons { list-style: none; flex-basis: 100%; margin: 0; padding: 0; }
+.important-workday-lesson {
+  display: grid; grid-template-columns: 100px minmax(0, 1.25fr) minmax(0, 1fr) minmax(90px, .65fr);
+  gap: 6px 12px; padding: 9px 0; border-top: 1px solid #e1e7ef; overflow-wrap: anywhere;
+}
+.important-workday-day .important-workday-lesson { text-decoration: none; }
+.important-workday-lesson .important-workday-lesson-subject { color: var(--important-ink, #102544); font-weight: 600; }
+.important-workday-lesson .important-workday-lesson-time { color: var(--important-blue); font-variant-numeric: tabular-nums; }
+.important-workday-lesson:hover .important-workday-lesson-subject { text-decoration: underline; }
+.important-workday-lesson:focus-visible { outline: 2px solid var(--important-blue); outline-offset: 3px; border-radius: 3px; }
+@media (max-width: 600px) {
+  .important-workday-lesson { grid-template-columns: 94px minmax(0,1fr); gap: 3px 8px; }
+  .important-workday-lesson-audience, .important-workday-lesson-room { grid-column: 2; }
+}
 .important-detail-links:not([hidden]) { margin-bottom: 8px; }
 .important-item-actions button[data-primary] {
   border: 1px solid #205ad7; border-radius: 7px; min-height: 40px;

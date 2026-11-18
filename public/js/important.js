@@ -45,6 +45,34 @@ if (panel) {
       lesson.studentName ? 'индив.' : '', location].filter(Boolean).join(' · ');
   }
 
+  function lessonCountLabel(count) {
+    const last = count % 10;
+    const teen = count % 100 >= 11 && count % 100 <= 14;
+    return `${count} ${teen || last === 0 || last >= 5 ? 'уроков' : last === 1 ? 'урок' : 'урока'}`;
+  }
+
+  function renderWorkdayLessons(group, lessons) {
+    const rows = element('ol', 'important-workday-lessons');
+    for (const lesson of lessons) {
+      const row = element('li');
+      const link = element(lesson.href ? 'a' : 'span', 'important-workday-lesson');
+      if (lesson.href) link.href = lesson.href;
+      const range = [formatTime(lesson.start),formatTime(lesson.end)].filter(Boolean).join('–');
+      const rooms = lesson.rooms.map(room => /^каб(?:инет)?[.\s]/iu.test(room) ? room : `каб. ${room}`);
+      const room = lesson.format === 'online' ? 'Онлайн' : rooms.join(', ') || 'Кабинет не указан';
+      const individual = lesson.individual || lesson.studentName;
+      const audience = individual ? `Индив. · ${lesson.studentName || 'Состав уточняется'}`
+        : lesson.classes.join(', ') || 'Класс уточняется';
+      link.append(element('span','important-workday-lesson-time',range),
+        element('span','important-workday-lesson-subject',lesson.subject || 'Занятие'),
+        element('span','important-workday-lesson-audience',audience),
+        element('span','important-workday-lesson-room',room));
+      row.append(link);
+      rows.append(row);
+    }
+    group.append(rows);
+  }
+
   function renderWorkday(now) {
     if (!workday) return;
     const [today, tomorrow] = data.workday ?? [];
@@ -63,11 +91,13 @@ if (panel) {
       const upcoming = today.entries.filter(entry => when(entry.start) > now);
       const next = upcoming[0];
       const following = tomorrow?.entries[0];
-      const firstLessons = tomorrow?.entries.find(entry => entry.kind === 'lesson')?.firstLessons ?? [];
+      const teaching = tomorrow?.entries.find(entry => entry.kind === 'lesson');
+      const firstLessons = teaching?.firstLessons ?? [];
       const lesson = firstLessons[0];
       const details = lesson ? firstLessonDetails(lesson) : '';
-      const simultaneous = firstLessons.length > 1 ? `ещё ${firstLessons.length - 1} в это время` : '';
-      const lessonSummary = [details, simultaneous].filter(Boolean).join(' · ');
+      const count = Number.isSafeInteger(teaching?.lessonCount) ? lessonCountLabel(teaching.lessonCount) : '';
+      const simultaneous = !count && firstLessons.length > 1 ? `ещё ${firstLessons.length - 1} в это время` : '';
+      const lessonSummary = [details, count || simultaneous].filter(Boolean).join(' · ');
       const previewTomorrow = lesson ? [`Завтра ${formatTime(lesson.start)}`, lessonSummary].filter(Boolean).join(' · ') : '';
       if (first && now < when(first.start)) {
         text(title, `${first.kind === 'shift' ? 'До начала рабочего дня' : 'До первого урока'} ${beginningDuration(when(first.start) - now)}`);
@@ -101,21 +131,18 @@ if (panel) {
     for (const [index, previewDay] of [today, tomorrow].entries()) {
       if (!previewDay?.entries.length && !previewDay?.pending.length) continue;
       const group = element('div', 'important-workday-day');
-      group.append(element('strong', '', index ? 'Завтра' : 'Сегодня'));
+      const count = previewDay.entries.find(entry=>entry.kind==='lesson')?.lessonCount;
+      const header = [index ? 'Завтра' : 'Сегодня',Number.isSafeInteger(count) ? lessonCountLabel(count) : ''].filter(Boolean).join(' · ');
+      group.append(element('strong', '', header));
       for (const entry of previewDay.entries) {
-        const lessons = entry.firstLessons ?? [];
+        const lessons = entry.lessons ?? entry.firstLessons ?? [];
         if (lessons.length) {
           if (when(entry.start) < when(lessons[0].start)) {
             const dayLink = element(entry.href ? 'a' : 'span', '', `Занятия с ${formatTime(entry.start)}`);
             if (entry.href) dayLink.href = entry.href;
             group.append(dayLink);
           }
-          for (const lesson of lessons) {
-            const label = [formatTime(lesson.start), firstLessonDetails(lesson)].filter(Boolean).join(' · ');
-            const link = element(lesson.href ? 'a' : 'span', '', label);
-            if (lesson.href) link.href = lesson.href;
-            group.append(link);
-          }
+          renderWorkdayLessons(group, lessons);
           continue;
         }
         const label = entry.kind === 'shift' ? `Смена ${formatTime(entry.start)}–${formatTime(entry.end)}`

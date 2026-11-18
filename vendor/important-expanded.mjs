@@ -75,15 +75,24 @@ export function workdayPreview(schedule, attendance, now) {
       if (!row || row.status !== 'scheduled' || !hasInterval(row) ||
           schoolDate.format(new Date(row.start)) !== date) return [];
       const entry = { kind, start: row.start, end: row.end, href: importantLink(row.href, origin) };
-      if (kind === 'lesson' && Array.isArray(row.firstLessons)) {
-        entry.firstLessons = row.firstLessons.filter(lesson =>
-          instant(lesson?.start) >= instant(row.start) && instant(lesson?.start) < instant(row.end))
+      if (kind === 'lesson') {
+        const complete = Array.isArray(row.lessons) || row.lessonCount === 0;
+        const lessons = (complete ? row.lessons ?? [] : row.firstLessons ?? []).filter(lesson =>
+          instant(lesson?.start) >= instant(row.start) && instant(lesson?.start) < instant(row.end) &&
+          (!lesson.end || instant(lesson.end) > instant(lesson.start) && instant(lesson.end) <= instant(row.end)))
           .map(lesson => ({
             start: lesson.start, subject: text(lesson.subject, 180), format: text(lesson.format, 20),
+            ...(lesson.end ? {end:lesson.end} : {}),
             classes: Array.isArray(lesson.classes) ? lesson.classes.map(value => text(value, 45)).filter(Boolean) : [],
             rooms: Array.isArray(lesson.rooms) ? lesson.rooms.map(value => text(value, 100)).filter(Boolean) : [],
             studentName: text(lesson.studentName, 200), href: importantLink(lesson.href, origin),
-          }));
+            ...(lesson.individual ? {individual:true} : {}),
+          })).sort((a,b)=>instant(a.start)-instant(b.start)||a.subject.localeCompare(b.subject,'ru'));
+        if (complete) {
+          entry.lessons = lessons;
+          entry.lessonCount = lessons.length;
+        }
+        if (lessons.length) entry.firstLessons = lessons.filter(lesson=>lesson.start===lessons[0].start);
       }
       return [entry];
     }).sort((a, b) => instant(a.start) - instant(b.start) || Number(b.kind === 'shift') - Number(a.kind === 'shift'));

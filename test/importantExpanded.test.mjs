@@ -55,6 +55,24 @@ test('the first lesson uses its own time and links even when a shift or Flex sta
   }]);
 });
 
+test('tomorrow includes the complete sorted teaching list and a count with individual names', () => {
+  const group = { start:at('10:00',tomorrow),end:at('10:40',tomorrow),subject:'Математика',
+    format:'onsite',classes:['7-1'],rooms:['204'],href:'/schedule/my?entry_id=8' };
+  const individual = { start:at('12:00',tomorrow),end:at('12:20',tomorrow),subject:'Логопедия',
+    format:'onsite',classes:['3'],rooms:['208'],individual:true,studentName:'Иванов Иван Иванович',
+    href:'/schedule/my?entry_id=9' };
+  const schedule = {workday:[{ ...planned(tomorrow,'10:00','12:20'),
+    firstLessons:[group], lessons:[individual,group], lessonCount:2 }]};
+  const [,next]=workdayPreview(schedule,undefined,now);
+  const entry=next.entries[0];
+  assert.equal(entry.lessonCount,2);
+  assert.deepEqual(entry.lessons.map(lesson=>lesson.subject),['Математика','Логопедия']);
+  assert.equal(entry.lessons[1].studentName,'Иванов Иван Иванович');
+  assert.equal(entry.lessons[1].end,at('12:20',tomorrow));
+  assert.equal(entry.firstLessons.length,1);
+  assert.equal(entry.firstLessons[0].subject,'Математика');
+});
+
 test('weekly attendance renders known coverage without inferring lateness', () => {
   const view=buildImportantView({ now });
   const attendance={ weeklyCoverage:{ arrivalDays:63,coveredDays:0,complete:false } };
