@@ -51,13 +51,16 @@ export function returnPeriods(schedule, attendance, now) {
     .filter(period => period.confirmation === 'confirmed')
     .map(period => ({ studentId: Number(student.id), start: period.start, end: period.end })));
   for (const period of [...confirmed, ...(attendance?.recentReturns ?? [])]) {
-    if (!assigned.has(String(period.studentId)) || !hasInterval(period) ||
+    const studentId = Number(period.studentId);
+    if (!Number.isSafeInteger(studentId) || studentId <= 0 || !assigned.has(String(studentId)) || !hasInterval(period) ||
         instant(period.end) > +now || instant(period.end) < +now - 7 * 24 * 60 * minute) continue;
     const meeting = (schedule?.lessons ?? []).find(lesson => lesson.individual && hasInterval(lesson) &&
       (lesson.own || lesson.contexts?.includes('assigned')) && instant(lesson.end) > +now &&
       instant(period.end) <= instant(lesson.start) &&
       lesson.students?.some(person => String(person.id) === String(period.studentId)));
-    if (meeting) periods.set(`${period.studentId}|${period.start}|${period.end}`, period);
+    if (meeting && instant(period.start) >= +now - 60 * 24 * 60 * minute) {
+      periods.set(`${studentId}|${period.start}|${period.end}`, {studentId,start:period.start,end:period.end});
+    }
   }
   return [...periods.values()].slice(0, 20);
 }

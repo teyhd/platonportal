@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import test from 'node:test';
 import { buildImportantView, createImportantService } from '../vendor/important.mjs';
-import { expandImportantView, lessonReferences, workdayPreview } from '../vendor/important-expanded.mjs';
+import { expandImportantView, lessonReferences, returnPeriods, workdayPreview } from '../vendor/important-expanded.mjs';
 import { createImportantVcall } from '../vendor/important-vcall.mjs';
 
 const now = new Date('2026-11-17T08:00:00+03:00');
@@ -71,6 +71,13 @@ test('tomorrow includes the complete sorted teaching list and a count with indiv
   assert.equal(entry.lessons[1].end,at('12:20',tomorrow));
   assert.equal(entry.firstLessons.length,1);
   assert.equal(entry.firstLessons[0].subject,'Математика');
+});
+
+test('recent return periods keep numeric student IDs in the Diary integration contract', () => {
+  const schedule={assignedStudents:[{id:11}],lessons:[{...lesson,individual:true,start:at('10:00'),end:at('10:40')}]};
+  const attendance={recentReturns:[{studentId:'11',start:'2026-11-16T10:00:00+03:00',end:at('07:00')}]};
+  const periods=returnPeriods(schedule,attendance,now);
+  assert.deepEqual(periods,[{studentId:11,start:'2026-11-16T10:00:00+03:00',end:at('07:00')}]);
 });
 
 test('weekly attendance renders known coverage without inferring lateness', () => {
