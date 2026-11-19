@@ -120,7 +120,7 @@ function mount(card) {
       if (group.signature !== signature) {
         group.signature = signature;
         group.bar.replaceChildren(...states.map((state,i) => {
-          const mark = element("i");
+          const mark = element("span", "mark", rooms[i].name);
           mark.dataset.kind = state.kind;
           mark.title = rooms[i].name + " · " + state.text;
           return mark;
