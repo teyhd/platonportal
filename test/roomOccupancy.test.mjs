@@ -9,8 +9,11 @@ const published = {
   rooms: [{ id: 2, name: '14', floor: '2 этаж', intervals: [], studentName: 'Private' }],
 };
 
-function routeFor(fetchImpl, clock = () => now) {
-  const service = createRoomOccupancy({ env: { MAINPORTAL_SCHEDULE_TOKEN: 'test-token' }, now: clock, fetchImpl });
+function routeFor(fetchImpl, clock = () => now, options = {}) {
+  const service = createRoomOccupancy({
+    env: { MAINPORTAL_SCHEDULE_TOKEN: 'test-token', ...options.env },
+    now: clock, fetchImpl, canReadIssues: options.canReadIssues,
+  });
   let route;
   service.register({ get(path, handler) {
     assert.equal(path, '/api/room-occupancy');
@@ -71,4 +74,47 @@ test('rejects invalid occupied intervals instead of showing the room as free', a
     rooms: [{ id: 8, name: '8', intervals: [{ start: 'invalid', end: published.dayEnd }] }],
   }));
   assert.equal((await request(100)).status, 503);
+});
+
+test('only members of Заявки see matching current incidents and floors come from the schedule', async () => {
+  let issueCalls = 0;
+  const { request } = routeFor((url, options) => {
+    if (url.pathname.endsWith('/room-occupancy')) return Response.json({
+      ...published,
+      rooms: [...published.rooms,
+        { id: 9, name: '14 ложа', floor: null, intervals: [] },
+        { id: 10, name: '5', floor: '1 этаж', intervals: [] }],
+    });
+    issueCalls++;
+    assert.equal(options.headers.Authorization, 'Bearer issues-test-token');
+    return Response.json({ schema: 1, rooms: [
+      { roomName: 'Кабинет 14 (Робототехника)', floor: '3 этаж', count: 2, title: 'Нет сигнала\n проекции', author: 'Private' },
+      { roomName: 'Кабинет 5', count: 1, title: 'Сбой' },
+      { roomName: '5', count: 0 },
+    ] });
+  }, undefined, { env: { MAINPORTAL_ROOM_ISSUES_TOKEN: 'issues-test-token' }, canReadIssues: uid => uid === 100 });
+
+  assert.equal((await request(101)).body.rooms[0].issue, undefined);
+  assert.equal(issueCalls, 0);
+  const [first, second] = await Promise.all([request(100), request(100)]);
+  assert.equal(issueCalls, 1);
+  assert.deepEqual(first.body.rooms, second.body.rooms);
+  const [room, named, ambiguous] = first.body.rooms;
+  assert.deepEqual(room.issue, { count: 2, title: 'Нет сигнала проекции' });
+  assert.equal(room.floor, '2 этаж');
+  assert.equal(named.issue, undefined);
+  assert.equal(ambiguous.issue, undefined);
+  assert.equal((await request(101)).body.rooms[0].issue, undefined);
+});
+
+test('an outage in Заявки still returns occupancy', async () => {
+  const { request } = routeFor(url => url.pathname.endsWith('/room-issues')
+    ? new Response(null, { status: 503 }) : Response.json(published), undefined, {
+    env: { MAINPORTAL_ROOM_ISSUES_TOKEN: 'issues-test-token' },
+    canReadIssues: () => true,
+  });
+  const result = await request(100);
+  assert.equal(result.status, 200);
+  assert.equal(result.body.issueStatus, 'unavailable');
+  assert.deepEqual(result.body.rooms, [{ id: 2, name: '14', floor: '2 этаж', intervals: [] }]);
 });

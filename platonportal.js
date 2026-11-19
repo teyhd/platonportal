@@ -329,7 +329,9 @@ app.use("/sso", makeSsoRouter({
 }));
 app.use(platformsso)
 
-const roomOccupancy = createRoomOccupancy();
+const roomOccupancy = createRoomOccupancy({
+  canReadIssues: uid => db.hasActiveServiceAccess(uid, 'zayavki'),
+});
 roomOccupancy.register(app);
 
 app.use(express.json({ limit: "20mb" })); // для application/json
@@ -1014,7 +1016,7 @@ function getHomeRoleMeta(role = 0) {
     return {
       homeRoleMode: 'admin',
       roleLabel: 'Расширенный доступ',
-      homeTitle: 'Рабочий каталог Гармонии',
+      homeTitle: 'Сервисы Гармонии',
       homeSubtitle: 'Учебные, коммуникационные и административные сервисы собраны в одном аккуратном каталоге.',
       homeHint: 'Каталог уже адаптирован под вашу роль и показывает доступные рабочие инструменты.',
     };

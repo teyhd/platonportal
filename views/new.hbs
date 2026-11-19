@@ -1,17 +1,19 @@
 <main class="min-h-screen bg-[#f5f5f7] text-slate-950">
   <div class="mx-auto max-w-[1500px] px-[16px] pb-10 pt-14 sm:pt-16 md:px-6 xl:pt-16">
-    <header class="max-w-4xl">
+    {{#unless isAdminHome}}
       {{#unless isGuestHome}}
-        <h1 class="text-3xl font-semibold leading-tight tracking-tight text-slate-950 md:text-4xl xl:text-5xl">
-          {{homeTitle}}
-        </h1>
+        <header class="max-w-4xl">
+          <h1 class="text-3xl font-semibold leading-tight tracking-tight text-slate-950 md:text-4xl xl:text-5xl">
+            {{homeTitle}}
+          </h1>
+        </header>
       {{/unless}}
-    </header>
+    {{/unless}}
 
     {{#if showRoomOccupancy}}
-      <link rel="stylesheet" href="/css/room-occupancy.css?v=2">
+      <link rel="stylesheet" href="/css/room-occupancy.css?v=3">
       {{> roomOccupancy}}
-      <script type="module" src="/js/room-occupancy.js?v=2"></script>
+      <script type="module" src="/js/room-occupancy.js?v=3"></script>
     {{/if}}
 
     {{#if canManageCards}}

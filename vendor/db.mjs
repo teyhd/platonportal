@@ -478,6 +478,19 @@ export async function getUserRolesForsrvnam(usrId, srvNmae) {
   const ids = Array.from(new Set(rows.map(r => r.role_id).filter(v => Number.isInteger(v))));
   return ids;
 }
+
+export async function hasActiveServiceAccess(userId, serviceName, pool = usr) {
+  const [rows] = await pool.query(
+    `SELECT 1 FROM rights r
+       JOIN srvs s ON s.id = r.srv_id
+       JOIN users u ON u.id = r.usr_id
+      WHERE u.id = ? AND s.name = ? AND r.role_id >= 0
+        AND u.status = 1 AND u.lifecycle_state = 'active' AND u.type <> ?
+      LIMIT 1`,
+    [userId, serviceName, EXTERNAL_ROLE_ID]
+  );
+  return rows.length > 0;
+}
 ///console.log(await getUserRolesForServiceById(147, 'portal'))
 // ==== USERS ====zz
 export async function get_err_roles_users(pool = usr) {

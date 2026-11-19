@@ -29,11 +29,17 @@ export function prepareSnapshot(payload) {
     }
     const floor = room.floor || null;
     if (!floors.has(floor)) floors.set(floor, []);
-    floors.get(floor).push({ name: room.name, spans });
+    const issue = Number.isSafeInteger(room.issue?.count) && room.issue.count > 0 &&
+      typeof room.issue.title === "string" && room.issue.title.trim() ? room.issue : null;
+    floors.get(floor).push({ id:room.id ?? room.name, name:room.name, spans, issue });
   }
   const groups = [...floors].sort(([a],[b]) => a === null ? 1 : b === null ? -1 : natural.compare(a,b));
   for (const [,rooms] of groups) rooms.sort((a,b) => natural.compare(a.name,b.name));
-  return { generated, end, state: payload.state, groups };
+  return { generated, end, state: payload.state, groups, issuesUnavailable:payload.issueStatus === "unavailable" };
+}
+
+function issueLabel(issue) {
+  return issue.title + (issue.count > 1 ? " · ещё " + (issue.count - 1) : "");
 }
 
 export function roomStatus(spans, now) {
@@ -62,26 +68,111 @@ function mount(card) {
   const select = name => card.querySelector("[data-" + name + "]");
   const floors = select("floors"), total = select("total"), time = select("time");
   const message = select("message"), retry = select("retry");
+  const tooltip = select("issue-tooltip");
   const rows = new Map();
   let snapshot, offset = 0, openFloor, pending = false, timer, failure = "";
   let nextId = 0;
+  let tooltipAnchor, pinned, hideTimer;
+
+  function hideTooltip() {
+    clearTimeout(hideTimer);
+    tooltipAnchor?.removeAttribute("aria-describedby");
+    tooltip.hidden = true;
+    tooltipAnchor = pinned = undefined;
+  }
+
+  function showTooltip(mark) {
+    clearTimeout(hideTimer);
+    if (tooltipAnchor !== mark) hideTooltip();
+    tooltipAnchor = mark;
+    tooltip.textContent = mark.dataset.issue;
+    tooltip.hidden = false;
+    mark.setAttribute("aria-describedby", tooltip.id);
+    positionTooltip(mark);
+  }
+
+  function positionTooltip(mark) {
+    const anchor = mark.getBoundingClientRect();
+    const bounds = card.getBoundingClientRect();
+    const { width, height } = tooltip.getBoundingClientRect();
+    const left = Math.min(bounds.width - width - 8, Math.max(8, anchor.left - bounds.left + (anchor.width - width) / 2));
+    const top = anchor.top >= height + 12 ? anchor.top - height - 6 : anchor.bottom + 6;
+    tooltip.style.left = left + "px";
+    tooltip.style.top = (top - bounds.top) + "px";
+  }
+
+  function leaveTooltip() {
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => {
+      if (!pinned && document.activeElement !== tooltipAnchor) hideTooltip();
+    }, 120);
+  }
+
+  tooltip.addEventListener("pointerenter", () => clearTimeout(hideTimer));
+  tooltip.addEventListener("pointerleave", leaveTooltip);
+  document.addEventListener("pointerdown", event => {
+    if (tooltipAnchor && !tooltipAnchor.contains(event.target) && !tooltip.contains(event.target)) hideTooltip();
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && tooltipAnchor) hideTooltip();
+  });
 
   function createGroup(floor) {
     const section = element("div", "group"), button = element("button", "row");
     button.type = "button";
     const label = floor || "Этаж не указан";
     const bar = element("span", "bar"), count = element("span","count");
-    bar.setAttribute("aria-hidden","true");
-    button.append(element("span","floor",label), bar, count, element("span","arrow"));
+    button.append(element("span","floor",label), count, element("span","arrow"));
     const details = element("div","details");
     details.id = "room-occ-floor-" + (++nextId);
     button.setAttribute("aria-controls", details.id);
-    button.addEventListener("click", () => {
+    function toggleFloor() {
       openFloor = openFloor === floor ? undefined : floor;
       draw();
+    }
+    button.addEventListener("click", toggleFloor);
+    bar.addEventListener("click", event => {
+      if (!event.target.closest("button")) toggleFloor();
     });
-    section.append(button,details);
-    return { section, button, label, bar, count, details };
+    section.append(button,bar,details);
+    return { section, button, label, bar, count, details, marks:new Map() };
+  }
+
+  function updateMark(group, room, state, index) {
+    let mark = group.marks.get(room.id);
+    if (!mark || Boolean(room.issue) !== (mark.tagName === "BUTTON")) {
+      mark?.remove();
+      mark = element(room.issue ? "button" : "span", "mark", room.name);
+      group.marks.set(room.id, mark);
+      if (room.issue) {
+        mark.type = "button";
+        const alert = element("span", "alert", "!");
+        alert.setAttribute("aria-hidden", "true");
+        mark.append(alert);
+        mark.addEventListener("pointerenter", event => {
+          if (event.pointerType !== "touch") showTooltip(mark);
+        });
+        mark.addEventListener("pointerleave", leaveTooltip);
+        mark.addEventListener("focus", () => showTooltip(mark));
+        mark.addEventListener("blur", hideTooltip);
+        mark.addEventListener("click", () => {
+          if (pinned === mark) {
+            hideTooltip();
+          } else {
+            showTooltip(mark);
+            pinned = mark;
+          }
+        });
+      }
+    }
+    if (group.bar.children[index] !== mark) group.bar.insertBefore(mark, group.bar.children[index] || null);
+    mark.dataset.kind = state.kind;
+    if (room.issue) {
+      mark.dataset.issue = issueLabel(room.issue);
+      mark.setAttribute("aria-label", "Кабинет " + room.name + " · " + state.text + " · есть проблема");
+    } else {
+      mark.title = room.name + " · " + state.text;
+    }
   }
 
   function draw() {
@@ -96,8 +187,12 @@ function mount(card) {
     retry.hidden = !failure && !expired;
     retry.disabled = pending;
     time.textContent = show ? "По расписанию · " + clock.format(now) + " МСК" : "По расписанию";
+    if (show && snapshot.issuesUnavailable) time.textContent += " · Заявки недоступны";
     if (hint) message.textContent = hint;
-    if (!show) return;
+    if (!show) {
+      if (tooltipAnchor) hideTooltip();
+      return;
+    }
     let freeTotal = 0, knownTotal = 0, index = 0;
     const seen = new Set();
     for (const [floor, rooms] of snapshot.groups) {
@@ -116,25 +211,33 @@ function mount(card) {
       const expanded = openFloor === floor;
       group.button.setAttribute("aria-expanded", String(expanded));
       group.details.hidden = !expanded;
-      const signature = JSON.stringify(states.map((s,i) => [rooms[i].name,s.kind,s.text]));
+      const signature = JSON.stringify(states.map((s,i) => [rooms[i].id,rooms[i].name,rooms[i].issue,s.kind,s.text]));
       if (group.signature !== signature) {
         group.signature = signature;
-        group.bar.replaceChildren(...states.map((state,i) => {
-          const mark = element("span", "mark", rooms[i].name);
-          mark.dataset.kind = state.kind;
-          mark.title = rooms[i].name + " · " + state.text;
-          return mark;
-        }));
+        const currentRooms = new Set(rooms.map(room => room.id));
+        for (const [id,mark] of group.marks) {
+          if (!currentRooms.has(id)) { mark.remove(); group.marks.delete(id); }
+        }
+        states.forEach((state,i) => updateMark(group,rooms[i],state,i));
         group.details.replaceChildren(...states.map((state,i) => {
           const item = element("div","room");
+          const { name, issue } = rooms[i];
           item.dataset.status = state.kind;
-          item.append(element("strong",null,rooms[i].name), element("small",null,state.text));
+          item.append(element("strong",null,name), element("small",null,state.text));
+          if (issue) item.append(element("small","issue-text",issueLabel(issue)));
           return item;
         }));
       }
     }
     for (const [floor,group] of rows) {
       if (!seen.has(floor)) { group.section.remove(); rows.delete(floor); }
+    }
+    if (tooltipAnchor) {
+      if (!tooltipAnchor.isConnected) hideTooltip();
+      else {
+        tooltip.textContent = tooltipAnchor.dataset.issue;
+        positionTooltip(tooltipAnchor);
+      }
     }
     total.textContent = knownTotal ? freeTotal + " свободно" : "Нет данных";
   }
