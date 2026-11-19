@@ -1,9 +1,18 @@
 const minute = 60_000;
+const soonWithin = 15 * minute;
 const freshFor = 2 * minute;
 const clock = new Intl.DateTimeFormat("ru-RU", {
   timeZone: "Europe/Moscow", hour: "2-digit", minute: "2-digit"
 });
 const natural = new Intl.Collator("ru", { numeric: true });
+const roomKinds = ["free", "short", "soon", "busy", "unknown"];
+
+function duration(ms) {
+  const minutes = Math.ceil(ms / minute);
+  if (minutes < 60) return minutes + " мин";
+  const remainder = minutes % 60;
+  return Math.floor(minutes / 60) + " ч" + (remainder ? " " + remainder + " мин" : "");
+}
 
 export function prepareSnapshot(payload) {
   const generated = Date.parse(payload?.generatedAt);
@@ -42,19 +51,27 @@ function issueLabel(issue) {
   return issue.title + (issue.count > 1 ? " · ещё " + (issue.count - 1) : "");
 }
 
+function releaseCount(count) {
+  return count + (count === 1 ? " скоро освободится" : " скоро освободятся");
+}
+
 export function roomStatus(spans, now) {
-  if (!spans) return { kind:"unknown", text:"Нет данных" };
-  const span = spans.find(([,end]) => end > now);
-  if (!span) return { kind:"free", text:"Свободен до конца дня" };
+  if (!spans) return { kind:"unknown", label:"Нет данных", timing:"" };
+  const index = spans.findIndex(([,end]) => end > now);
+  if (index === -1) return { kind:"free", label:"Свободен", timing:"До конца дня" };
+  const span = spans[index];
   const busy = span[0] <= now;
   const edge = span[busy ? 1 : 0];
   const left = edge - now;
-  if (left <= 15 * minute) {
-    const duration = left < minute ? "меньше чем через минуту" : "через " + Math.ceil(left / minute) + " мин";
-    const action = busy ? "Освободится" : "Займут";
-    return { kind:busy ? "soon" : "short", text:action + " " + duration + " · " + clock.format(edge) };
-  }
-  return { kind:busy ? "busy" : "free", text:(busy ? "Занят до " : "Свободен до ") + clock.format(edge) };
+  const soon = left <= soonWithin;
+  const relative = left < minute ? "меньше чем через минуту" : "через " + duration(left);
+  const timing = (busy ? "Освободится " : "Займут ") + relative + " · " + clock.format(edge) + " МСК";
+  if (!busy) return { kind:soon ? "short" : "free", label:soon ? "Свободен ненадолго" : "Свободен", timing };
+  const next = spans[index + 1];
+  const following = next
+    ? "Затем свободен до " + clock.format(next[0]) + " МСК"
+    : "Затем свободен до конца дня";
+  return { kind:soon ? "soon" : "busy", label:soon ? "Скоро освободится" : "Занят", timing, following };
 }
 
 function element(tag, className, text) {
@@ -66,10 +83,20 @@ function element(tag, className, text) {
 
 function mount(card) {
   const select = name => card.querySelector("[data-" + name + "]");
-  const floors = select("floors"), total = select("total"), time = select("time");
+  const floors = select("floors"), time = select("time"), legend = select("legend");
+  const totals = select("totals") ?? select("total");
   const message = select("message"), retry = select("retry");
   const tooltip = select("issue-tooltip");
+  const heading = element("div", "tooltip-heading");
+  const status = element("strong", "tooltip-status");
+  const timing = element("div", "tooltip-timing");
+  const following = element("div", "tooltip-timing");
+  const issueText = element("div", "tooltip-issue");
+  heading.setAttribute("aria-hidden", "true");
+  status.setAttribute("aria-hidden", "true");
+  tooltip.replaceChildren(heading, status, timing, following, issueText);
   const rows = new Map();
+  const roomByMark = new WeakMap();
   let snapshot, offset = 0, openFloor, pending = false, timer, failure = "";
   let nextId = 0;
   let tooltipAnchor, pinned, hideTimer;
@@ -77,6 +104,7 @@ function mount(card) {
   function hideTooltip() {
     clearTimeout(hideTimer);
     tooltipAnchor?.removeAttribute("aria-describedby");
+    pinned?.setAttribute("aria-pressed", "false");
     tooltip.hidden = true;
     tooltipAnchor = pinned = undefined;
   }
@@ -85,9 +113,22 @@ function mount(card) {
     clearTimeout(hideTimer);
     if (tooltipAnchor !== mark) hideTooltip();
     tooltipAnchor = mark;
-    tooltip.textContent = mark.dataset.issue;
     tooltip.hidden = false;
+    updateTooltip(mark);
     mark.setAttribute("aria-describedby", tooltip.id);
+  }
+
+  function updateTooltip(mark) {
+    const { room, state } = roomByMark.get(mark);
+    tooltip.dataset.kind = state.kind;
+    heading.textContent = "Кабинет " + room.name;
+    status.textContent = state.label;
+    timing.textContent = state.timing;
+    timing.hidden = !state.timing;
+    following.textContent = state.following ?? "";
+    following.hidden = !state.following;
+    issueText.textContent = room.issue ? "Проблема · " + issueLabel(room.issue) : "";
+    issueText.hidden = !room.issue;
     positionTooltip(mark);
   }
 
@@ -95,8 +136,11 @@ function mount(card) {
     const anchor = mark.getBoundingClientRect();
     const bounds = card.getBoundingClientRect();
     const { width, height } = tooltip.getBoundingClientRect();
-    const left = Math.min(bounds.width - width - 8, Math.max(8, anchor.left - bounds.left + (anchor.width - width) / 2));
-    const top = anchor.top >= height + 12 ? anchor.top - height - 6 : anchor.bottom + 6;
+    const left = Math.max(8, Math.min(bounds.width - width - 8,
+      anchor.left - bounds.left + (anchor.width - width) / 2));
+    const below = window.innerHeight - anchor.bottom;
+    const above = anchor.top >= height + 12 || anchor.top > below;
+    const top = above ? anchor.top - height - 6 : anchor.bottom + 6;
     tooltip.style.left = left + "px";
     tooltip.style.top = (top - bounds.top) + "px";
   }
@@ -105,7 +149,7 @@ function mount(card) {
     clearTimeout(hideTimer);
     hideTimer = setTimeout(() => {
       if (!pinned && document.activeElement !== tooltipAnchor) hideTooltip();
-    }, 120);
+    }, 200);
   }
 
   tooltip.addEventListener("pointerenter", () => clearTimeout(hideTimer));
@@ -116,12 +160,23 @@ function mount(card) {
   document.addEventListener("keydown", event => {
     if (event.key === "Escape" && tooltipAnchor) hideTooltip();
   });
+  window.addEventListener("resize", () => {
+    if (tooltipAnchor) positionTooltip(tooltipAnchor);
+  });
 
   function createGroup(floor) {
     const section = element("div", "group"), button = element("button", "row");
     button.type = "button";
     const label = floor || "Этаж не указан";
-    const bar = element("span", "bar"), count = element("span","count");
+    const bar = element("div", "bar"), count = element("span","count");
+    const distribution = element("div","distribution");
+    distribution.setAttribute("aria-hidden","true");
+    const segments = new Map(roomKinds.map(kind => {
+      const segment = element("span");
+      segment.dataset.kind = kind;
+      distribution.append(segment);
+      return [kind, segment];
+    }));
     button.append(element("span","floor",label), count, element("span","arrow"));
     const details = element("div","details");
     details.id = "room-occ-floor-" + (++nextId);
@@ -131,47 +186,69 @@ function mount(card) {
       draw();
     }
     button.addEventListener("click", toggleFloor);
-    bar.addEventListener("click", event => {
-      if (!event.target.closest("button")) toggleFloor();
-    });
-    section.append(button,bar,details);
-    return { section, button, label, bar, count, details, marks:new Map() };
+    section.append(button,distribution,bar,details);
+    return { section, button, label, bar, count, details, segments, marks:new Map() };
   }
 
   function updateMark(group, room, state, index) {
-    let mark = group.marks.get(room.id);
-    if (!mark || Boolean(room.issue) !== (mark.tagName === "BUTTON")) {
-      mark?.remove();
-      mark = element(room.issue ? "button" : "span", "mark", room.name);
-      group.marks.set(room.id, mark);
-      if (room.issue) {
-        mark.type = "button";
-        const alert = element("span", "alert", "!");
-        alert.setAttribute("aria-hidden", "true");
-        mark.append(alert);
-        mark.addEventListener("pointerenter", event => {
-          if (event.pointerType !== "touch") showTooltip(mark);
-        });
-        mark.addEventListener("pointerleave", leaveTooltip);
-        mark.addEventListener("focus", () => showTooltip(mark));
-        mark.addEventListener("blur", hideTooltip);
-        mark.addEventListener("click", () => {
-          if (pinned === mark) {
-            hideTooltip();
-          } else {
-            showTooltip(mark);
-            pinned = mark;
-          }
-        });
-      }
+    let controls = group.marks.get(room.id);
+    if (!controls) {
+      const mark = element("button", "mark");
+      const name = element("span", "mark-name");
+      const clockMark = element("span", "mark-clock");
+      const alert = element("span", "alert", "!");
+      clockMark.setAttribute("aria-hidden", "true");
+      alert.setAttribute("aria-hidden", "true");
+      mark.type = "button";
+      mark.setAttribute("aria-pressed", "false");
+      mark.append(name, clockMark, alert);
+      controls = { mark, name, clockMark, alert };
+      group.marks.set(room.id, controls);
+      mark.addEventListener("pointerenter", event => {
+        if (event.pointerType !== "touch") showTooltip(mark);
+      });
+      mark.addEventListener("pointerleave", leaveTooltip);
+      mark.addEventListener("focus", () => showTooltip(mark));
+      mark.addEventListener("blur", () => {
+        if (tooltipAnchor === mark) hideTooltip();
+      });
+      mark.addEventListener("click", () => {
+        if (pinned === mark) hideTooltip();
+        else {
+          showTooltip(mark);
+          pinned = mark;
+          mark.setAttribute("aria-pressed", "true");
+        }
+      });
     }
+    const { mark, name, clockMark, alert } = controls;
+    roomByMark.set(mark, { room, state });
+    name.textContent = room.name;
+    clockMark.hidden = state.kind !== "soon" && state.kind !== "short";
+    alert.hidden = !room.issue;
     if (group.bar.children[index] !== mark) group.bar.insertBefore(mark, group.bar.children[index] || null);
     mark.dataset.kind = state.kind;
-    if (room.issue) {
-      mark.dataset.issue = issueLabel(room.issue);
-      mark.setAttribute("aria-label", "Кабинет " + room.name + " · " + state.text + " · есть проблема");
-    } else {
-      mark.title = room.name + " · " + state.text;
+    mark.toggleAttribute("data-issue", Boolean(room.issue));
+    mark.setAttribute("aria-label", ["Кабинет " + room.name, state.label, room.issue && "есть проблема"].filter(Boolean).join(" · "));
+  }
+
+  function updateTotals(counts) {
+    const labels = {
+      free: (counts.free + counts.short) + " свободно",
+      busy: (counts.busy + counts.soon) + " занято",
+      soon: "Из них " + releaseCount(counts.soon),
+      unknown: counts.unknown + " без данных",
+    };
+    if (!totals.children.length) {
+      totals.textContent = labels.free;
+      return;
+    }
+    for (const total of totals.children) {
+      const kind = total.dataset.kind;
+      total.hidden = (kind === "unknown" || kind === "soon")
+        ? !counts[kind]
+        : counts.free + counts.short + counts.busy + counts.soon === 0;
+      if (total.textContent !== labels[kind]) total.textContent = labels[kind];
     }
   }
 
@@ -182,7 +259,8 @@ function mount(card) {
       snapshot?.state === "unpublished" ? "Нет опубликованного расписания на сегодня." :
       snapshot && !snapshot.groups.length ? "В справочнике нет кабинетов." : "");
     const show = !!snapshot && !hint;
-    floors.hidden = total.hidden = !show;
+    floors.hidden = totals.hidden = !show;
+    if (legend) legend.hidden = !show;
     message.hidden = !hint && !!snapshot;
     retry.hidden = !failure && !expired;
     retry.disabled = pending;
@@ -193,7 +271,9 @@ function mount(card) {
       if (tooltipAnchor) hideTooltip();
       return;
     }
-    let freeTotal = 0, knownTotal = 0, index = 0;
+    const totalsByKind = Object.fromEntries(roomKinds.map(kind => [kind, 0]));
+    let index = 0;
+    let tooltipMoved = false;
     const seen = new Set();
     for (const [floor, rooms] of snapshot.groups) {
       seen.add(floor);
@@ -202,20 +282,36 @@ function mount(card) {
       if (floors.children[index] !== group.section) floors.insertBefore(group.section, floors.children[index] || null);
       index++;
       const states = rooms.map(room => roomStatus(room.spans,now));
-      const free = states.filter(s => s.kind === "short" || s.kind === "free").length;
-      const known = states.filter(s => s.kind !== "unknown").length;
-      freeTotal += free; knownTotal += known;
-      const value = known ? free : "—";
-      group.count.textContent = value + "/" + rooms.length;
-      group.button.setAttribute("aria-label", group.label + ", свободно " + value + " из " + rooms.length);
       const expanded = openFloor === floor;
+      if (group.details.hidden === expanded) tooltipMoved = true;
       group.button.setAttribute("aria-expanded", String(expanded));
       group.details.hidden = !expanded;
-      const signature = JSON.stringify(states.map((s,i) => [rooms[i].id,rooms[i].name,rooms[i].issue,s.kind,s.text]));
+      const counts = Object.fromEntries(roomKinds.map(kind => [kind, 0]));
+      for (const state of states) {
+        counts[state.kind]++;
+        totalsByKind[state.kind]++;
+      }
+      const signature = JSON.stringify(states.map((s,i) => [rooms[i].id,rooms[i].name,rooms[i].issue,s]));
       if (group.signature !== signature) {
         group.signature = signature;
+        tooltipMoved = true;
+        const free = counts.free + counts.short;
+        const busy = counts.busy + counts.soon;
+        const known = rooms.length > counts.unknown;
+        group.count.textContent = known ? free + " из " + rooms.length + " свободно" : "Нет данных";
+        group.count.dataset.freeCount = String(free);
+        group.button.setAttribute("aria-label", [
+          group.label, group.count.textContent, known && busy + " занято",
+          counts.soon && releaseCount(counts.soon),
+          counts.short && counts.short + (counts.short === 1 ? " свободен ненадолго" : " свободны ненадолго"),
+          counts.unknown && counts.unknown + " без данных",
+        ].filter(Boolean).join(" · "));
+        for (const [kind, segment] of group.segments) {
+          segment.hidden = !counts[kind];
+          segment.style.flexGrow = counts[kind];
+        }
         const currentRooms = new Set(rooms.map(room => room.id));
-        for (const [id,mark] of group.marks) {
+        for (const [id,{ mark }] of group.marks) {
           if (!currentRooms.has(id)) { mark.remove(); group.marks.delete(id); }
         }
         states.forEach((state,i) => updateMark(group,rooms[i],state,i));
@@ -223,7 +319,7 @@ function mount(card) {
           const item = element("div","room");
           const { name, issue } = rooms[i];
           item.dataset.status = state.kind;
-          item.append(element("strong",null,name), element("small",null,state.text));
+          item.append(element("strong",null,name), element("small",null,[state.label,state.timing].filter(Boolean).join(" · ")));
           if (issue) item.append(element("small","issue-text",issueLabel(issue)));
           return item;
         }));
@@ -234,12 +330,9 @@ function mount(card) {
     }
     if (tooltipAnchor) {
       if (!tooltipAnchor.isConnected) hideTooltip();
-      else {
-        tooltip.textContent = tooltipAnchor.dataset.issue;
-        positionTooltip(tooltipAnchor);
-      }
+      else if (tooltipMoved) updateTooltip(tooltipAnchor);
     }
-    total.textContent = knownTotal ? freeTotal + " свободно" : "Нет данных";
+    updateTotals(totalsByKind);
   }
 
   async function refresh() {
@@ -255,7 +348,6 @@ function mount(card) {
           openFloor = undefined;
           floors.replaceChildren();
           rows.clear();
-          total.textContent = "";
         }
         throw new Error("Unavailable");
       }

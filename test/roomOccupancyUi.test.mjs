@@ -11,6 +11,20 @@ test('availability changes at inclusive thresholds and exact lesson boundaries',
   assert.equal(roomStatus(null,instant('12:00')).kind,'unknown');
 });
 
+test('room status describes the current state, exact transition and next free window', () => {
+  const spans = [...span, [instant('13:10'), instant('13:45')]];
+  assert.deepEqual(roomStatus(spans, instant('11:50')), {
+    kind:'short', label:'Свободен ненадолго', timing:'Займут через 10 мин · 12:00 МСК',
+  });
+  assert.deepEqual(roomStatus(spans, instant('12:55')), {
+    kind:'soon', label:'Скоро освободится', timing:'Освободится через 5 мин · 13:00 МСК',
+    following:'Затем свободен до 13:10 МСК',
+  });
+  assert.equal(roomStatus(span, instant('12:00') - 1).timing, 'Займут меньше чем через минуту · 12:00 МСК');
+  assert.equal(roomStatus(span, instant('10:35')).timing, 'Займут через 1 ч 25 мин · 12:00 МСК');
+  assert.deepEqual(roomStatus(span, instant('13:00')), { kind:'free', label:'Свободен', timing:'До конца дня' });
+});
+
 test('adjoining intervals merge and malformed intervals produce unknown occupancy', () => {
   const iso = hm => new Date(instant(hm)).toISOString();
   const payload = { schema:1, state:'published', generatedAt:iso('10:00'), dayEnd:iso('23:59'), rooms:[
