@@ -6,6 +6,7 @@ import 'dotenv/config'
 
 import bcrypt from 'bcrypt';
 import * as db from './vendor/db.mjs';
+import { createRoomOccupancy } from './vendor/roomOccupancy.mjs';
 import * as hlp from './vendor/hlp.mjs';
 import * as vcall from './vendor/vcall.mjs';
 import { makeSsoRouter } from "./vendor/ssoRouter.mjs";
@@ -327,6 +328,9 @@ app.use("/sso", makeSsoRouter({
   lifecycle: ssoLifecycle,
 }));
 app.use(platformsso)
+
+const roomOccupancy = createRoomOccupancy();
+roomOccupancy.register(app);
 
 app.use(express.json({ limit: "20mb" })); // для application/json
 app.use(async function (req, res, next) {
@@ -1347,6 +1351,7 @@ app.get('/',async (req,res)=>{
       infoCount: infoCards.length,
       auth: rolen,
       canManageCards,
+      showRoomOccupancy: roomOccupancy.visibleFor(req.session),
       isGuestHome: homeCatalog.homeRoleMode === 'guest',
       isAdminHome: homeCatalog.homeRoleMode === 'admin',
       infoGroup,

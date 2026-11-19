@@ -8,6 +8,12 @@
       {{/unless}}
     </header>
 
+    {{#if showRoomOccupancy}}
+      <link rel="stylesheet" href="/css/room-occupancy.css">
+      {{> roomOccupancy}}
+      <script type="module" src="/js/room-occupancy.js"></script>
+    {{/if}}
+
     {{#if canManageCards}}
       <div class="mt-4 flex flex-wrap items-center gap-3">
         <button type="button" data-card-admin-open
