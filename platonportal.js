@@ -10,6 +10,8 @@ import * as hlp from './vendor/hlp.mjs';
 import * as vcall from './vendor/vcall.mjs';
 import { makeSsoRouter } from "./vendor/ssoRouter.mjs";
 import { RedisRevocableTokenStore, createSsoSessionLifecycle } from './vendor/ssoRevocableSessions.mjs';
+import { accountSessionPrefixes, createAccountSecurity } from './vendor/accountSecurity.mjs';
+import { makeAccountSecurityRouter, trackAccountSession } from './vendor/accountSecurityRoutes.mjs';
 import { getTelegramMiniAppConfig, verifyTelegramMiniAppInitData } from './vendor/telegramMiniApp.mjs';
 import { makeTelegramMiniAppRouter } from './vendor/telegramMiniAppRouter.mjs';
 import platformsso from "./vendor/platformsso.mjs";
@@ -55,13 +57,14 @@ const ssoRedis = createClient({
 ssoRedis.on('error', error => mlog(`SSO Redis error: ${error?.message || error}`));
 const ssoSessionStore = new RedisStore({
   client: ssoRedis,
-  prefix: 'sso:session:',
+  prefix: accountSessionPrefixes.portal,
   ttl: SSO_SESSION_TTL_SECONDS,
 });
 const ssoTokenStore = new RedisRevocableTokenStore(ssoRedis, {
   prefix: 'sso:oauth:',
   ttlSeconds: SSO_SESSION_TTL_SECONDS,
 });
+const accountSecurity = createAccountSecurity(ssoRedis);
 let telegramMiniAppConfig = { enabled: false };
 try {
   telegramMiniAppConfig = getTelegramMiniAppConfig();
@@ -71,7 +74,7 @@ try {
 const telegramMiniAppSessionStore = telegramMiniAppConfig.enabled
   ? new RedisStore({
     client: ssoRedis,
-    prefix: 'tma:session:',
+    prefix: accountSessionPrefixes.telegram,
     ttl: telegramMiniAppConfig.sessionTtlSeconds,
   })
   : null;
@@ -208,9 +211,9 @@ app.use(express.static(publicPath, {
 }));
 
 app.use(cookieParser());
-app.set('trust proxy', 1);
+app.set('trust proxy', 'loopback');
 
-app.use(session({
+const portalSession = session({
   name: 'sso.sid',
   store: ssoSessionStore,
   resave: false,
@@ -222,7 +225,10 @@ app.use(session({
     sameSite: 'lax',
     maxAge: SSO_SESSION_TTL_SECONDS * 1000,
   },
-}))
+});
+const sessionKind = req => telegramMiniAppSession && /^\/tg(?:\/|$)/i.test(req.path) ? 'telegram' : 'portal';
+app.use((req, res, next) => (sessionKind(req) === 'telegram' ? telegramMiniAppSession : portalSession)(req, res, next));
+app.use(trackAccountSession(accountSecurity, sessionKind));
 
 const SSO_CLIENTS = {
     "bookpc": { client_secret: SSO_CLIENT_SECRETS.bookpc, redirect_uri: "https://pc.platoniks.ru/cb",
@@ -272,11 +278,15 @@ const ssoLifecycle = createSsoSessionLifecycle({
   issuer: SSO_ISSUER,
   tokenStore: ssoTokenStore,
   sessionStore: ssoSessionStore,
+  accountSecurity,
   logger: message => mlog(message),
 });
 const telegramMiniAppLifecycle = telegramMiniAppConfig.enabled
   ? createSsoSessionLifecycle({
     sessionStore: telegramMiniAppSessionStore,
+    accountSecurity,
+    sessionKind: 'telegram',
+    revokeRelated: ssoLifecycle.revokeSnapshot,
     logger: message => mlog(message),
   })
   : null;
@@ -287,7 +297,7 @@ function saveStoreSession(store, sessionId, sessionValue) {
   });
 }
 
-async function establishTelegramSsoHandoff(res, { identity, right, logins }) {
+async function establishTelegramSsoHandoff(req, res, { identity, right, logins }) {
   const sessionId = crypto.randomBytes(24).toString('base64url');
   const maxAge = SSO_SESSION_TTL_SECONDS * 1000;
   const expires = new Date(Date.now() + maxAge);
@@ -307,8 +317,17 @@ async function establishTelegramSsoHandoff(res, { identity, right, logins }) {
     logins,
     rolen: getSessionPortalRole(right),
     sso_clients: [],
+    securityParentSid: req.sessionID,
   };
   await saveStoreSession(ssoSessionStore, sessionId, sessionValue);
+  try {
+    if (!await accountSecurity.noteLogin('portal', sessionId, identity.portalUserId, req, 'telegram-browser', req.sessionID)) {
+      throw new Error('Telegram session was ended');
+    }
+  } catch (error) {
+    await new Promise((resolve, reject) => ssoSessionStore.destroy(sessionId, failure => failure ? reject(failure) : resolve()));
+    throw error;
+  }
   res.cookie('sso.sid', `s:${cookieSignature.sign(sessionId, SESSION_SECRET)}`, {
     secure: true,
     httpOnly: true,
@@ -325,15 +344,24 @@ app.use("/sso", makeSsoRouter({
   clients: SSO_CLIENTS,
   tokenStore: ssoTokenStore,
   lifecycle: ssoLifecycle,
+  accountSecurity,
+}));
+app.use('/security', makeAccountSecurityRouter({
+  security: accountSecurity,
+  clients: SSO_CLIENTS,
+  secret: SESSION_SECRET,
+  lifecycle: ssoLifecycle,
+  logger: message => mlog(message),
 }));
 app.use(platformsso)
 
 app.use(express.json({ limit: "20mb" })); // для application/json
 app.use(async function (req, res, next) {
+    res.locals.isSignedIn = Number.isSafeInteger(Number(req.session.uid)) && Number(req.session.uid) > 0;
     let page = req._parsedOriginalUrl.pathname;
     //console.log('Cookie:', req.headers);
     //.log('Session:', req.session);
-     mlog(page,req.session.uid,req.session.name,req.session.info,req.headers['nip'],hlp.getcurip(req.socket.remoteAddress),req.query)
+    mlog(page,req.session.uid,req.session.name,req.session.info,req.headers['nip'],hlp.getcurip(req.socket.remoteAddress),/^\/auth\/?$/i.test(page) ? {} : req.query)
      next();
 })
 
@@ -1257,7 +1285,7 @@ async function getTelegramMiniAppPortalData(identity) {
   };
 }
 
-async function launchTelegramMiniAppService(identity, serviceId, res) {
+async function launchTelegramMiniAppService(identity, serviceId, res, req) {
   const cardId = Number(serviceId);
   if (!Number.isSafeInteger(cardId) || cardId <= 0) {
     return res.status(404).json({ ok: false, code: 'service_unavailable' });
@@ -1269,7 +1297,7 @@ async function launchTelegramMiniAppService(identity, serviceId, res) {
   if (!launch) return res.status(404).json({ ok: false, code: 'service_unavailable' });
 
   const logins = await db.get_user_logins(identity.portalUserId);
-  await establishTelegramSsoHandoff(res, { identity, right: rights, logins });
+  await establishTelegramSsoHandoff(req, res, { identity, right: rights, logins });
 
   if (launch.type === 'portal' || launch.type === 'external') return res.redirect(302, launch.target);
   const client = SSO_CLIENTS[launch.clientId];
@@ -1283,13 +1311,13 @@ async function launchTelegramMiniAppService(identity, serviceId, res) {
 }
 
 if (telegramMiniAppConfig.enabled) {
-  app.use('/tg', telegramMiniAppSession);
   app.use('/tg', makeTelegramMiniAppRouter({
     ...telegramMiniAppConfig,
     verifyInitData: verifyTelegramMiniAppInitData,
     resolveIdentity: db.resolveTelegramMiniAppIdentity,
     getUserRights: db.get_user_rights,
     lifecycle: telegramMiniAppLifecycle,
+    accountSecurity,
     getPortalData: getTelegramMiniAppPortalData,
     launchService: launchTelegramMiniAppService,
     logger: message => mlog(message),
@@ -1850,9 +1878,13 @@ app.get('/auth',async (req,res)=>{
     }
 })  
 
-app.get('/logout', async function(req, res) {
+app.get('/logout', async function(req, res, next) {
     mlog( req.session.name,"вышел из системы");
-    await ssoLifecycle.logout(req, 'logout');
+    try {
+      await ssoLifecycle.logout(req, 'logout');
+    } catch (error) {
+      return next(error);
+    }
     res.clearCookie('sso.sid', { path: '/' });
     res.redirect('/');
 })
@@ -2138,6 +2170,7 @@ app.get('*',async function(req, res){
 async function start(){
     try {
         await ssoRedis.connect();
+        await accountSecurity.backfill();
         try {
             await db.migratePortalModeratorRole();
             await db.migrateCalendarSso();

@@ -47,8 +47,9 @@ class MemoryTokenStore {
     return record;
   }
 
-  async consume(token) {
-    const record = this.tokens.get(token) || null;
+  async consume(token, clientId) {
+    const record = this.tokens.get(token);
+    if (!record || record.exp <= Math.floor(Date.now() / 1000) || (clientId && record.client_id !== clientId)) return null;
     this.tokens.delete(token);
     return record;
   }
@@ -87,6 +88,11 @@ async function startFixture(options = {}) {
       revocable_sessions: true,
       srv_name: 'rasp',
       legacy_audience: 8,
+    },
+    other: {
+      client_secret: 'other-client-secret',
+      revocable_sessions: true,
+      srv_name: 'other',
     },
   };
   const tokenStore = new MemoryTokenStore();
@@ -223,6 +229,27 @@ test('revocable rasp token is bound to the upstream session and rotates once', a
       }),
     });
     assert.equal(replay.status, 400);
+  } finally {
+    await closeFixture(fixture);
+  }
+});
+
+test('refresh cannot consume another authenticated client’s token', async () => {
+  const fixture = await startFixture();
+  try {
+    const seed = await fetch(`${fixture.baseURL}/seed`);
+    const tokens = await authorizeAndExchange(fixture, cookieFrom(seed));
+    const refused = await fetch(`${fixture.baseURL}/sso/token`, {
+      method: 'POST',
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: tokens.refresh_token,
+        client_id: 'other',
+        client_secret: 'other-client-secret',
+      }),
+    });
+    assert.equal(refused.status, 400);
+    assert.equal((await introspect(fixture, tokens.refresh_token)).active, true);
   } finally {
     await closeFixture(fixture);
   }

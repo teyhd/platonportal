@@ -6,6 +6,9 @@ import jwt from "jsonwebtoken";
 import * as db from './db.mjs';
 import {mlog,say} from './logs.js'
 
+const authorizationCodeTtlMs = 2 * 60 * 1000;
+const maxPendingAuthorizationCodes = 2000;
+
 export function getClientServiceName(client) {
   if (typeof client?.srv_name !== 'string' || !client.srv_name) {
     throw new Error('SSO client must have a service name');
@@ -68,12 +71,29 @@ export function makeSsoRouter(config = {}) {
   const getServiceRoles = config.getServiceRoles || db.getUserRolesForsrvnam;
   const tokenStore = config.tokenStore || null;
   const lifecycle = config.lifecycle || null;
+  const accountSecurity = config.accountSecurity;
+  const getConfiguredClient = clientId => typeof clientId === 'string' && Object.hasOwn(CLIENTS, clientId)
+    ? CLIENTS[clientId] : null;
   const asyncRoute = handler => (req, res, next) => {
     Promise.resolve(handler(req, res, next)).catch(next);
   };
 
-  // code -> { sub, client_id, srv_name, scope }
   const CODES = new Map();
+
+  async function recordService(entry, kind, expiresAt, issuedToken) {
+    if (!accountSecurity) return true;
+    let active = false;
+    try {
+      active = await accountSecurity.noteService({
+        sid: entry.sid, uid: entry.sub, clientId: entry.client_id, expiresAt, kind,
+      });
+      return active;
+    } finally {
+      if (!active && issuedToken) {
+        await tokenStore.consume(issuedToken, entry.client_id).catch(() => {});
+      }
+    }
+  }
 
   router.use(bodyParser.urlencoded({ extended: false }));
 
@@ -98,7 +118,7 @@ export function makeSsoRouter(config = {}) {
   }
 
   // --- Демо-логин (замени на свою авторизацию) ---
-  router.get('/auth',async (req,res)=>{
+  router.get('/auth', asyncRoute(async (req,res)=>{
       if (req.query.pin!=undefined){
           let ans = await db.auth_user(req.query.pin);
           if (ans!=undefined){
@@ -114,9 +134,9 @@ export function makeSsoRouter(config = {}) {
               title: 'Авторизация'
           });
       }
-  }) 
+  }));
 
-  router.get('/bauth',async (req,res)=>{
+  router.get('/bauth', asyncRoute(async (req,res)=>{
       if (req.query.pin!=undefined){
           let ans = await db.auth_user(req.query.pin);
           if (ans!=undefined){
@@ -142,7 +162,7 @@ export function makeSsoRouter(config = {}) {
               title: 'Авторизация'
           });
       }
-  }) 
+  }));
 
   router.post('/auth',async (req,res)=>{
     if (req.body.pin!=undefined){
@@ -176,8 +196,9 @@ export function makeSsoRouter(config = {}) {
   // --- /authorize ---
   // Calendar uses its service name. Legacy clients use their configured numeric audience.
   router.get("/authorize", (req, res) => {
+    res.set('Cache-Control', 'no-store');
     const { client_id, redirect_uri, state, audience } = req.query;
-    const cl = CLIENTS[client_id];
+    const cl = getConfiguredClient(client_id);
     if (!cl || cl.redirect_uri !== redirect_uri) return res.status(400).send("invalid client");
 
     if (!req.session.uid) {
@@ -189,9 +210,14 @@ export function makeSsoRouter(config = {}) {
     req.session.sso_clients = [...new Set([...(req.session.sso_clients || []), client_id])];
     req.session.save(error => {
       if (error) return res.status(500).send('session save failed');
+      if (CODES.size >= maxPendingAuthorizationCodes) return res.status(503).send('SSO temporarily unavailable');
       const code = crypto.randomBytes(16).toString("hex");
       const serviceScopedAccessToken = cl.service_scoped_access_token === true;
+      const expiresAt = Date.now() + authorizationCodeTtlMs;
+      const cleanup = setTimeout(() => CODES.delete(code), authorizationCodeTtlMs).unref();
       CODES.set(code, {
+        expiresAt,
+        cleanup,
         sub: req.session.uid,       // users.id
         name : req.session.name,
         right: serviceScopedAccessToken ? undefined : req.session.right,
@@ -213,8 +239,8 @@ export function makeSsoRouter(config = {}) {
   router.post("/token", asyncRoute(async (req, res) => {
     res.set('Cache-Control', 'no-store');
     const { grant_type, code, client_id, client_secret, redirect_uri, refresh_token } = req.body;
-    const cl = CLIENTS[client_id];
-    if (!cl || cl.client_secret !== client_secret || (grant_type === 'authorization_code' && cl.redirect_uri !== redirect_uri)) {
+    const cl = getConfiguredClient(client_id);
+    if (!cl?.client_secret || cl.client_secret !== client_secret || (grant_type === 'authorization_code' && cl.redirect_uri !== redirect_uri)) {
       return res.status(400).json({ error: "invalid_client" });
     }
 
@@ -222,10 +248,11 @@ export function makeSsoRouter(config = {}) {
       if (!cl.revocable_sessions || !tokenStore || !refresh_token) {
         return res.status(400).json({ error: 'invalid_grant' });
       }
-      const previous = await tokenStore.consume(refresh_token);
-      if (!previous || previous.client_id !== client_id || !await lifecycle?.isActive(previous.sid, previous.sub)) {
+      const previous = await tokenStore.consume(refresh_token, client_id);
+      if (!previous || !await lifecycle?.isActive(previous.sid, previous.sub)) {
         return res.status(400).json({ error: 'invalid_grant' });
       }
+
       const rights = await getServiceRoles(previous.sub, cl.srv_name);
       const nextRefresh = await tokenStore.issue(previous);
       const now = Math.floor(Date.now() / 1000);
@@ -240,6 +267,9 @@ export function makeSsoRouter(config = {}) {
         sid: previous.sid,
         now,
       });
+      if (!await recordService(previous, 'refresh', nextRefresh.expiresAt, nextRefresh.token)) {
+        return res.status(400).json({ error: 'invalid_grant' });
+      }
       return res.json({
         token_type: 'Bearer',
         access_token: accessToken,
@@ -254,10 +284,14 @@ export function makeSsoRouter(config = {}) {
     }
 
     const entry = CODES.get(code);
-    if (!entry || entry.client_id !== client_id) {
+    if (!entry || entry.client_id !== client_id || entry.expiresAt <= Date.now()) {
       return res.status(400).json({ error: "invalid_code" });
     }
     CODES.delete(code);
+    clearTimeout(entry.cleanup);
+    if (lifecycle && !await lifecycle.isActive(entry.sid, entry.sub)) {
+      return res.status(400).json({ error: 'invalid_grant' });
+    }
 
     const rights = entry.service_scoped_access_token
       ? await getServiceRoles(entry.sub, entry.srv_name)
@@ -283,7 +317,7 @@ export function makeSsoRouter(config = {}) {
     );
 
     let issuedRefreshToken;
-    let refreshExpiresIn;
+    let refreshExpiresAt = null;
     if (cl.revocable_sessions) {
       if (!tokenStore || !entry.sid) return res.status(503).json({ error: 'revocable_sessions_unavailable' });
       const issued = await tokenStore.issue({
@@ -295,7 +329,7 @@ export function makeSsoRouter(config = {}) {
         audience: entry.srv_name,
       });
       issuedRefreshToken = issued.token;
-      refreshExpiresIn = issued.expiresAt - now;
+      refreshExpiresAt = issued.expiresAt;
     } else {
       issuedRefreshToken = jwt.sign(
         { sub: entry.sub, typ: "refresh", iat: now, exp: now + 7 * 24 * 3600 },
@@ -304,21 +338,24 @@ export function makeSsoRouter(config = {}) {
       );
     }
 
+    if (!await recordService(entry, 'exchange', refreshExpiresAt, refreshExpiresAt ? issuedRefreshToken : null)) {
+      return res.status(400).json({ error: 'invalid_grant' });
+    }
     res.json({
       token_type: "Bearer",
       access_token,
       id_token,
       refresh_token: issuedRefreshToken,
       expires_in: 600,
-      ...(refreshExpiresIn ? { refresh_expires_in: refreshExpiresIn } : {}),
+      ...(refreshExpiresAt ? { refresh_expires_in: refreshExpiresAt - now } : {}),
     });
   }));
 
   router.post('/introspect', asyncRoute(async (req, res) => {
     res.set('Cache-Control', 'no-store');
     const credentials = parseBasicCredentials(req.get('authorization'));
-    const client = credentials ? CLIENTS[credentials.clientId] : null;
-    if (!client || client.client_secret !== credentials.clientSecret) {
+    const client = getConfiguredClient(credentials?.clientId);
+    if (!client?.client_secret || client.client_secret !== credentials.clientSecret) {
       res.set('WWW-Authenticate', 'Basic realm="sso-introspection"');
       return res.status(401).json({ active: false });
     }
@@ -329,6 +366,7 @@ export function makeSsoRouter(config = {}) {
       return res.json({ active: false });
     }
     const right = await getServiceRoles(record.sub, client.srv_name);
+    if (!await recordService(record, 'introspection', record.exp)) return res.json({ active: false });
     const authorizationVersion = crypto
       .createHash('sha256')
       .update(JSON.stringify([...right].sort((left, rightValue) => Number(left) - Number(rightValue))))

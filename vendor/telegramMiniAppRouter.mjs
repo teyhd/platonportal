@@ -29,6 +29,16 @@ function publicUser(identity) {
   };
 }
 
+function publicSession(req, identity) {
+  return {
+    ok: true,
+    user: publicUser(identity),
+    csrfToken: req.session.telegram.csrfToken,
+    telegramUserId: String(req.session.telegram.telegramUserId),
+    authDate: req.session.telegram.authDate,
+  };
+}
+
 export function makeTelegramMiniAppRouter({
   enabled,
   botId,
@@ -39,6 +49,7 @@ export function makeTelegramMiniAppRouter({
   resolveIdentity,
   getUserRights,
   lifecycle,
+  accountSecurity,
   getPortalData,
   launchService,
   logger = () => {},
@@ -72,6 +83,12 @@ export function makeTelegramMiniAppRouter({
       return null;
     }
 
+    if (lifecycle.isActive && !await lifecycle.isActive(req.sessionID, identity.portalUserId)) {
+      clearTelegramCookie(res, cookieName);
+      res.status(401).json({ ok: false, code: 'unauthorized' });
+      return null;
+    }
+
     return identity;
   }
 
@@ -83,23 +100,50 @@ export function makeTelegramMiniAppRouter({
         return res.status(403).json({ ok: false, code: 'link_unavailable' });
       }
 
-      const right = await getUserRights(identity.portalUserId);
+      const current = sessionIdentity(req);
+      const sameSession = current?.telegramUserId === validated.telegramUserId &&
+        current.botUserId === String(identity.botUserId) && String(req.session.uid) === String(identity.portalUserId) &&
+        (!lifecycle.isActive || await lifecycle.isActive(req.sessionID, identity.portalUserId));
+      if (sameSession && current.authDate === validated.authDate) return res.json(publicSession(req, identity));
+
+      const right = sameSession ? null : await getUserRights(identity.portalUserId);
+      if (accountSecurity) {
+        // These fields are verified with Telegram's signature before the proof is claimed.
+        const proof = [botId, validated.telegramUserId, validated.authDate].join(':');
+        const remainingProofSeconds = Math.max(1, validated.authDate + authMaxAgeSeconds - Math.floor(Date.now() / 1000) + 1);
+        if (!await accountSecurity.claimTelegramProof(proof, remainingProofSeconds)) {
+          if (sameSession && (!lifecycle.isActive || await lifecycle.isActive(req.sessionID, identity.portalUserId))) {
+            return res.json(publicSession(req, identity));
+          }
+          return res.status(401).json({ ok: false, code: 'telegram_proof_used' });
+        }
+      }
+
+      if (sameSession) {
+        if (lifecycle.isActive && !await lifecycle.isActive(req.sessionID, identity.portalUserId)) {
+          return res.status(401).json({ ok: false, code: 'unauthorized' });
+        }
+        current.authDate = Math.max(current.authDate, validated.authDate);
+        return res.json(publicSession(req, identity));
+      }
+
+      const telegram = {
+        telegramUserId: validated.telegramUserId,
+        botUserId: String(identity.botUserId),
+        authDate: validated.authDate,
+        csrfToken: csrfToken(),
+      };
       await lifecycle.establish(req, {
         id: identity.portalUserId,
         name: identity.name,
         role: identity.role,
         right,
         logins: [],
+        telegram,
       });
-      req.session.telegram = {
-        telegramUserId: validated.telegramUserId,
-        botUserId: String(identity.botUserId),
-        authDate: validated.authDate,
-        csrfToken: csrfToken(),
-      };
-      await new Promise((resolve, reject) => req.session.save(error => (error ? reject(error) : resolve())));
+      req.session.telegram ??= telegram;
 
-      return res.json({ ok: true, user: publicUser(identity), csrfToken: req.session.telegram.csrfToken });
+      return res.json(publicSession(req, identity));
     } catch (error) {
       if (error instanceof TelegramMiniAppValidationError) {
         return res.status(401).json({ ok: false, code: 'invalid_telegram_auth' });
@@ -113,7 +157,7 @@ export function makeTelegramMiniAppRouter({
     try {
       const identity = await resolveActiveIdentity(req, res);
       if (!identity) return;
-      return res.json({ ok: true, user: publicUser(identity), csrfToken: req.session.telegram.csrfToken });
+      return res.json(publicSession(req, identity));
     } catch (error) {
       return next(error);
     }
@@ -137,7 +181,7 @@ export function makeTelegramMiniAppRouter({
       if (typeof launchService !== 'function') {
         return res.status(404).json({ ok: false, code: 'service_unavailable' });
       }
-      return await launchService(identity, req.params.serviceId, res);
+      return await launchService(identity, req.params.serviceId, res, req);
     } catch (error) {
       return next(error);
     }
@@ -147,9 +191,8 @@ export function makeTelegramMiniAppRouter({
     try {
       const session = sessionIdentity(req);
       const token = String(req.get('x-tma-csrf') || '');
-      if (!session || !token || token !== session.csrfToken) {
-        return res.status(403).json({ ok: false, code: 'forbidden' });
-      }
+      if (!session) return res.status(401).json({ ok: false, code: 'unauthorized' });
+      if (!token || token !== session.csrfToken) return res.status(403).json({ ok: false, code: 'forbidden' });
       await lifecycle.logout(req, 'telegram_logout');
       clearTelegramCookie(res, cookieName);
       return res.json({ ok: true });

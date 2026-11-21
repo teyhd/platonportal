@@ -89,25 +89,53 @@
     setVisible(elements.empty, services.length === 0);
   }
 
+  function launchIdentity(initData) {
+    const params = new URLSearchParams(initData);
+    try {
+      return { userId: String(JSON.parse(params.get('user'))?.id ?? ''), authDate: Number(params.get('auth_date')) };
+    } catch {
+      return { userId: '', authDate: 0 };
+    }
+  }
+
+  async function currentSession(initData) {
+    const headers = { accept: 'application/json' };
+    const launch = launchIdentity(initData);
+    let active;
+    try {
+      active = await request('/tg/api/session', { headers });
+      if (!launch.userId || active.telegramUserId === launch.userId && launch.authDate <= active.authDate) return active;
+    } catch (error) {
+      if (error.code !== 'unauthorized') throw error;
+    }
+
+    if (!initData) return null;
+    try {
+      return await request('/tg/api/auth', {
+        method: 'POST',
+        headers: { ...headers, 'content-type': 'application/json' },
+        body: JSON.stringify({ initData }),
+      });
+    } catch (error) {
+      if (active?.telegramUserId === launch.userId && error.code === 'invalid_telegram_auth') return active;
+      throw error;
+    }
+  }
+
   async function openPortal() {
     setVisible(elements.error, false);
     setVisible(elements.content, false);
     setVisible(elements.loading, true);
 
-    const initData = getInitData();
-    if (!initData) {
-      showError('Откройте приложение из Telegram', 'Для безопасного входа используйте кнопку «Открыть портал» в чате с ботом.', false);
-      return;
-    }
-
     try {
-      telegram.ready?.();
-      telegram.expand?.();
-      const authenticated = await request('/tg/api/auth', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({ initData }),
-      });
+      telegram?.ready?.();
+      telegram?.expand?.();
+      const authenticated = await currentSession(getInitData());
+      if (!authenticated) {
+        showError('Откройте приложение из Telegram', 'Для входа используйте кнопку «Открыть портал» в чате с ботом.');
+        return;
+      }
+
       csrfToken = authenticated.csrfToken;
       const payload = await request('/tg/api/portal', { headers: { accept: 'application/json' } });
       if (elements.name) elements.name.textContent = payload.portal.title;
@@ -120,8 +148,12 @@
         showError('Нужно подтвердить связь аккаунта', 'Ваш Telegram пока не связан с активным аккаунтом Гармонии или связь требует проверки.', false);
         return;
       }
+      if (error.code === 'unauthorized' || error.code === 'telegram_proof_used') {
+        showError('Сеанс завершён', 'Закройте мини-приложение и снова откройте портал из бота.');
+        return;
+      }
       if (error.code === 'invalid_telegram_auth') {
-        showError('Не удалось подтвердить вход', 'Закройте Mini App и откройте его снова из бота.', true);
+        showError('Не удалось подтвердить вход', 'Закройте мини-приложение и снова откройте портал из бота.');
         return;
       }
       showError('Не удалось открыть портал', 'Проверьте подключение и повторите попытку.', true);
@@ -132,7 +164,14 @@
   elements.logout?.addEventListener('click', async () => {
     try {
       await request('/tg/api/logout', { method: 'POST', headers: { 'x-tma-csrf': csrfToken } });
-    } catch (_) {}
+    } catch (error) {
+      if (error.code !== 'unauthorized') {
+        showError('Не удалось завершить сеанс', 'Проверьте подключение и повторите выход.', true);
+        return;
+      }
+    }
+    csrfToken = '';
+    showError('Вы вышли из портала', 'Чтобы войти снова, откройте портал из бота.');
     telegram?.close?.();
   });
 

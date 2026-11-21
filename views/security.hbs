@@ -1,0 +1,201 @@
+<link rel="stylesheet" href="/css/security.css">
+
+<main class="security-page" aria-labelledby="security-title">
+  <div class="security-shell">
+    <div class="security-heading">
+      <span class="security-heading-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 22s7-3.5 7-9V5l-7-3-7 3v8c0 5.5 7 9 7 9Z"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>
+      </span>
+      <div>
+        <h1 id="security-title">Безопасность</h1>
+        <p>Устройства, входы в сервисы и недавняя активность аккаунта.</p>
+        {{#unless unavailable}}
+          <a class="security-history-link" href="#security-activity">
+            К истории входов
+            <svg aria-hidden="true"><use href="/icons/lucide.svg#chevron-down"></use></svg>
+          </a>
+        {{/unless}}
+      </div>
+    </div>
+
+    {{#if notice}}
+      <p class="security-message security-message--success" role="status">{{notice}}</p>
+    {{/if}}
+    {{#if error}}
+      <p class="security-message security-message--error" role="alert">{{error}}</p>
+    {{/if}}
+
+    {{#if unavailable}}
+      <a class="security-button" href="/security">Обновить страницу</a>
+    {{else}}
+      <div class="security-columns">
+        <section class="security-section" aria-labelledby="security-devices">
+          <div class="security-section-heading">
+            <h2 id="security-devices">Активные сеансы{{#if sessions.length}} <span class="security-count">{{sessions.length}}</span>{{/if}}</h2>
+            {{#if hasOtherSessions}}
+              <details class="security-confirm security-confirm--bulk">
+                <summary class="security-button security-button--danger">Завершить все, кроме текущего</summary>
+                <form method="post" action="/security/sessions/revoke-others" class="security-confirm-panel">
+                  <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                  <p>Выйти из портала и поддерживаемых сервисов во всех остальных сеансах?</p>
+                  <button class="security-button security-button--solid" type="submit">Подтвердить выход</button>
+                </form>
+              </details>
+            {{/if}}
+          </div>
+          {{#if sessions.length}}
+            <ul class="security-device-list" role="list">
+              {{#each sessions}}
+                <li class="security-device{{#if current}} security-device--current{{/if}}">
+                  <div class="security-identity">
+                    <span class="security-device-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        {{#if (eq deviceType "mobile")}}
+                          <rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 17.5h2"/>
+                        {{else if (eq deviceType "tablet")}}
+                          <rect x="4" y="3" width="16" height="18" rx="2"/><path d="M11 17.5h2"/>
+                        {{else}}
+                          <rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/>
+                        {{/if}}
+                      </svg>
+                    </span>
+                    <div class="security-device-name">
+                      <h3><bdi>{{#if device}}{{device}}{{else}}Устройство уточняется{{/if}}</bdi></h3>
+                      {{#if browser}}<p><bdi>{{browser}}</bdi></p>{{/if}}
+                      {{#if related}}<p><bdi>{{related}}</bdi></p>{{/if}}
+                    </div>
+                    {{#if current}}
+                      <span class="security-current"><span aria-hidden="true"></span>Текущий сеанс</span>
+                    {{/if}}
+                  </div>
+
+                  <dl class="security-facts">
+                    {{#if lastSeenAt}}<div><dt>Активность</dt><dd>{{lastSeenAt}}</dd></div>{{/if}}
+                    {{#if createdAt}}<div><dt>Вход</dt><dd>{{createdAt}}</dd></div>{{/if}}
+                    {{#if ip}}<div><dt>IP-адрес</dt><dd><bdi>{{ip}}</bdi></dd></div>{{/if}}
+                    {{#if expiresAt}}<div><dt>Истекает</dt><dd>{{expiresAt}}</dd></div>{{/if}}
+                  </dl>
+
+                  <div class="security-device-services">
+                    <h4>Авторизация в сервисах</h4>
+                    {{#if services.length}}
+                      <ul class="security-service-list" role="list">
+                        {{#each services}}
+                          <li class="security-service">
+                            <div class="security-service-info">
+                              <span class="security-service-icon">
+                                <svg aria-hidden="true"><use href="/icons/lucide.svg#globe"></use></svg>
+                              </span>
+                              <div>
+                                <p><bdi>{{name}}</bdi></p>
+                                {{#if statusDetail}}
+                                  <p class="security-service-meta">{{statusDetail}}</p>
+                                {{else if lastSeenAt}}
+                                  <p class="security-service-meta">Активность {{lastSeenAt}}</p>
+                                {{/if}}
+                                {{#if expiresAt}}<p class="security-service-meta">Истекает {{expiresAt}}</p>{{/if}}
+                              </div>
+                              {{#if status}}<span class="security-service-status">{{status}}</span>{{/if}}
+                            </div>
+                          </li>
+                        {{/each}}
+                      </ul>
+                    {{else}}
+                      <p class="security-empty-services">Нет подтверждённых авторизаций через портал.</p>
+                    {{/if}}
+                  </div>
+
+                  {{#unless current}}
+                    <div class="security-device-actions">
+                      <details class="security-confirm">
+                        <summary class="security-button security-button--quiet">Завершить сеанс<span class="security-sr-only"> «{{device}}»</span></summary>
+                        <form method="post" action="/security/sessions/{{id}}/revoke" class="security-confirm-panel">
+                          <input type="hidden" name="_csrf" value="{{@root.csrfToken}}">
+                          <p>Выйти из портала и поддерживаемых сервисов в этом сеансе?</p>
+                          <button class="security-button security-button--solid" type="submit">Подтвердить выход</button>
+                        </form>
+                      </details>
+                    </div>
+                  {{/unless}}
+                </li>
+              {{/each}}
+            </ul>
+          {{else}}
+            <p class="security-empty">Активные сеансы пока отсутствуют.</p>
+          {{/if}}
+        </section>
+
+        <div class="security-aside">
+          <section class="security-section" id="security-activity" aria-labelledby="security-activity-title">
+            <div class="security-section-heading">
+              <h2 id="security-activity-title">История и активность</h2>
+            </div>
+            {{#if activityDays}}
+              <p class="security-history-period">Последние {{activityDays}} дней · время московское</p>
+            {{/if}}
+            {{#if activity.length}}
+              <ol class="security-timeline" role="list">
+                {{#each activity}}
+                  <li>
+                    <span class="security-timeline-dot" aria-hidden="true"></span>
+                    <div>
+                      <h3>{{title}}</h3>
+                      {{#if detail}}<p>{{detail}}</p>{{/if}}
+                      <time datetime="{{dateTime}}">{{at}}</time>
+                    </div>
+                  </li>
+                {{/each}}
+              </ol>
+              {{#if (or activityPrevious activityNext)}}
+                <nav class="security-pagination" aria-label="Страницы истории">
+                  {{#if activityPrevious}}
+                    <a class="security-button" href="/security?activityPage={{activityPrevious}}#security-activity" aria-label="Предыдущая страница истории">
+                      <svg class="security-arrow-back" aria-hidden="true"><use href="/icons/lucide.svg#arrow-right"></use></svg>
+                      Назад
+                    </a>
+                  {{/if}}
+                  <span class="security-page-number" aria-current="page">Стр. {{activityPage}}</span>
+                  {{#if activityNext}}
+                    <a class="security-button" href="/security?activityPage={{activityNext}}#security-activity" aria-label="Следующая страница истории">
+                      Далее
+                      <svg aria-hidden="true"><use href="/icons/lucide.svg#arrow-right"></use></svg>
+                    </a>
+                  {{/if}}
+                </nav>
+              {{/if}}
+            {{else}}
+              <p class="security-empty">Здесь появятся входы через портал и завершения сеансов.</p>
+              {{#if activityPrevious}}
+                <nav class="security-pagination" aria-label="Страницы истории">
+                  <a class="security-button" href="/security#security-activity">К последним событиям</a>
+                </nav>
+              {{/if}}
+            {{/if}}
+          </section>
+
+          <details class="security-coverage">
+            <summary>
+              <svg aria-hidden="true"><use href="/icons/lucide.svg#info"></use></svg>
+              <span>Какие входы отображаются</span>
+              <svg class="security-chevron" aria-hidden="true"><use href="/icons/lucide.svg#chevron-down"></use></svg>
+            </summary>
+            <div class="security-coverage-body">
+              <p>Для прежних сеансов сведения об устройстве появляются после активности.</p>
+              {{#if trackedServices.length}}
+                <p>При завершении сеанса портал также завершает авторизацию в подключённых сервисах. Для сервисов с пометкой «Только история входов» отображается вход через портал. Завершить сеанс можно в самом сервисе.</p>
+                <dl class="security-coverage-list">
+                  {{#each trackedServices}}
+                    <div><dt>{{name}}</dt><dd class="{{#if (eq mode "Онлайн-отзыв")}}security-mode-online{{/if}}">{{#if (eq mode "Онлайн-отзыв")}}Выход через портал{{else}}{{mode}}{{/if}}</dd></div>
+                  {{/each}}
+                </dl>
+              {{/if}}
+            </div>
+          </details>
+        </div>
+      </div>
+    {{/if}}
+  </div>
+</main>

@@ -11,7 +11,14 @@
 
     <div class="flex shrink-0 items-center gap-2">
       <button id="theme" class="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500" title="Сменить тему" hidden>🌞</button>
-      {{#if auth}}
+      {{#if (or isSignedIn auth)}}
+        <a href="/security"{{#if securityActive}} aria-current="page"{{/if}} aria-label="Безопасность"
+           class="inline-flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 {{#if securityActive}}bg-slate-100{{/if}}" title="Безопасность">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 22s7-3.5 7-9V5l-7-3-7 3v8c0 5.5 7 9 7 9Z"/><path d="m9 12 2 2 4-4"/>
+          </svg>
+          <span class="hidden sm:inline">Безопасность</span>
+        </a>
         <button id="logoutBtn" class="inline-flex min-h-[36px] items-center justify-center rounded-lg border border-transparent px-3 py-1.5 text-sm font-semibold text-red-700 transition duration-150 hover:border-red-200 hover:bg-red-50 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2">
           Выйти
         </button>
