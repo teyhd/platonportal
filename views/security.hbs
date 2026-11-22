@@ -80,7 +80,7 @@
                   </dl>
 
                   <div class="security-device-services">
-                    <h4>Авторизация в сервисах</h4>
+                    <h4>Активные входы в сервисы</h4>
                     {{#if services.length}}
                       <ul class="security-service-list" role="list">
                         {{#each services}}
@@ -94,7 +94,7 @@
                                 {{#if statusDetail}}
                                   <p class="security-service-meta">{{statusDetail}}</p>
                                 {{else if lastSeenAt}}
-                                  <p class="security-service-meta">Активность {{lastSeenAt}}</p>
+                                  <p class="security-service-meta">Проверено {{lastSeenAt}}</p>
                                 {{/if}}
                                 {{#if expiresAt}}<p class="security-service-meta">Истекает {{expiresAt}}</p>{{/if}}
                               </div>
@@ -105,6 +105,9 @@
                       </ul>
                     {{else}}
                       <p class="security-empty-services">Нет подтверждённых авторизаций через портал.</p>
+                    {{/if}}
+                    {{#if unconfirmedServices}}
+                      <p class="security-empty-services">Входы без подтверждения активности: {{unconfirmedServices}}.</p>
                     {{/if}}
                   </div>
 
@@ -185,7 +188,7 @@
             <div class="security-coverage-body">
               <p>Для прежних сеансов сведения об устройстве появляются после активности.</p>
               {{#if trackedServices.length}}
-                <p>При завершении сеанса портал также завершает авторизацию в подключённых сервисах. Для сервисов с пометкой «Только история входов» отображается вход через портал. Завершить сеанс можно в самом сервисе.</p>
+                <p>Сервис появляется в списке активных после того, как подтвердит вход из этого сеанса портала. Удалённый выход отзывает доступ. Сервис применяет отзыв при следующей проверке.</p>
                 <dl class="security-coverage-list">
                   {{#each trackedServices}}
                     <div><dt>{{name}}</dt><dd class="{{#if (eq mode "Онлайн-отзыв")}}security-mode-online{{/if}}">{{#if (eq mode "Онлайн-отзыв")}}Выход через портал{{else}}{{mode}}{{/if}}</dd></div>

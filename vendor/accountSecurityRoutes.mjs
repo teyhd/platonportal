@@ -44,11 +44,18 @@ function deviceView(records, currentId, clients) {
   const current = records.find(record => record.id === currentId);
   const representative = current || records.find(record => record.kind === 'telegram') || records[0];
   const services = new Map();
+  const observedSignIns = new Set();
   const now = Date.now();
   for (const record of records) {
     for (const [id, grant] of Object.entries(record.services || {})) {
-      if (!clients[id]?.revocable_sessions || grant.expiresAt <= now) continue;
-      if (!services.has(id) || services.get(id).lastSeenAt < grant.lastSeenAt) services.set(id, grant);
+      if (grant.exchangedAt || grant.lastSeenAt) observedSignIns.add(id);
+      if (!clients[id]?.revocable_sessions || !grant.confirmedAt || grant.confirmedExpiresAt <= now) continue;
+      if (!services.has(id) || services.get(id).confirmedAt < grant.confirmedAt) {
+        services.set(id, {
+          ...grant,
+          expiresAt: Math.min(grant.confirmedExpiresAt, record.expiresAt || Infinity),
+        });
+      }
     }
   }
 
@@ -66,10 +73,11 @@ function deviceView(records, currentId, clients) {
     services: [...services].map(([id, grant]) => ({
       id,
       name: nameOfService(id, clients),
-      lastSeenAt: formatDate(grant.lastSeenAt),
+      lastSeenAt: formatDate(grant.confirmedAt),
       expiresAt: formatDate(grant.expiresAt),
-      revocable: true,
+      status: 'Подтверждена',
     })),
+    unconfirmedServices: [...observedSignIns].filter(id => !services.has(id)).map(id => nameOfService(id, clients)).join(', '),
   };
 }
 

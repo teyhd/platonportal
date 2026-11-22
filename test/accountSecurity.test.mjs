@@ -108,6 +108,10 @@ test('Redis backs device sessions, service grants and account history', {
       client_secret: 'fixture-bookpc-secret', redirect_uri: 'https://pc.example.test/cb',
       srv_name: 'bookpc', legacy_audience: 2,
     },
+    report: {
+      client_secret: 'fixture-report-secret', redirect_uri: 'https://reports.example.test/cb',
+      srv_name: 'report', legacy_audience: 3, revocable_sessions: true, session_only_introspection: true,
+    },
     calendar: { srv_name: 'calendar', revocable_sessions: true },
   };
   const issuer = 'https://sso.example.test/sso';
@@ -129,9 +133,10 @@ test('Redis backs device sessions, service grants and account history', {
     next();
   });
   app.use('/security', makeAccountSecurityRouter({ security, clients, secret: sessionSecret, lifecycle }));
+  let roleLookups = 0;
   app.use('/sso', makeSsoRouter({
     issuer, jwtSecret: 'account-security-test-jwt', clients, tokenStore, lifecycle, accountSecurity: security,
-    getServiceRoles: async () => [3],
+    getServiceRoles: async () => { roleLookups += 1; return [3]; },
   }));
   server = await new Promise(resolve => {
     const listener = app.listen(0, '127.0.0.1', () => resolve(listener));
@@ -184,10 +189,10 @@ test('Redis backs device sessions, service grants and account history', {
     assert.ok(await redis.get(current.key));
   });
 
-  await t.test('records service access after exchange and displays only currently revocable grants as active', async () => {
-    async function startAuthorization(clientId) {
+  await t.test('links confirmed service authorization to its device and revokes it from the current device', async () => {
+    async function startAuthorization(clientId, device = current) {
       const redirectUri = clients[clientId].redirect_uri;
-      const authorize = await get('/sso/authorize?' + new URLSearchParams({ client_id: clientId, redirect_uri: redirectUri }), current);
+      const authorize = await get('/sso/authorize?' + new URLSearchParams({ client_id: clientId, redirect_uri: redirectUri }), device);
       assert.equal(authorize.status, 302);
       const code = new URL(authorize.headers.get('location')).searchParams.get('code');
       assert.ok(code);
@@ -197,6 +202,11 @@ test('Redis backs device sessions, service grants and account history', {
       });
     }
     const exchange = body => fetch(base + '/sso/token', { method: 'POST', body });
+    const introspect = (clientId, token, sessionOnly = '0') => fetch(base + '/sso/introspect', {
+      method: 'POST',
+      headers: { authorization: 'Basic ' + Buffer.from(clientId + ':' + clients[clientId].client_secret).toString('base64') },
+      body: new URLSearchParams({ token, session_only: sessionOnly }),
+    });
 
     const authorizationGrant = await startAuthorization('rasp');
     assert.ok(!(await security.activity(user, 1, 30)).events.some(event => event.type === 'service'));
@@ -209,20 +219,51 @@ test('Redis backs device sessions, service grants and account history', {
       client_secret: clients.rasp.client_secret,
     }));
     assert.equal(refresh.status, 200);
-    assert.notEqual((await refresh.json()).refresh_token, refreshToken);
+    const { refresh_token: nextToken } = await refresh.json();
+    assert.notEqual(nextToken, refreshToken);
     assert.equal((await exchange(await startAuthorization('bookpc'))).status, 200);
     await security.noteService({
       sid: current.sid, uid: user, clientId: 'calendar', kind: 'exchange', expiresAt: Math.floor(Date.now() / 1000) - 10,
     });
 
+    const before = await (await get('/security', current)).json();
+    assert.deepEqual(before.sessions.find(record => record.current).services, []);
+    assert.match(before.sessions.find(record => record.current).unconfirmedServices, /Расписание/);
+    assert.equal((await (await introspect('rasp', nextToken)).json()).active, true);
+
+    const remote = await seed('portal', user);
+    await security.noteLogin('portal', remote.sid, user, request, 'pin');
+    const remoteGrant = await exchange(await startAuthorization('report', remote));
+    assert.equal(remoteGrant.status, 200);
+    const { refresh_token: remoteToken } = await remoteGrant.json();
+    const callsBefore = roleLookups;
+    const confirmed = await (await introspect('report', remoteToken, '1')).json();
+    assert.equal(roleLookups, callsBefore);
+    assert.equal(confirmed.active, true);
+    assert.equal(confirmed.sid, remote.sid);
+    assert.equal(confirmed.sub, String(user));
+    assert.equal(confirmed.iss, issuer);
+    assert.equal(String(confirmed.aud), '3');
+
     const page = await get('/security', current);
     assert.equal(page.status, 200);
     assert.equal(page.headers.get('cache-control'), 'no-store, private');
-    const { activity, sessions } = await page.json();
+    const { activity, sessions, csrfToken } = await page.json();
     assert.ok(sessions.find(record => record.current).services.some(service => service.id === 'rasp'));
     assert.ok(!sessions.find(record => record.current).services.some(service => ['calendar', 'bookpc'].includes(service.id)));
+    assert.deepEqual(sessions.find(record => record.id === remote.id).services.map(service => service.id), ['report']);
+    assert.ok(!sessions.find(record => record.current).services.some(service => service.id === 'report'));
     assert.ok(activity.some(event => event.detail.includes('Аренда ПК')));
     assert.equal(activity.filter(event => event.detail.includes('Расписание')).length, 1);
+
+    const bulk = await fetch(base + '/security/sessions/revoke-others', {
+      method: 'POST', headers: { cookie: cookieOf(current) },
+      body: new URLSearchParams({ _csrf: csrfToken }), redirect: 'manual',
+    });
+    assert.equal(bulk.status, 303);
+    assert.equal(await redis.exists(remote.key), 0);
+    assert.equal((await (await introspect('report', remoteToken, '1')).json()).active, false);
+    assert.equal((await (await introspect('rasp', nextToken)).json()).active, true);
   });
 
   await t.test('history is paginated and pruned to 30 days', async () => {

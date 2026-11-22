@@ -272,6 +272,11 @@ const SSO_CLIENTS = {
     [CALENDAR_SSO_CLIENT_ID]: getCalendarSsoClient(),
 
 };
+for (const id of (process.env.SSO_SESSION_CHECK_CLIENTS || '').split(',').map(value => value.trim()).filter(Boolean)) {
+  if (!Object.hasOwn(SSO_CLIENTS, id) || SSO_CLIENTS[id].revocable_sessions) continue;
+  SSO_CLIENTS[id].revocable_sessions = true;
+  SSO_CLIENTS[id].session_only_introspection = true;
+}
 const SSO_ISSUER = process.env.SSO_ISSUER || process.env.SSOADR;
 const ssoLifecycle = createSsoSessionLifecycle({
   clients: SSO_CLIENTS,

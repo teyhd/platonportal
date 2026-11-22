@@ -117,9 +117,16 @@ if incoming.parentKey and not owned(incoming.parentKey) then return 0 end
 if not owned(incoming.key) then return 0 end
 local record = load(p .. 'session:' .. incoming.id)
 if record then
-  if not incoming.lastSeenAt or (record.lastSeenAt and now - record.lastSeenAt < tonumber(ARGV[7])) then return 1 end
-  record.lastSeenAt = incoming.lastSeenAt
-  if incoming.device then
+  local repair = not record.sid or record.groupId ~= incoming.groupId
+  if repair then
+    record.sid = incoming.sid
+    record.groupId = incoming.groupId
+    record.parentKey = incoming.parentKey
+  end
+  local update = incoming.lastSeenAt and (not record.lastSeenAt or now - record.lastSeenAt >= tonumber(ARGV[7]))
+  if not repair and not update then return 1 end
+  if update then
+    record.lastSeenAt = incoming.lastSeenAt
     record.device = incoming.device
     record.browser = incoming.browser
     record.deviceType = incoming.deviceType
@@ -138,17 +145,22 @@ return 1
 const noteServiceScript = `${lua}
 local id, key, clientId, kind = ARGV[6], ARGV[7], ARGV[8], ARGV[9]
 if redis.call('EXISTS', p .. 'revoked:' .. id) == 1 or not owned(key) then return 0 end
-local record = load(p .. 'session:' .. id) or {id = id, groupId = id, key = key, kind = 'portal'}
+local record = load(p .. 'session:' .. id)
+if not record or not record.sid then return 0 end
 if redis.call('EXISTS', p .. 'revoked:' .. record.groupId) == 1 then return 0 end
 if record.parentKey and not owned(record.parentKey) then return 0 end
+if kind == 'refresh' then return 1 end
 local expiresAt = tonumber(ARGV[10])
 record.services = record.services or {}
-local previous = record.services[clientId]
-if kind == 'introspection' and previous and now - previous.lastSeenAt < tonumber(ARGV[11]) then return 1 end
-record.services[clientId] = {
-  lastSeenAt = now,
-  expiresAt = math.max(expiresAt, previous and previous.expiresAt or 0)
-}
+local grant = record.services[clientId] or {}
+if kind == 'introspection' then
+  if grant.confirmedAt and now - grant.confirmedAt < tonumber(ARGV[11]) and expiresAt <= grant.confirmedExpiresAt then return 1 end
+  grant.confirmedAt = now
+  grant.confirmedExpiresAt = math.max(expiresAt, grant.confirmedExpiresAt or 0)
+elseif kind == 'exchange' then
+  grant.exchangedAt = now
+end
+record.services[clientId] = grant
 if not save(record) then return 0 end
 if kind == 'exchange' then
   addEvent({type = 'service', clientId = clientId, device = record.device, ip = record.ip, at = now, id = ARGV[12]})

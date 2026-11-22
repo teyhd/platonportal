@@ -365,22 +365,27 @@ export function makeSsoRouter(config = {}) {
     if (!record || record.client_id !== credentials.clientId || !await lifecycle?.isActive(record.sid, record.sub)) {
       return res.json({ active: false });
     }
-    const right = await getServiceRoles(record.sub, client.srv_name);
     if (!await recordService(record, 'introspection', record.exp)) return res.json({ active: false });
+    const session = {
+      active: true,
+      sub: record.sub,
+      sid: record.sid,
+      iss: ISS,
+      aud: record.audience,
+      exp: record.exp,
+    };
+    if (client.session_only_introspection && req.body?.session_only === '1') return res.json(session);
+
+    const right = await getServiceRoles(record.sub, client.srv_name);
     const authorizationVersion = crypto
       .createHash('sha256')
       .update(JSON.stringify([...right].sort((left, rightValue) => Number(left) - Number(rightValue))))
       .digest('hex')
       .slice(0, 24);
     return res.json({
-      active: true,
-      sub: record.sub,
+      ...session,
       name: record.name,
       right,
-      sid: record.sid,
-      iss: ISS,
-      aud: record.audience,
-      exp: record.exp,
       authorization_version: authorizationVersion,
     });
   }));

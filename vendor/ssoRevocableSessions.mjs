@@ -280,7 +280,9 @@ export function createSsoSessionLifecycle(options = {}) {
   async function isActive(sid, expectedSub) {
     if (!sid || !expectedSub) return false;
     const sessionValue = await sessionStoreGet(sessionStore, sid);
+    const expiresAt = Date.parse(sessionValue?.cookie?.expires);
     return Boolean(sessionValue && String(sessionValue.uid || '') === String(expectedSub)
+      && (!Number.isFinite(expiresAt) || expiresAt > Date.now())
       && !await accountSecurity?.isRevoked(sessionKind, sid));
   }
 
