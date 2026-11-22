@@ -1,0 +1,45 @@
+<aside class="users-drawer users-drawer--narrow" id="user-family-tools" aria-hidden="true" aria-labelledby="user-family-tools-title" role="dialog" aria-modal="true" data-family-csrf="{{familyAdminToken}}">
+  <div class="users-drawer-backdrop" data-close-drawer></div>
+  <div class="users-drawer-panel">
+    <header class="users-drawer-header">
+      <div>
+        <h2 class="users-drawer-title" id="user-family-tools-title"></h2>
+        <p class="users-drawer-subtitle" id="user-family-tools-name"></p>
+      </div>
+      <button class="users-drawer-close" type="button" data-close-drawer aria-label="Закрыть">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+    <div class="users-drawer-body users-family-tools-body">
+      <section data-family-editor hidden>
+        <ul class="users-family-list" data-family-linked aria-label="Связанные дети"></ul>
+        <label class="users-field">
+          <span class="users-field-label">Добавить ребёнка</span>
+          <input class="users-input" data-family-search type="search" autocomplete="off" placeholder="Имя или ID ученика">
+        </label>
+        <ul class="users-family-list" data-family-results aria-label="Найденные ученики"></ul>
+      </section>
+      <section data-service-preview hidden>
+        <p class="users-field-hint">Доступы и данные выбранного пользователя. Режим только для просмотра.</p>
+        <div class="users-family-controls" data-preview-controls hidden>
+          <label class="users-field">
+            <span class="users-field-label">Сервис</span>
+            <select class="users-select" data-preview-service></select>
+          </label>
+          <label class="users-field" data-preview-child-field hidden>
+            <span class="users-field-label">Ребёнок</span>
+            <select class="users-select" data-preview-child></select>
+          </label>
+        </div>
+        <div class="users-preview-details" data-preview-details hidden>
+          <h3 class="users-field-label">Назначенные роли</h3>
+          <p data-preview-roles></p>
+          <h3 class="users-field-label">Данные сервиса</h3>
+          <ul class="users-family-list" data-preview-entries></ul>
+        </div>
+      </section>
+      <p class="users-drawer-message" data-family-tools-status role="status"></p>
+      <button class="users-secondary-button" data-family-tools-retry type="button" hidden>Повторить</button>
+    </div>
+  </div>
+</aside>

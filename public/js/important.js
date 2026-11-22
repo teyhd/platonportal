@@ -17,7 +17,8 @@ if (panel) {
     calendar: 'Календарь',
     calendar_approval: 'Календарь',
   };
-  let data = null, etag = '', context = 'personal', childId = '', generation = 0, controller, pollTimer;
+  const portalControlsFamily = panel.hasAttribute('data-portal-family');
+  let data = null, etag = '', context = 'personal', childId = panel.dataset.portalChild || '', generation = 0, controller, pollTimer;
   let baseTime = Date.now(), basePerformance = performance.now(), lastSuccess = 0, failures = 0, expanded = false;
   let noticeUntil = 0, boundary = '', networkFailed = false;
   let itemSequence = 0;
@@ -28,7 +29,7 @@ if (panel) {
   const formatTime = value => Number.isFinite(when(value)) ? clockFormat.format(new Date(value)) : '';
   const remaining = duration => duration < 60_000 ? 'меньше минуты' : `${Math.ceil(duration / 60_000)} мин`;
   const setClock = value => { const parsed = Date.parse(value); if (Number.isFinite(parsed)) { baseTime = parsed; basePerformance = performance.now(); } };
-  const query = extra => new URLSearchParams({ context, ...(childId ? { childId } : {}), ...extra });
+  const query = extra => new URLSearchParams({ context, ...(childId && context === 'personal' ? { childId } : {}), ...extra });
   const workday = $('[data-important-workday]');
 
   function beginningDuration(duration) {
@@ -389,7 +390,7 @@ if (panel) {
       childSelect.dataset.options = childOptions;
     }
     childSelect.value = String(data.selectedChildId ?? '');
-    $('[data-important-family]').hidden = children.length < 2 || context !== 'personal';
+    $('[data-important-family]').hidden = portalControlsFamily || children.length < 2 || context !== 'personal';
     const issues = Object.values(data.sources).filter(source => source.partial || ['unavailable', 'unconfigured'].includes(source.status));
     status.dataset.state = issues.length ? 'warning' : 'ready';
     text(status, issues.length ? issues.map(source => `${source.label}: ${source.status==='ready' && source.partial ? 'часть сведений временно недоступна' : source.checkedAt ? `последние данные ${formatTime(source.checkedAt)}` : 'временно недоступно'}`).join(' · ')

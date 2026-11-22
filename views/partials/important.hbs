@@ -1,4 +1,4 @@
-<section class="important-panel" data-important aria-labelledby="important-title" hidden>
+<section class="important-panel" data-important{{#if family}} data-portal-family data-portal-child="{{family.selected.id}}"{{/if}} aria-labelledby="important-title" hidden>
   <div class="important-heading">
     <div class="important-heading-main">
       <h2 id="important-title">Актуально</h2>
@@ -32,4 +32,4 @@
   <noscript>Для обновления сводки включите JavaScript. Расписание и посещаемость доступны в каталоге сервисов.</noscript>
 </section>
 <link rel="stylesheet" href="/css/important.css?v=workday-4">
-<script type="module" src="/js/important.js?v=workday-4"></script>
+<script type="module" src="/js/important.js?v=family-1"></script>

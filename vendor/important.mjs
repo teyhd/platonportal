@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { hasFamilyServiceRight, selectedFamilyChild } from './familyAccess.mjs';
 import { contactsForClasses } from './important-class-contacts.mjs';
 import { expandImportantView, expandedSources, lessonReferences, returnPeriods, schoolDate } from './important-expanded.mjs';
 const clock = new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
@@ -201,7 +202,7 @@ async function addLessonContacts(items, schedule, loadContactContext) {
 }
 
 export function createImportantService({
-  env=process.env, fetchImpl=fetch, now=()=>new Date(), getRights, getClassContactContext,
+  env=process.env, fetchImpl=fetch, now=()=>new Date(), getRights, getClassContactContext, getFamilyScope,
   canUseVcall=async()=>false, getVcallLessonStatus,
 }={}) {
   const cache = new Map();
@@ -301,15 +302,32 @@ export function createImportantService({
     if (!enabled(env)) throw Object.assign(new Error('disabled'),{status:404});
     const actorId=Number(session?.uid);
     if (!Number.isSafeInteger(actorId)||actorId<=0) throw Object.assign(new Error('authentication_required'),{status:401});
-    const {context,childId}=validateQuery(query);
-    const rights=await getRights(actorId);
+    const { context, childId: requestedChildId } = validateQuery(query);
+    const [rights, family] = await Promise.all([
+      getRights(actorId), context === 'personal' ? getFamilyScope?.(actorId) : null,
+    ]);
+    if (context === 'personal' && getFamilyScope && requestedChildId &&
+        !family?.children.some(child => child.id === requestedChildId)) {
+      throw Object.assign(new Error('child_forbidden'), { status: 403 });
+    }
+    const preference = session.familyChild?.parentId === actorId ? session.familyChild.childId : null;
+    const selectedChildId = context === 'personal'
+      ? requestedChildId ?? selectedFamilyChild(family?.children ?? [], preference)?.id ?? null
+      : null;
+    const sourceChild = source => getFamilyScope && !hasFamilyServiceRight(source, rights) ? null : selectedChildId;
+    const childId = sourceChild('schedule');
     const rightsKey=rightsCacheKey(rights);
     const expanded=expandedFor(actorId);
     const date=schoolDate.format(now());
-    const options={expanded,date};
+    const options={expanded,date,fresh:Boolean(family && !childId)};
     const schedule=await sourceRequest('schedule',actorId,rightsKey,context,childId,[],null,0,options);
-    if (childId && schedule.status==='forbidden') throw Object.assign(new Error('child_forbidden'),{status:403});
-    const scheduleData=schedule.data;
+    if (!getFamilyScope && childId && schedule.status==='forbidden') {
+      throw Object.assign(new Error('child_forbidden'), { status: 403 });
+    }
+    const scheduleData = getFamilyScope && !childId && schedule.data?.selectedChildId
+      ? { ...schedule.data, lessons: (schedule.data.lessons ?? []).filter(lesson => lesson.own || !lesson.contexts?.includes('child')),
+        children: [], selectedChildId: null }
+      : schedule.data;
     const staff=(scheduleData?.roles??[]).some(role=>['teacher','mentor','tutor','admin','staff'].includes(role));
     const allowed = new Set((staff ? scheduleData?.lessons??[]:[]).filter(lesson=>lesson.own||lesson.contexts?.includes('assigned')).flatMap(lesson=>(lesson.students??[]).map(person=>id(person.id))));
     for (const person of scheduleData?.assignedStudents??[]) allowed.add(id(person.id));
@@ -321,7 +339,7 @@ export function createImportantService({
       ? sourceRequest('attendance',actorId,rightsKey,context,null,requestedIds,null,0,{...options,scheduleScope:scope})
       : denied;
     const extra = expanded ? Object.fromEntries(['calendar','progress'].map(source => [source,
-      extraContext(source,actorId,rightsKey,context,childId ?? scheduleData?.selectedChildId ?? null,options)])) : {};
+      extraContext(source,actorId,rightsKey,context,sourceChild(source) ?? (getFamilyScope ? null : scheduleData?.selectedChildId) ?? null,options)])) : {};
     const [attendance, capability, extraResponses] = await Promise.all([
       attendanceRequest, canUseVcall({...session,right:rights},{expanded}),
       Promise.all(Object.entries(extra).map(async ([source, result]) => [source, await result]))
@@ -339,7 +357,7 @@ export function createImportantService({
     const readySchedule=schedule.status === 'ready' ? scheduleData : null;
     const readyAttendance=attendance.status === 'ready' ? attendanceData : null;
     const requestDiary=expanded && context==='personal'
-      ? sourceRequest('diary',actorId,rightsKey,context,childId ?? scheduleData?.selectedChildId ?? null,[],null,0,{
+      ? sourceRequest('diary',actorId,rightsKey,context,sourceChild('diary') ?? (getFamilyScope ? null : scheduleData?.selectedChildId) ?? null,[],null,0,{
         ...options, lessonRefs:lessonReferences(readySchedule,viewNow),returns:returnPeriods(readySchedule,readyAttendance,viewNow),
       }) : null;
     const vcallTargets=expanded && rooms && context==='personal' && getVcallLessonStatus
@@ -353,23 +371,99 @@ export function createImportantService({
       ])),
     ]);
     const sourceResults={schedule,attendance,...Object.fromEntries(extraResponses),...(diary?{diary}:{})};
+    if (getFamilyScope && context === 'personal') {
+      for (const source of ['calendar', 'progress', 'diary']) {
+        const result = sourceResults[source];
+        if (!result?.data || sourceChild(source)) continue;
+        sourceResults[source] = { ...result, data: { ...result.data,
+          events: (result.data.events ?? []).filter(event => event.studentId == null),
+          items: (result.data.items ?? []).filter(item => item.audience !== 'child' && item.kind !== 'progress_published'),
+        } };
+      }
+    }
     const sources=Object.fromEntries(Object.entries(sourceResults).map(([key,value])=>[key,{
       status:value.status,checkedAt:value.checkedAt,label:sourceTitles[key],partial:Boolean(
         value.data?.partial === true || value.data?.unavailableFeatures?.some(feature=>!['history_truncated','weekly_coverage'].includes(feature)) ||
         value.data?.coverage?.complete===false),
     }]));
     const view=buildImportantView({schedule:scheduleData,attendance:attendanceData,sources,context,now:viewNow,canVcall:capability,expanded});
-    if(schedule.status==='forbidden'&&attendance.status==='forbidden')view.visible=false;
+    if (getFamilyScope && family) {
+      view.children = family.children;
+      view.selectedChildId = selectedChildId;
+    }
+    if (schedule.status === 'forbidden' && attendance.status === 'forbidden' &&
+        !Object.values(sources).some(source => source.status === 'ready')) view.visible = false;
     if (expanded) {
       const integrated=Object.fromEntries(Object.entries(sourceResults).filter(([key,value])=>key!=='schedule' && value.status==='ready')
         .map(([key,value])=>[key,value.data]));
       view.schoolAllowed ||= Object.values(integrated).some(source=>source?.schoolAllowed===true);
       expandImportantView(view,{schedule:readySchedule,attendance:readyAttendance,integrated,now:viewNow,vcallRooms:Object.fromEntries(roomEntries)});
     }
-    return {view,actorId,rightsKey,schedule:readySchedule,options,scope};
+    return {view,actorId,rightsKey,schedule:readySchedule,options,scope,childId};
   }
   return {
     enabled:()=>enabled(env),
+    async previewSource(actorId, source, childId) {
+      if (!['schedule', 'diary', 'attendance', 'calendar', 'progress'].includes(source)) {
+        return { state: 'permissions_only' };
+      }
+      const date = schoolDate.format(now());
+      const rights = await getRights(actorId);
+      const rightsKey = rightsCacheKey(rights);
+      if (source === 'attendance' && !rights.some(right =>
+        Number(right.srv_id) === Number(env.ATTENDANCE_SSO_SERVICE_ID || 13) && [2, 3, 4, 5].includes(Number(right.role_id))
+      )) return { state: 'permissions_only' };
+      const options = { date, expanded: true, fresh: true };
+      const request = (name, extra = {}, studentIds = []) => sourceRequest(name, actorId, rightsKey, 'personal',
+        hasFamilyServiceRight(name, rights) ? childId : null, studentIds, null, 0, { ...options, ...extra });
+      let schedule;
+      if (source === 'diary' || source === 'attendance') {
+        schedule = await request('schedule');
+      }
+      const attendanceScope = schedule?.data?.attendanceScope;
+      const staffRoster = new Set();
+      if (source === 'attendance' && attendanceScope) {
+        const roster = (schedule.data.lessons ?? []).filter(lesson => lesson.own || lesson.contexts?.includes('assigned'))
+          .flatMap(lesson => lesson.students ?? []);
+        for (const student of [...roster, ...(schedule.data.assignedStudents ?? [])]) staffRoster.add(Number(student.id));
+      }
+      const result = await request(source, {
+        lessonRefs: source === 'diary' ? lessonReferences(schedule?.data, now()) : undefined,
+        scheduleScope: source === 'attendance' ? attendanceScope : undefined,
+      }, [...staffRoster]);
+      const payload = result.status === 'ready' ? result.data : null;
+      if (!payload) return { state: result.status, date };
+      const entries = (payload.items ?? []).map(item => ({ title: item.title, detail: item.subtitle }));
+      if (source === 'schedule') {
+        for (const lesson of payload.lessons ?? []) {
+          entries.push({ title: lesson.subject || 'Занятие', detail: [
+            timeLabel(lesson.start), (lesson.rooms ?? []).join(', '),
+          ].filter(Boolean).join(' · ') });
+        }
+      } else if (source === 'calendar') {
+        for (const event of payload.events ?? []) {
+          entries.push({ title: event.title, detail: [event.start?.slice(0, 10), timeLabel(event.start)].filter(Boolean).join(' · ') });
+        }
+      } else if (source === 'diary') {
+        const lessonNames = new Map((schedule?.data?.lessons ?? []).map(lesson => [String(lesson.key), lesson.subject]));
+        for (const lesson of payload.lessons ?? []) {
+          if (lesson.topic) entries.push({ title: lessonNames.get(String(lesson.key)) || 'Тема урока', detail: lesson.topic });
+        }
+      } else if (source === 'attendance') {
+        if (payload.shift?.start) entries.push({ title: 'Смена', detail: timeLabel(payload.shift.start) });
+        const assigned = new Set((payload.assignedIds ?? []).map(Number));
+        for (const studentId of staffRoster) assigned.add(studentId);
+        for (const student of (payload.students ?? []).filter(student => assigned.has(Number(student.id)))) {
+          entries.push({ title: student.name, detail: attendanceRow(student, student, null, now()).description });
+        }
+      }
+      return {
+        state: 'ready',
+        date,
+        entries: entries.filter(item => typeof item.title === 'string' && item.title).slice(0, 30)
+          .map(item => ({ title: item.title.slice(0, 240), detail: String(item.detail ?? '').slice(0, 300) })),
+      };
+    },
     async vcallLesson(session,key) {
       const actorId=Number(session?.uid);
       if (!Number.isSafeInteger(actorId)||actorId<=0) throw Object.assign(new Error('authentication_required'),{status:401});
@@ -396,12 +490,12 @@ export function createImportantService({
     async details(session,query) {
       const offset=Number(query.offset??0);
       if (!Number.isSafeInteger(offset)||offset<0||offset>100000||typeof query.key!=='string'||query.key.length>1000) throw Object.assign(new Error('invalid_details'),{status:400});
-      const {view,actorId,rightsKey,options,scope}=await load(session,query);
+      const {view,actorId,rightsKey,options,scope,childId}=await load(session,query);
       const item=view.items.find(item=>item.key===query.key);
       if (!item) throw Object.assign(new Error('item_not_found'),{status:404});
       let rows=item.rows??[],total;
       if (item.remoteScheduleDetail) {
-        const {context,childId}=validateQuery(query);
+        const { context } = view;
         const source=await sourceRequest('schedule',actorId,rightsKey,context,childId,[],item.remoteScheduleDetail,offset,options);
         if(source.status!=='ready') throw Object.assign(new Error('details_unavailable'),{status:503});
         rows=(source.data.detailRows??[]).map(row=>({...row,href:safeLink(row.href,'https://rasp.platoniks.ru')}));total=source.data.detailTotal??0;

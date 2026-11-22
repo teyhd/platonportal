@@ -30,6 +30,7 @@ let setss = {
     keepAliveInitialDelay: 0
 }
 const usr = mysql.createPool(sets).promise()
+export const openHarmonySsoConnection = () => usr.getConnection()
 const portal = mysql.createPool(setss).promise()
 
 export const EXTERNAL_ROLE_ID = -1;

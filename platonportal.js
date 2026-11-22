@@ -7,6 +7,8 @@ import 'dotenv/config'
 import bcrypt from 'bcrypt';
 import * as db from './vendor/db.mjs';
 import { createImportantService, registerImportantRoutes } from './vendor/important.mjs';
+import { contextualizeFamilyCard, createFamilyAccess } from './vendor/familyAccess.mjs';
+import { createFamilyRoutes } from './vendor/familyRoutes.mjs';
 import { createImportantVcall, lessonRoomPrefix, registerImportantVcallRoutes } from './vendor/important-vcall.mjs';
 import * as hlp from './vendor/hlp.mjs';
 import { getRegisteredService } from './vendor/nginxServices.mjs';
@@ -1035,9 +1037,11 @@ function isNoisyIntroInfo(card) {
   return /сервисы платоникса/i.test(title) && /добро пожаловать|коллекция ссылок|ключевые ресурсы/i.test(text);
 }
 
+const familyAccess = createFamilyAccess(db.openHarmonySsoConnection);
 const importantLessonRooms = createImportantVcall(vcall);
 const importantService = createImportantService({
   getRights: db.get_user_rights,
+  getFamilyScope: userId => familyAccess.getFamily(userId, { includeGrants: false }),
   getClassContactContext: db.getClassContactContext,
   canUseVcall: async (session, {expanded} = {}) => {
     if (!expanded) return await canUseVcallAction(session, '#lesson') ? 'host'
@@ -1050,6 +1054,13 @@ const importantService = createImportantService({
   },
   getVcallLessonStatus: importantLessonRooms.status,
 });
+const familyRoutes = createFamilyRoutes({
+  db: familyAccess,
+  important: importantService,
+  sessionSecret: SESSION_SECRET,
+  audit: message => mlog(message),
+});
+app.use(familyRoutes.router);
 registerImportantRoutes(app, importantService);
 registerImportantVcallRoutes(app, { importantService, lessonRooms: importantLessonRooms, getUser: getVcallUser });
 
@@ -1066,7 +1077,22 @@ app.get('/',async (req,res)=>{
     const catalogRole = getPortalCatalogRole(rolen)
     let cards = await db.get_cards(catalogRole)
     const canManageCards = hasPortalManagementRole(req.session)
-    const menuCards = cards.filter(c => c.type === 0).map((card, index) => normalizeMenuCard(card, index))
+    let family;
+    try {
+      family = await familyRoutes.homeContext(req, res);
+    } catch (error) {
+      console.error('Family context unavailable', error.code || error.name);
+      if (getSessionPortalRoles(req.session.right ?? req.session.role).includes(6)) {
+        family = { unavailable: true };
+      }
+    }
+    if (family && req.session.familySelectionNotice) {
+      family.selectionNotice = true;
+      delete req.session.familySelectionNotice;
+    }
+    const menuCards = cards.filter(c => c.type === 0)
+      .map((card, index) => normalizeMenuCard(card, index))
+      .map(card => contextualizeFamilyCard(card, family?.services ?? []))
     const infoCards = cards.filter(c => c.type === 1).map(normalizeInfoCard)
     const homeCatalog = buildHomeCatalog(menuCards, catalogRole)
     const showManualLink = !homeCatalog.catalogServices.some(card => /^\/(?:manual)\/?(?:[?#]|$)/.test(card.cont))
@@ -1101,6 +1127,7 @@ app.get('/',async (req,res)=>{
       infoCount: infoCards.length,
       auth: rolen,
       canManageCards,
+      family,
       showImportant: Boolean(req.session.uid) && importantService.enabled(),
       showManualLink,
       isGuestHome: !res.locals.isSignedIn && homeCatalog.homeRoleMode === 'guest',
@@ -1258,6 +1285,7 @@ app.get('/users', async (req, res) => {
     });
   }
   const canViewExternalUsers = hasPortalAdminRole(req.session);
+  res.set('Cache-Control', 'private, no-store');
   req.session.rolen = getSessionPortalRole(req.session?.right ?? req.session?.role ?? 0);
 
   try {
@@ -1284,6 +1312,7 @@ app.get('/users', async (req, res) => {
       services,
       allRoles,
       errrules,
+      familyAdminToken: canViewExternalUsers ? familyRoutes.formToken(req) : '',
       auth: req.session.rolen
     });
   } catch (e) {

@@ -1,0 +1,65 @@
+.family-context {
+  margin: 1rem 0 0;
+  padding: clamp(1rem, 2vw, 1.4rem);
+  border: 1px solid #cddce9;
+  border-radius: .95rem;
+  background: #edf5fb;
+  color: #172b43;
+  scroll-margin-top: 3.75rem;
+}
+.family-context-heading, .family-choice, .family-single {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .65rem 1rem;
+}
+.family-context-heading { justify-content: space-between; }
+.family-context h2 { font-size: clamp(1.35rem, 2.1vw, 1.7rem); font-weight: 700; letter-spacing: -.025em; }
+.family-context p { margin: .35rem 0 0; color: #405973; font-size: .92rem; }
+.family-context p a { text-decoration: underline; }
+.family-choice { max-width: 100%; gap: .45rem .65rem; }
+.family-choice label, .family-single small { color: #405973; font-size: .86rem; font-weight: 600; }
+.family-choice select, .family-submit, .family-single {
+  min-height: 44px;
+  border: 1px solid #aec2d8;
+  border-radius: .65rem;
+  background-color: white;
+  color: #172b43;
+  font-size: .95rem;
+  font-weight: 650;
+}
+.family-choice select { max-width: 100%; padding: .45rem 2.1rem .45rem .7rem; text-overflow: ellipsis; }
+.family-submit, .family-single { padding: .45rem .72rem; }
+.family-choice.is-enhanced .family-submit { display: none; }
+.family-services {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%, 10rem),1fr));
+  gap: .55rem;
+  margin-top: .9rem;
+}
+.family-services a {
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr) auto;
+  align-items: center;
+  gap: .5rem;
+  min-height: 48px;
+  padding: .55rem .66rem;
+  border: 1px solid #d2dce7;
+  border-radius: .65rem;
+  background-color: white;
+  color: #173b64;
+  font-size: .92rem;
+  font-weight: 650;
+}
+.family-services a:hover { border-color: #6b94bb; background-color: #f9fcff; }
+.family-services img { object-fit: contain; }
+.family-context :focus-visible { outline: 2px solid #28649f; outline-offset: 2px; }
+.family-context .family-notice { color: #8a480f; }
+@media (max-width: 500px) {
+  .family-choice { width: 100%; }
+  .family-choice select { flex: 1 1 10rem; min-width: 0; }
+  .family-services { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 340px) {
+  .family-services { grid-template-columns: minmax(0,1fr); }
+}

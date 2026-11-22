@@ -1,0 +1,28 @@
+.users-family-tools-body section > .users-field-hint { margin: 0 0 .85rem; }
+.users-family-controls { display: grid; gap: .85rem; }
+.users-family-list {
+  display: grid;
+  gap: .4rem;
+  margin: .55rem 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+.users-family-list:empty { margin: 0; }
+.users-family-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .7rem;
+  border: 1px solid var(--users-border);
+  border-radius: .6rem;
+  background: #142238;
+  color: #e7edf5;
+  padding: .55rem .7rem;
+  overflow-wrap: anywhere;
+}
+.users-family-list small { display: block; margin-top: .15rem; color: #afc0d4; }
+.users-family-list button { flex: 0 0 auto; }
+.users-preview-details { margin-top: 1rem; }
+.users-preview-details p { margin: .3rem 0 1rem; color: #e7edf5; }
+[data-family-tools-status] { margin: .65rem 0; }
+[data-family-tools-retry][hidden] { display: none; }

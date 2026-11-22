@@ -1,3 +1,5 @@
+import { createUserFamilyTools } from './user-family-tools.js?v=1';
+
 export function normalizeSearchText(value) {
   return String(value ?? '')
     .normalize('NFKC')
@@ -97,6 +99,11 @@ if (typeof document !== 'undefined') {
   function userRows() {
     return qsa('.user-row', elements.tbody);
   }
+
+  const familyDrawer = qs('#user-family-tools');
+  const familyTools = createUserFamilyTools({
+    drawer: familyDrawer, openDrawer, users: () => userRows().map(userFromRow), normalizeText: normalizeSearchText,
+  });
 
   function labelFor(map, value) {
     return map[String(value ?? '')] || '—';
@@ -285,8 +292,8 @@ if (typeof document !== 'undefined') {
   }
 
   function openDrawer(drawer, { focus = true, opener = document.activeElement } = {}) {
-    if (!drawer) return;
-    if (state.activeDrawer && state.activeDrawer !== drawer && !closeDrawer(state.activeDrawer, { restoreFocus: false })) return;
+    if (!drawer) return false;
+    if (state.activeDrawer && state.activeDrawer !== drawer && !closeDrawer(state.activeDrawer, { restoreFocus: false })) return false;
     state.lastFocused = opener;
     state.activeDrawer = drawer;
     drawer.classList.add('is-open');
@@ -309,6 +316,7 @@ if (typeof document !== 'undefined') {
       state.userDetailsState = 'idle';
       state.userDrafts.clear();
     }
+    if (drawer === familyDrawer) familyTools?.clear();
     drawer.classList.remove('is-open');
     drawer.setAttribute('aria-hidden', 'true');
     if (state.activeDrawer === drawer) state.activeDrawer = null;
@@ -828,11 +836,12 @@ if (typeof document !== 'undefined') {
       toggle.closest('.user-row')?.classList.toggle('user-row--menu-open', willOpen);
       return;
     }
-    const action = event.target.closest('[data-open-tab], [data-action="delete"]');
+    const action = event.target.closest('[data-open-tab], [data-family-tool], [data-action="delete"]');
     if (!action) return;
     const row = action.closest('.user-row');
     closeActionMenus();
     if (action.dataset.action === 'delete') deleteUser(row);
+    else if (action.dataset.familyTool) familyTools?.open(userFromRow(row), action.dataset.familyTool, qs('.action-menu-toggle', row));
     else openUser(row, action.dataset.openTab);
   });
   qsa('.users-tab', elements.userDrawer).forEach(button => button.addEventListener('click', () => setTab(button.dataset.tab)));
@@ -893,6 +902,9 @@ if (typeof document !== 'undefined') {
     trapFocus(event);
   });
   window.addEventListener('pagehide', clearTransientSearch);
+  window.addEventListener('pagehide', () => {
+    if (familyDrawer && state.activeDrawer === familyDrawer) closeDrawer(familyDrawer, { restoreFocus: false });
+  });
   window.addEventListener('pageshow', clearTransientSearch);
 
   readUrlState();
