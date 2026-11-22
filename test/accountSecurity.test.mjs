@@ -82,6 +82,7 @@ test('Redis backs device sessions, service grants and account history', {
       name: 'Пользователь',
       right: [],
       logins: [],
+      sso_clients: [],
       cookie: {
         expires: new Date(Date.now() + (expired ? -1000 : cookieAge)).toISOString(),
         originalMaxAge: cookieAge,
@@ -256,12 +257,15 @@ test('Redis backs device sessions, service grants and account history', {
     assert.ok(activity.some(event => event.detail.includes('Аренда ПК')));
     assert.equal(activity.filter(event => event.detail.includes('Расписание')).length, 1);
 
+    const portalOnly = await seed('portal', user);
+    await security.noteLogin('portal', portalOnly.sid, user, request, 'pin');
     const bulk = await fetch(base + '/security/sessions/revoke-others', {
       method: 'POST', headers: { cookie: cookieOf(current) },
       body: new URLSearchParams({ _csrf: csrfToken }), redirect: 'manual',
     });
     assert.equal(bulk.status, 303);
     assert.equal(await redis.exists(remote.key), 0);
+    assert.equal(await redis.exists(portalOnly.key), 0);
     assert.equal((await (await introspect('report', remoteToken, '1')).json()).active, false);
     assert.equal((await (await introspect('rasp', nextToken)).json()).active, true);
   });

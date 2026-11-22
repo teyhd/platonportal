@@ -181,7 +181,9 @@ local function revoke(record)
   redis.call('SET', p .. 'revoked:' .. record.id, '1', 'PX', ttl)
   redis.call('DEL', record.key, p .. 'session:' .. record.id)
   redis.call('ZREM', index, record.id)
-  record.previousClients = value.sso_clients
+  if type(value.sso_clients) == 'table' and #value.sso_clients > 0 then
+    record.previousClients = value.sso_clients
+  end
   table.insert(removed, record)
   addEvent({type = reason, device = record.device, browser = record.browser, ip = record.ip, at = now, id = record.id})
 end
