@@ -12,6 +12,9 @@
     <div class="flex shrink-0 items-center gap-2">
       <button id="theme" class="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500" title="Сменить тему" hidden>🌞</button>
       {{#if (or isSignedIn auth)}}
+        {{#if showMentorSchedule}}
+          <a href="https://stud.platoniks.ru/attendance/mentor-schedule?view=me" class="inline-flex min-h-[36px] items-center whitespace-nowrap rounded-lg bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-800 transition hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">{{mentorScheduleLabel}}</a>
+        {{/if}}
         <a href="/security"{{#if securityActive}} aria-current="page"{{/if}} aria-label="Безопасность"
            class="inline-flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 {{#if securityActive}}bg-slate-100{{/if}}" title="Безопасность">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

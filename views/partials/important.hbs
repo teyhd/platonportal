@@ -1,0 +1,35 @@
+<section class="important-panel" data-important aria-labelledby="important-title" hidden>
+  <div class="important-heading">
+    <div class="important-heading-main">
+      <h2 id="important-title">Актуально</h2>
+      <div class="important-contexts" data-important-contexts hidden role="group" aria-label="Область сводки">
+        <button type="button" data-context="personal" aria-pressed="true">Личное</button>
+        <button type="button" data-context="school" aria-pressed="false">Школа</button>
+      </div>
+    </div>
+    <div class="important-heading-side">
+      <div class="important-clock" data-important-clock hidden></div>
+      <button type="button" class="important-refresh" data-important-refresh aria-label="Обновить важную информацию">Обновить</button>
+    </div>
+  </div>
+  <div class="important-toolbar">
+    <label data-important-family hidden>Ребёнок <select data-important-child aria-label="Выбрать ребёнка"></select></label>
+    <p class="important-source-status" data-important-sources role="status">Загружаем вашу сводку…</p>
+  </div>
+  <p class="important-update" data-important-update role="status" hidden>Расписание обновлено</p>
+  <details class="important-workday" data-important-workday hidden>
+    <summary>
+      <span data-important-workday-title></span>
+      <span data-important-workday-time></span>
+    </summary>
+    <div data-important-workday-details></div>
+  </details>
+  <div class="important-items" id="important-items" data-important-items></div>
+  <div class="important-footer">
+    <p data-important-day></p>
+    <button type="button" data-important-more aria-expanded="false" aria-controls="important-items" hidden></button>
+  </div>
+  <noscript>Для обновления сводки включите JavaScript. Расписание и посещаемость доступны в каталоге сервисов.</noscript>
+</section>
+<link rel="stylesheet" href="/css/important.css?v=workday-4">
+<script type="module" src="/js/important.js?v=workday-4"></script>
