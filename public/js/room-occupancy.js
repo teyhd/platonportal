@@ -83,6 +83,9 @@ function element(tag, className, text) {
 
 function mount(card) {
   const select = name => card.querySelector("[data-" + name + "]");
+  const toggle = select("toggle");
+  const body = document.getElementById(toggle.getAttribute("aria-controls"));
+  const preview = select("preview"), previewNote = select("preview-note");
   const floors = select("floors"), time = select("time"), legend = select("legend");
   const totals = select("totals") ?? select("total");
   const message = select("message"), retry = select("retry");
@@ -97,8 +100,8 @@ function mount(card) {
   tooltip.replaceChildren(heading, status, timing, following, issueText);
   const rows = new Map();
   const roomByMark = new WeakMap();
-  let snapshot, offset = 0, openFloor, pending = false, timer, failure = "";
-  let nextId = 0;
+  let snapshot, offset = 0, pending = false, timer, failure = "";
+  let previewSignature;
   let tooltipAnchor, pinned, hideTimer;
 
   function hideTooltip() {
@@ -164,9 +167,44 @@ function mount(card) {
     if (tooltipAnchor) positionTooltip(tooltipAnchor);
   });
 
+  toggle.addEventListener("click", () => {
+    const open = body.hidden;
+    body.hidden = !open;
+    toggle.setAttribute("aria-expanded", String(open));
+    if (!open) hideTooltip();
+    draw();
+  });
+
+  function updatePreview(groups, hint) {
+    const items = groups.flatMap(([floor, entries]) =>
+      entries.map(({ room, state }) => [room.name, floor, state.kind, state.label]));
+    preview.hidden = !body.hidden || !items.length;
+    previewNote.hidden = !body.hidden || !!items.length;
+    const note = hint || "Загрузка…";
+    if (previewNote.textContent !== note) previewNote.textContent = note;
+    const signature = JSON.stringify(items);
+    if (previewSignature === signature) return;
+    previewSignature = signature;
+
+    items.sort(([a], [b]) => natural.compare(a, b));
+    preview.replaceChildren(...items.map(([name, floor, kind, label]) => {
+      const badge = element("li", "mark");
+      badge.dataset.kind = kind;
+      badge.title = ["Кабинет " + name, floor, label].filter(Boolean).join(" · ");
+      badge.setAttribute("aria-label", badge.title);
+      badge.append(element("span", "mark-name", name));
+      if (kind === "soon" || kind === "short") {
+        const clockMark = element("span", "mark-clock");
+        clockMark.setAttribute("aria-hidden", "true");
+        badge.append(clockMark);
+      }
+      return badge;
+    }));
+  }
+
   function createGroup(floor) {
-    const section = element("div", "group"), button = element("button", "row");
-    button.type = "button";
+    const section = element("div", "group");
+    const row = element("div", "row");
     const label = floor || "Этаж не указан";
     const bar = element("div", "bar"), count = element("span","count");
     const distribution = element("div","distribution");
@@ -177,17 +215,9 @@ function mount(card) {
       distribution.append(segment);
       return [kind, segment];
     }));
-    button.append(element("span","floor",label), count, element("span","arrow"));
-    const details = element("div","details");
-    details.id = "room-occ-floor-" + (++nextId);
-    button.setAttribute("aria-controls", details.id);
-    function toggleFloor() {
-      openFloor = openFloor === floor ? undefined : floor;
-      draw();
-    }
-    button.addEventListener("click", toggleFloor);
-    section.append(button,distribution,bar,details);
-    return { section, button, label, bar, count, details, segments, marks:new Map() };
+    row.append(element("span", "floor", label), count);
+    section.append(row, distribution, bar);
+    return { section, bar, count, segments, marks: new Map() };
   }
 
   function updateMark(group, room, state, index) {
@@ -259,6 +289,13 @@ function mount(card) {
       snapshot?.state === "unpublished" ? "Нет опубликованного расписания на сегодня." :
       snapshot && !snapshot.groups.length ? "В справочнике нет кабинетов." : "");
     const show = !!snapshot && !hint;
+    const groups = (snapshot?.groups ?? []).map(([floor, rooms]) => [
+      floor,
+      rooms.map(room => ({ room, state: roomStatus(show ? room.spans : null, now) })),
+    ]);
+    updatePreview(groups, hint);
+    if (body.hidden) return;
+
     floors.hidden = totals.hidden = !show;
     if (legend) legend.hidden = !show;
     message.hidden = !hint && !!snapshot;
@@ -275,54 +312,34 @@ function mount(card) {
     let index = 0;
     let tooltipMoved = false;
     const seen = new Set();
-    for (const [floor, rooms] of snapshot.groups) {
+    for (const [floor, entries] of groups) {
       seen.add(floor);
       let group = rows.get(floor);
       if (!group) { group = createGroup(floor); rows.set(floor,group); }
       if (floors.children[index] !== group.section) floors.insertBefore(group.section, floors.children[index] || null);
       index++;
-      const states = rooms.map(room => roomStatus(room.spans,now));
-      const expanded = openFloor === floor;
-      if (group.details.hidden === expanded) tooltipMoved = true;
-      group.button.setAttribute("aria-expanded", String(expanded));
-      group.details.hidden = !expanded;
       const counts = Object.fromEntries(roomKinds.map(kind => [kind, 0]));
-      for (const state of states) {
+      for (const { state } of entries) {
         counts[state.kind]++;
         totalsByKind[state.kind]++;
       }
-      const signature = JSON.stringify(states.map((s,i) => [rooms[i].id,rooms[i].name,rooms[i].issue,s]));
+      const signature = JSON.stringify(entries.map(({ room, state }) => [room.id, room.name, room.issue, state]));
       if (group.signature !== signature) {
         group.signature = signature;
         tooltipMoved = true;
         const free = counts.free + counts.short;
-        const busy = counts.busy + counts.soon;
-        const known = rooms.length > counts.unknown;
-        group.count.textContent = known ? free + " из " + rooms.length + " свободно" : "Нет данных";
+        const known = entries.length > counts.unknown;
+        group.count.textContent = known ? free + " из " + entries.length + " свободно" : "Нет данных";
         group.count.dataset.freeCount = String(free);
-        group.button.setAttribute("aria-label", [
-          group.label, group.count.textContent, known && busy + " занято",
-          counts.soon && releaseCount(counts.soon),
-          counts.short && counts.short + (counts.short === 1 ? " свободен ненадолго" : " свободны ненадолго"),
-          counts.unknown && counts.unknown + " без данных",
-        ].filter(Boolean).join(" · "));
         for (const [kind, segment] of group.segments) {
           segment.hidden = !counts[kind];
           segment.style.flexGrow = counts[kind];
         }
-        const currentRooms = new Set(rooms.map(room => room.id));
+        const currentRooms = new Set(entries.map(({ room }) => room.id));
         for (const [id,{ mark }] of group.marks) {
           if (!currentRooms.has(id)) { mark.remove(); group.marks.delete(id); }
         }
-        states.forEach((state,i) => updateMark(group,rooms[i],state,i));
-        group.details.replaceChildren(...states.map((state,i) => {
-          const item = element("div","room");
-          const { name, issue } = rooms[i];
-          item.dataset.status = state.kind;
-          item.append(element("strong",null,name), element("small",null,[state.label,state.timing].filter(Boolean).join(" · ")));
-          if (issue) item.append(element("small","issue-text",issueLabel(issue)));
-          return item;
-        }));
+        entries.forEach(({ room, state }, index) => updateMark(group, room, state, index));
       }
     }
     for (const [floor,group] of rows) {
@@ -345,7 +362,6 @@ function mount(card) {
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
           snapshot = null;
-          openFloor = undefined;
           floors.replaceChildren();
           rows.clear();
         }

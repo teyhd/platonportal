@@ -1,24 +1,31 @@
 <section class="room-occ" data-room-occupancy aria-labelledby="room-occ-title">
-  <header class="room-occ__header">
-    <div>
-      <h2 id="room-occ-title">Кабинеты сейчас</h2>
+  <div class="room-occ__summary">
+    <button class="room-occ__toggle" data-toggle type="button" aria-expanded="false" aria-controls="room-occ-body">
+      <span id="room-occ-title">Кабинеты</span>
+      <span class="room-occ__chevron" aria-hidden="true"></span>
+    </button>
+    <ul class="room-occ__preview" data-preview aria-label="Номера и статусы кабинетов" tabindex="0" hidden></ul>
+    <span class="room-occ__preview-note" data-preview-note role="status">Загрузка…</span>
+  </div>
+  <div class="room-occ__body" id="room-occ-body" hidden>
+    <header class="room-occ__header">
       <p class="room-occ__time" data-time>По расписанию</p>
-    </div>
-    <div class="room-occ__totals" data-totals hidden>
-      <strong class="room-occ__total" data-kind="free"></strong>
-      <strong class="room-occ__total" data-kind="busy"></strong>
-      <strong class="room-occ__total" data-kind="soon" hidden></strong>
-      <strong class="room-occ__total" data-kind="unknown" hidden></strong>
-    </div>
-  </header>
-  <ul class="room-occ__legend" data-legend aria-label="Статусы кабинетов" hidden>
-    <li class="room-occ__legend-item" data-kind="free"><span class="room-occ__legend-key" aria-hidden="true"></span>Свободен</li>
-    <li class="room-occ__legend-item" data-kind="busy"><span class="room-occ__legend-key" aria-hidden="true"></span>Занят</li>
-    <li class="room-occ__legend-item" data-kind="soon"><span class="room-occ__legend-key" aria-hidden="true"></span>Скоро освободится</li>
-    <li class="room-occ__legend-item" data-kind="short"><span class="room-occ__legend-key" aria-hidden="true"></span>Свободен ненадолго</li>
-  </ul>
-  <div data-floors></div>
-  <div class="room-occ__tooltip" id="room-occ-issue" data-issue-tooltip role="tooltip" hidden></div>
-  <p class="room-occ__message" data-message role="status">Загрузка расписания…</p>
-  <button class="room-occ__retry" data-retry type="button" hidden>Обновить</button>
+      <div class="room-occ__totals" data-totals hidden>
+        <strong class="room-occ__total" data-kind="free"></strong>
+        <strong class="room-occ__total" data-kind="busy"></strong>
+        <strong class="room-occ__total" data-kind="soon" hidden></strong>
+        <strong class="room-occ__total" data-kind="unknown" hidden></strong>
+      </div>
+    </header>
+    <ul class="room-occ__legend" data-legend aria-label="Статусы кабинетов" hidden>
+      <li class="room-occ__legend-item" data-kind="free"><span class="room-occ__legend-key" aria-hidden="true"></span>Свободен</li>
+      <li class="room-occ__legend-item" data-kind="busy"><span class="room-occ__legend-key" aria-hidden="true"></span>Занят</li>
+      <li class="room-occ__legend-item" data-kind="soon"><span class="room-occ__legend-key" aria-hidden="true"></span>Скоро освободится</li>
+      <li class="room-occ__legend-item" data-kind="short"><span class="room-occ__legend-key" aria-hidden="true"></span>Свободен ненадолго</li>
+    </ul>
+    <div data-floors></div>
+    <div class="room-occ__tooltip" id="room-occ-issue" data-issue-tooltip role="tooltip" hidden></div>
+    <p class="room-occ__message" data-message role="status">Загрузка расписания…</p>
+    <button class="room-occ__retry" data-retry type="button" hidden>Обновить</button>
+  </div>
 </section>

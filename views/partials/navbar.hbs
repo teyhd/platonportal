@@ -1,29 +1,18 @@
 <header class="fixed inset-x-0 top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
-  <div class="mx-auto flex h-12 max-w-[1500px] items-center justify-between gap-3 px-[16px] md:px-6">
-    <a href="/" class="group flex min-h-[36px] min-w-0 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2" aria-label="На главную">
-      <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-xs font-semibold text-white shadow-sm shadow-slate-950/20">
-        Г
-      </span>
-      <span class="min-w-0">
-        <span class="block truncate text-sm font-semibold leading-tight text-slate-950">{{title}}</span>
-      </span>
+  <div class="mx-auto flex h-12 max-w-[1500px] items-center justify-between gap-2 px-[16px] md:px-6">
+    <a href="/" class="flex min-h-[40px] min-w-0 items-center rounded-lg text-sm font-semibold leading-tight text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+      Гармония Образования
     </a>
 
-    <div class="flex shrink-0 items-center gap-2">
+    <div class="flex shrink-0 items-center gap-1">
       <button id="theme" class="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500" title="Сменить тему" hidden>🌞</button>
       {{#if (or isSignedIn auth)}}
-        {{#if showMentorSchedule}}
-          <a href="https://stud.platoniks.ru/attendance/mentor-schedule?view=me" class="inline-flex min-h-[36px] items-center whitespace-nowrap rounded-lg bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-800 transition hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">{{mentorScheduleLabel}}</a>
-        {{/if}}
-        <a href="/security"{{#if securityActive}} aria-current="page"{{/if}} aria-label="Безопасность"
-           class="inline-flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 {{#if securityActive}}bg-slate-100{{/if}}" title="Безопасность">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 22s7-3.5 7-9V5l-7-3-7 3v8c0 5.5 7 9 7 9Z"/><path d="m9 12 2 2 4-4"/>
-          </svg>
-          <span class="hidden sm:inline">Безопасность</span>
+        <a href="/security"{{#if securityActive}} aria-current="page"{{/if}}
+           class="inline-flex min-h-[40px] items-center rounded-lg px-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 {{#if securityActive}}bg-slate-100{{/if}}">
+          Безопасность
         </a>
-        <button id="logoutBtn" class="inline-flex min-h-[36px] items-center justify-center rounded-lg border border-transparent px-3 py-1.5 text-sm font-semibold text-red-700 transition duration-150 hover:border-red-200 hover:bg-red-50 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2">
-          Выйти
+        <button id="logoutBtn" type="button" class="inline-flex min-h-[40px] items-center rounded-lg px-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2">
+          Выход
         </button>
       {{else}}
         <button id="openModal" class="inline-flex min-h-[36px] items-center justify-center rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm shadow-blue-900/10 transition duration-150 hover:bg-blue-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
