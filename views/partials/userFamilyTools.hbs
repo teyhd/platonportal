@@ -1,45 +1,72 @@
-<aside class="users-drawer users-drawer--narrow" id="user-family-tools" aria-hidden="true" aria-labelledby="user-family-tools-title" role="dialog" aria-modal="true" data-family-csrf="{{familyAdminToken}}">
+<aside class="users-drawer users-family-drawer" id="user-family-tools" aria-hidden="true" aria-labelledby="user-family-tools-title" role="dialog" aria-modal="true" data-family-csrf="{{familyAdminToken}}">
   <div class="users-drawer-backdrop" data-close-drawer></div>
   <div class="users-drawer-panel">
     <header class="users-drawer-header">
-      <div>
+      <div class="users-family-heading">
         <h2 class="users-drawer-title" id="user-family-tools-title"></h2>
-        <p class="users-drawer-subtitle" id="user-family-tools-name"></p>
+        <p class="users-family-person"><span id="user-family-tools-name"></span><span class="user-id" data-family-user-id></span></p>
       </div>
-      <button class="users-drawer-close" type="button" data-close-drawer aria-label="Закрыть">
+      <button class="users-drawer-close" type="button" data-close-drawer aria-label="Закрыть панель">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
     </header>
     <div class="users-drawer-body users-family-tools-body">
-      <section data-family-editor hidden>
-        <ul class="users-family-list" data-family-linked aria-label="Связанные дети"></ul>
-        <label class="users-field">
-          <span class="users-field-label">Добавить ребёнка</span>
-          <input class="users-input" data-family-search type="search" autocomplete="off" placeholder="Имя или ID ученика">
-        </label>
-        <ul class="users-family-list" data-family-results aria-label="Найденные ученики"></ul>
-      </section>
+      <form id="family-editor-form" data-family-editor hidden>
+        <div class="users-family-picker" data-family-picker>
+          <label class="users-family-label" for="family-lookup">Добавить ребёнка</label>
+          <div class="users-family-input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10.5 17.5a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM16 16l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <input class="users-input" id="family-lookup" data-family-search type="search" role="combobox" autocomplete="off" spellcheck="false" maxlength="160" placeholder="Часть ФИО или ID" aria-autocomplete="list" aria-expanded="false" aria-controls="family-candidates" aria-describedby="family-lookup-hint" disabled>
+          </div>
+          <p class="users-family-note" id="family-lookup-hint">Сверьте полное имя, класс и ID перед выбором.</p>
+          <div class="users-family-dropdown" data-family-dropdown hidden>
+            <p class="users-family-note" data-family-search-status role="status"></p>
+            <ul class="users-family-options" id="family-candidates" data-family-results role="listbox" aria-label="Найденные ученики"></ul>
+          </div>
+        </div>
+        <section class="users-family-linked" aria-labelledby="family-linked-title" data-family-linked-section hidden>
+          <h3 id="family-linked-title" class="users-family-label">Дети</h3>
+          <ul class="users-family-list" data-family-linked></ul>
+          <p class="users-family-empty" data-family-empty hidden>У пользователя пока нет связанных детей.</p>
+        </section>
+      </form>
       <section data-service-preview hidden>
-        <p class="users-field-hint">Доступы и данные выбранного пользователя. Режим только для просмотра.</p>
+        <p class="users-family-note users-preview-note"><span class="users-preview-badge">Только просмотр</span> Сводка и роли пользователя в выбранном сервисе.</p>
         <div class="users-family-controls" data-preview-controls hidden>
           <label class="users-field">
-            <span class="users-field-label">Сервис</span>
-            <select class="users-select" data-preview-service></select>
+            <span class="users-family-label">Сервис</span>
+            <span class="users-family-select-wrap"><select class="users-select" data-preview-service></select></span>
           </label>
           <label class="users-field" data-preview-child-field hidden>
-            <span class="users-field-label">Ребёнок</span>
-            <select class="users-select" data-preview-child></select>
+            <span class="users-family-label" id="preview-child-label">Ребёнок</span>
+            <span class="users-family-select-wrap"><select class="users-select" data-preview-child aria-labelledby="preview-child-label" aria-describedby="preview-child-id"></select></span>
+            <span class="users-family-note" id="preview-child-id" data-preview-child-id></span>
           </label>
         </div>
         <div class="users-preview-details" data-preview-details hidden>
-          <h3 class="users-field-label">Назначенные роли</h3>
-          <p data-preview-roles></p>
-          <h3 class="users-field-label">Данные сервиса</h3>
-          <ul class="users-family-list" data-preview-entries></ul>
+          <section class="users-preview-role-section" aria-labelledby="preview-roles-title">
+            <h3 class="users-family-label" id="preview-roles-title">Роли в сервисе</h3>
+            <ul class="users-preview-roles" data-preview-roles></ul>
+          </section>
+          <section aria-labelledby="preview-data-title">
+            <h3 class="users-family-label" id="preview-data-title">Сводка сервиса</h3>
+            <p class="users-family-note" data-preview-date hidden></p>
+            <ul class="users-family-list" data-preview-entries></ul>
+          </section>
         </div>
       </section>
-      <p class="users-drawer-message" data-family-tools-status role="status"></p>
+      <p class="users-drawer-message users-family-notice" data-family-tools-status role="status" hidden></p>
       <button class="users-secondary-button" data-family-tools-retry type="button" hidden>Повторить</button>
     </div>
+    <footer class="users-drawer-footer users-family-footer">
+      <p class="users-family-note" data-family-changes role="status" hidden></p>
+      <div class="users-drawer-actions" data-family-actions hidden>
+        <button class="users-cancel-button" type="button" data-close-drawer data-family-cancel>Отмена</button>
+        <button class="users-save-button" type="submit" form="family-editor-form" data-family-save disabled>Сохранить</button>
+      </div>
+      <div class="users-drawer-actions" data-preview-actions hidden>
+        <button class="users-secondary-button" type="button" data-close-drawer>Закрыть</button>
+      </div>
+    </footer>
   </div>
 </aside>

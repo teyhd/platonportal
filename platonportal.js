@@ -1304,9 +1304,10 @@ app.get('/users', async (req, res) => {
       }
     }
 
+    const parentIds = canViewExternalUsers ? await familyAccess.getEligibleParentIds() : new Set();
     res.render('users', {
       title: 'Пользователи',
-      users,
+      users: users.map(user => ({ ...user, familyEditable: parentIds.has(Number(user.id)) })),
       types,
       kafs,
       services,

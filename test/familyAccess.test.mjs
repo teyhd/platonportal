@@ -35,12 +35,26 @@ test('family selection, protected editing and scoped preview keep the real porta
   const sessions = new Map();
   const reads = [];
   const writes = [];
+  const searches = [];
+  const replacements = [];
+  const revision = 'r'.repeat(43);
   const snapshots = [];
   const db = {
-    getFamily: async id => id === 600 ? { children, rights: parentGrants } : null,
+    getFamily: async id => id === 600 ? { children, rights: parentGrants, revision } : null,
     isAdmin: async id => id === 900,
     getAccount: async id => accounts.get(id),
     updateChild: async (...args) => (writes.push(args), true),
+    findCandidates: async (parentId, q) => {
+      searches.push([parentId, q]);
+      return parentId === 600 ? [{ id: 110, name: 'Тестовый Ученик', className: '7А' }] : null;
+    },
+    replaceChildren: async (parentId, ids, original) => {
+      replacements.push([parentId, ids, original]);
+      if (parentId !== 600) return null;
+      if (original !== revision) return { code: 'family_conflict' };
+      if (ids.includes(999)) return { code: 'invalid_child' };
+      return { children: [children[0]], revision: 's'.repeat(43), added: [], removed: [102] };
+    },
   };
   const routes = createFamilyRoutes({
     db, sessionSecret: 'synthetic',
@@ -88,6 +102,10 @@ test('family selection, protected editing and scoped preview keep the real porta
   assert.equal((await post(901, preview, {})).status, 403);
   assert.equal((await post(0, preview, {})).status, 401);
   assert.equal((await post(900, preview, {}, 'invalid')).status, 403);
+  const serviceList = await (await post(900, preview, {})).json();
+  assert.equal(serviceList.services.find(service => service.id === '8').previewAvailable, true);
+  assert.equal(serviceList.services.find(service => service.id === '3').previewAvailable, false);
+  assert.deepEqual(serviceList.children.map(child => child.id), [101, 102]);
   assert.equal((await post(900, preview, { serviceId: 8, childId: 404 })).status, 403);
   assert.equal((await post(900, preview, { serviceId: 13 })).status, 404);
   assert.equal((await (await post(900, preview, { serviceId: 3 })).json()).state, 'permissions_only');
@@ -101,6 +119,38 @@ test('family selection, protected editing and scoped preview keep the real porta
   assert.equal((await post(900, '/api/users/600/family', { childId: 600, action: 'add' })).status, 400);
   assert.equal((await post(900, '/api/users/600/family', { childId: 102, action: 'remove' })).status, 200);
   assert.deepEqual(writes, [[600, 102, 'remove']]);
+
+  const family = '/api/users/600/family';
+  const candidates = family + '/candidates';
+  const put = (uid, body, csrf = routes.formToken({ sessionID: String(uid) })) => call(uid, family, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Portal-CSRF': csrf }, body: JSON.stringify(body),
+  });
+  assert.equal((await call(901, family)).status, 403);
+  assert.deepEqual(await (await call(900, family)).json(), { children, revision });
+  assert.equal((await post(0, candidates, { q: 'Уче' })).status, 401);
+  assert.equal((await post(901, candidates, { q: 'Уче' })).status, 403);
+  assert.equal((await post(900, candidates, { q: 'Уче' }, 'invalid')).status, 403);
+  assert.equal((await post(900, candidates, { q: ['Уче'] })).status, 400);
+  const hits = await post(900, candidates, { q: 'Уче' });
+  assert.equal(hits.headers.get('cache-control'), 'private, no-store');
+  assert.deepEqual(await hits.json(), { candidates: [{ id: 110, name: 'Тестовый Ученик', className: '7А' }] });
+  assert.deepEqual(searches, [[600, 'Уче']]);
+  assert.equal((await put(901, { childIds: [], revision })).status, 403);
+  assert.equal((await put(900, { childIds: [], revision }, 'invalid')).status, 403);
+  assert.equal((await put(900, { childIds: [] })).status, 400);
+  for (const invalid of [[101, '101'], [[101]], [600], [0], ['1e2'], '101']) {
+    assert.equal((await put(900, { childIds: invalid, revision })).status, 400);
+  }
+  const conflict = await put(900, { childIds: [101], revision: 'x'.repeat(43) });
+  assert.equal(conflict.status, 409);
+  assert.equal((await conflict.json()).code, 'family_conflict');
+  const unavailable = await put(900, { childIds: [999], revision });
+  assert.equal(unavailable.status, 422);
+  assert.equal((await unavailable.json()).code, 'invalid_child');
+  const saved = await put(900, { childIds: ['101'], revision });
+  assert.deepEqual(await saved.json(), { children: [children[0]], revision: 's'.repeat(43) });
+  assert.deepEqual(replacements, [[600, [101], 'x'.repeat(43)], [600, [999], revision], [600, [101], revision]]);
+  assert(reads.some(entry => /family replace actor=900 parent=600 added= removed=102/.test(entry)));
 });
 
 test('Important rechecks revoked links and scopes an independent service without a Schedule parent grant', async () => {

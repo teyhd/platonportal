@@ -1,4 +1,4 @@
-import { createUserFamilyTools } from './user-family-tools.js?v=1';
+import { createUserFamilyTools } from './user-family-tools.js?v=2';
 
 export function normalizeSearchText(value) {
   return String(value ?? '')
@@ -102,7 +102,7 @@ if (typeof document !== 'undefined') {
 
   const familyDrawer = qs('#user-family-tools');
   const familyTools = createUserFamilyTools({
-    drawer: familyDrawer, openDrawer, users: () => userRows().map(userFromRow), normalizeText: normalizeSearchText,
+    drawer: familyDrawer, openDrawer,
   });
 
   function labelFor(map, value) {
@@ -301,11 +301,13 @@ if (typeof document !== 'undefined') {
     elements.workspace.inert = true;
     document.body.classList.add('users-drawer-open');
     if (focus) window.setTimeout(() => {
-      if (state.activeDrawer === drawer) qs('button[data-close-drawer]', drawer)?.focus();
+      if (state.activeDrawer === drawer && !drawer.contains(document.activeElement)) {
+        qs('button[data-close-drawer]', drawer)?.focus();
+      }
     }, 20);
   }
 
-  function closeDrawer(drawer = state.activeDrawer, { restoreFocus = true } = {}) {
+  function closeDrawer(drawer = state.activeDrawer, { restoreFocus = true, discardFamilyDraft = false, force = false } = {}) {
     if (!drawer) return;
     if (drawer === elements.userDrawer) {
       if (state.userSaving) return false;
@@ -316,7 +318,10 @@ if (typeof document !== 'undefined') {
       state.userDetailsState = 'idle';
       state.userDrafts.clear();
     }
-    if (drawer === familyDrawer) familyTools?.clear();
+    if (drawer === familyDrawer) {
+      if (!force && !familyTools?.canClose({ discard: discardFamilyDraft })) return false;
+      familyTools?.clear();
+    }
     drawer.classList.remove('is-open');
     drawer.setAttribute('aria-hidden', 'true');
     if (state.activeDrawer === drawer) state.activeDrawer = null;
@@ -825,15 +830,54 @@ if (typeof document !== 'undefined') {
     state.sortKey = key;
     applyListState();
   }));
+  function showActionMenu(toggle, { last = false } = {}) {
+    const menu = toggle.nextElementSibling;
+    closeActionMenus(menu);
+    menu.style.maxHeight = '';
+    menu.classList.remove('users-action-menu--up');
+    menu.hidden = false;
+    toggle.setAttribute('aria-expanded', 'true');
+    toggle.closest('.user-row')?.classList.add('user-row--menu-open');
+    const { top, bottom } = toggle.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - bottom - 12;
+    const spaceAbove = top - 12;
+    const opensUp = spaceBelow < menu.offsetHeight && spaceAbove > spaceBelow;
+    menu.classList.toggle('users-action-menu--up', opensUp);
+    menu.style.maxHeight = Math.max(44, opensUp ? spaceAbove : spaceBelow) + 'px';
+    const items = qsa('[role="menuitem"]', menu);
+    (last ? items.at(-1) : items[0])?.focus({ preventScroll: true });
+  }
+
+  elements.tbody?.addEventListener('keydown', event => {
+    const toggle = event.target.closest('.action-menu-toggle');
+    if (toggle && ['ArrowDown', 'ArrowUp'].includes(event.key)) {
+      event.preventDefault();
+      showActionMenu(toggle, { last: event.key === 'ArrowUp' });
+      return;
+    }
+    const menu = event.target.closest('.users-action-menu');
+    if (!menu) return;
+    if (event.key === 'Tab') {
+      const opener = menu.previousElementSibling;
+      closeActionMenus();
+      opener.focus();
+      return;
+    }
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const items = qsa('[role="menuitem"]', menu);
+    const position = items.indexOf(event.target);
+    const offset = event.key === 'ArrowDown' ? 1 : -1;
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 :
+      (position + offset + items.length) % items.length;
+    items[next]?.focus();
+  });
+
   elements.tbody?.addEventListener('click', event => {
     const toggle = event.target.closest('.action-menu-toggle');
     if (toggle) {
-      const menu = toggle.nextElementSibling;
-      const willOpen = menu.hidden;
-      closeActionMenus(willOpen ? menu : null);
-      menu.hidden = !willOpen;
-      toggle.setAttribute('aria-expanded', String(willOpen));
-      toggle.closest('.user-row')?.classList.toggle('user-row--menu-open', willOpen);
+      if (toggle.nextElementSibling.hidden) showActionMenu(toggle);
+      else closeActionMenus();
       return;
     }
     const action = event.target.closest('[data-open-tab], [data-family-tool], [data-action="delete"]');
@@ -875,7 +919,9 @@ if (typeof document !== 'undefined') {
     reveal.setAttribute('aria-pressed', String(!shown));
     reveal.setAttribute('aria-label', shown ? 'Показать PIN/код доступа' : 'Скрыть PIN/код доступа');
   });
-  qsa('[data-close-drawer]').forEach(button => button.addEventListener('click', () => closeDrawer(button.closest('.users-drawer'))));
+  qsa('[data-close-drawer]').forEach(button => button.addEventListener('click', () => {
+    closeDrawer(button.closest('.users-drawer'), { discardFamilyDraft: button.hasAttribute('data-family-cancel') });
+  }));
   qs('#issues-search')?.addEventListener('input', updateIssueVisibility);
   qs('#issues-list')?.addEventListener('click', event => {
     const item = event.target.closest('.users-issue-item');
@@ -897,13 +943,17 @@ if (typeof document !== 'undefined') {
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
       if (state.activeDrawer) closeDrawer();
-      else closeActionMenus();
+      else {
+        const opener = qs('.action-menu-toggle[aria-expanded="true"]', elements.tbody);
+        closeActionMenus();
+        opener?.focus();
+      }
     }
     trapFocus(event);
   });
   window.addEventListener('pagehide', clearTransientSearch);
   window.addEventListener('pagehide', () => {
-    if (familyDrawer && state.activeDrawer === familyDrawer) closeDrawer(familyDrawer, { restoreFocus: false });
+    if (familyDrawer && state.activeDrawer === familyDrawer) closeDrawer(familyDrawer, { restoreFocus: false, force: true });
   });
   window.addEventListener('pageshow', clearTransientSearch);
 

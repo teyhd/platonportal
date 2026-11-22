@@ -81,18 +81,62 @@ export function createFamilyRoutes({ db, important, sessionSecret, audit }) {
     }
   }
 
+  function requireAdminToken(req, res, next) {
+    if (!req.is('application/json') || !tokenMatches(req, req.get('X-Portal-CSRF'))) return res.sendStatus(403);
+    return next();
+  }
+
+  const ineligibleParent = res => res.status(409).json({
+    code: 'ineligible_parent', message: 'У пользователя должна быть активная родительская роль.',
+  });
+
   router.get('/api/users/:id/family', requireAdmin, async (req, res) => {
     try {
       const family = await db.getFamily(res.locals.familyTargetId, { includeInactive: true });
-      if (!family) return res.status(409).json({ message: 'У пользователя должна быть активная родительская роль.' });
-      return res.json({ children: family.children });
+      if (!family) return ineligibleParent(res);
+      return res.json({ children: family.children, revision: family.revision });
     } catch {
       return temporaryFailure(res);
     }
   });
 
-  router.post('/api/users/:id/family', requireAdmin, async (req, res) => {
-    if (!req.is('application/json') || !tokenMatches(req, req.get('X-Portal-CSRF'))) return res.sendStatus(403);
+  router.post('/api/users/:id/family/candidates', requireAdmin, requireAdminToken, async (req, res) => {
+    const query = req.body?.q;
+    if (typeof query !== 'string' || query.length > 160) return res.sendStatus(400);
+    try {
+      const candidates = await db.findCandidates(res.locals.familyTargetId, query);
+      if (!candidates) return ineligibleParent(res);
+      return res.json({ candidates });
+    } catch {
+      return temporaryFailure(res);
+    }
+  });
+
+  router.put('/api/users/:id/family', requireAdmin, requireAdminToken, async (req, res) => {
+    const { childIds, revision } = req.body ?? {};
+    const { familyActorId: actorId, familyTargetId: parentId } = res.locals;
+    if (!Array.isArray(childIds) || typeof revision !== 'string' || !/^[a-zA-Z0-9_-]{43}$/.test(revision)) return res.sendStatus(400);
+    const ids = childIds.map(positiveUserId);
+    if (ids.includes(null) || ids.includes(parentId) || new Set(ids).size !== ids.length) return res.sendStatus(400);
+    try {
+      const result = await db.replaceChildren(parentId, ids, revision);
+      if (!result) return ineligibleParent(res);
+      if (result.code === 'family_conflict') return res.status(409).json({
+        code: result.code, message: 'Состав семьи уже изменился. Загрузите актуальный список.',
+      });
+      if (result.code === 'invalid_child') return res.status(422).json({
+        code: result.code, message: 'Один из добавляемых учеников больше недоступен. Проверьте список.',
+      });
+      if (result.added.length || result.removed.length) {
+        audit(`family replace actor=${actorId} parent=${parentId} added=${result.added.join(',')} removed=${result.removed.join(',')}`);
+      }
+      return res.json({ children: result.children, revision: result.revision });
+    } catch {
+      return res.status(503).json({ message: 'Не удалось подтвердить сохранение. Попробуйте ещё раз.' });
+    }
+  });
+
+  router.post('/api/users/:id/family', requireAdmin, requireAdminToken, async (req, res) => {
     const targetId = res.locals.familyTargetId;
     const childId = positiveUserId(req.body?.childId);
     const action = req.body?.action;
@@ -108,33 +152,35 @@ export function createFamilyRoutes({ db, important, sessionSecret, audit }) {
     }
   });
 
-  router.post('/api/users/:id/service-preview', requireAdmin, async (req, res) => {
-    if (!req.is('application/json') || !tokenMatches(req, req.get('X-Portal-CSRF'))) return res.sendStatus(403);
+  router.post('/api/users/:id/service-preview', requireAdmin, requireAdminToken, async (req, res) => {
     const { familyActorId: actorId, familyTargetId: targetId } = res.locals;
     const { serviceId, childId: rawChildId } = req.body ?? {};
     const childId = rawChildId == null ? null : positiveUserId(rawChildId);
     if (rawChildId != null && !childId) return res.sendStatus(400);
     try {
-      const [target, family] = await Promise.all([db.getAccount(targetId), db.getFamily(targetId, { includeInactive: true })]);
+      const [target, family, actor] = await Promise.all([
+        db.getAccount(targetId), db.getFamily(targetId, { includeInactive: true }), db.getAccount(actorId),
+      ]);
       if (!target) return res.sendStatus(404);
       const services = target.active ? listServices(target.rights) : [];
       const children = target.active ? (family?.children ?? []).filter(child => child.active) : [];
       if (childId && !children.some(child => child.id === childId)) return res.sendStatus(403);
       audit(`service-preview actor=${actorId} subject=${targetId} service=${positiveUserId(serviceId) ?? 'list'} child=${childId ?? 'none'}`);
+      for (const service of services) {
+        const actorCanRead = actor?.active && actor.rights.some(right =>
+          Number(right.srv_id) === Number(service.id) && Number(right.role_id) === 5 && right.roleConfigured !== 0
+        );
+        const targetHasPrivilegedAccess = protectedRoles.has(Number(target.type)) || target.rights.some(right =>
+          (Number(right.srv_id) === 1 || Number(right.srv_id) === Number(service.id)) && protectedRoles.has(Number(right.role_id))
+        );
+        service.previewAvailable = Boolean(service.integration && actorCanRead && !targetHasPrivilegedAccess);
+      }
       if (serviceId == null) return res.json({ active: target.active, services, children });
 
       const service = services.find(item => item.id === String(positiveUserId(serviceId)));
       if (!service) return res.sendStatus(404);
+      if (!service.previewAvailable) return res.json({ state: 'permissions_only' });
       const integration = previewServices.find(item => item.ids.includes(Number(service.id)));
-      if (!integration) return res.json({ state: 'permissions_only' });
-      const actor = await db.getAccount(actorId);
-      const actorCanRead = actor?.active && actor.rights.some(right =>
-        Number(right.srv_id) === Number(service.id) && Number(right.role_id) === 5 && right.roleConfigured !== 0
-      );
-      const targetHasPrivilegedAccess = protectedRoles.has(Number(target.type)) || target.rights.some(right =>
-        (Number(right.srv_id) === 1 || Number(right.srv_id) === Number(service.id)) && protectedRoles.has(Number(right.role_id))
-      );
-      if (!actorCanRead || targetHasPrivilegedAccess) return res.json({ state: 'permissions_only' });
       const hasParentRole = target.rights.some(right => Number(right.srv_id) === Number(service.id) && Number(right.role_id) === 6);
       const selected = hasParentRole ? selectedFamilyChild(children, childId) : null;
       if (integration.path && hasParentRole && !selected) return res.json({ state: 'no_child' });

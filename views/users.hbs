@@ -1,6 +1,6 @@
 {{!-- User-management workspace --}}
-<link rel="stylesheet" href="/css/users.css">
-{{#if familyAdminToken}}<link rel="stylesheet" href="/css/user-family-tools.css?v=1">{{/if}}
+<link rel="stylesheet" href="/css/users.css?v=family-2">
+{{#if familyAdminToken}}<link rel="stylesheet" href="/css/user-family-tools.css?v=2">{{/if}}
 <script>document.body.classList.add('users-route');</script>
 
 <main class="users-workspace">
@@ -82,7 +82,11 @@
               <td><span class="user-role">{{#with (findById ../types this.type)}}{{this.name}}{{else}}—{{/with}}</span></td>
               <td>{{#if this.status}}<span class="user-status user-status--active">Активен</span>{{else}}<span class="user-status user-status--blocked">Заблокирован</span>{{/if}}</td>
               <td><button class="user-pin user-pin-reveal" type="button" aria-label="Показать PIN пользователя {{this.name}}" aria-pressed="false" title="Показать PIN">••••••</button></td>
-              <td><div class="user-actions"><button class="users-icon-button action-menu-toggle" type="button" aria-label="Действия пользователя {{this.name}}" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button><div class="users-action-menu" role="menu" hidden><button class="users-action-item" type="button" role="menuitem" data-open-tab="profile">Профиль</button><button class="users-action-item" type="button" role="menuitem" data-open-tab="roles">Доступы</button><button class="users-action-item" type="button" role="menuitem" data-open-tab="logins">Учётные записи</button>{{#if @root.familyAdminToken}}{{#if this.status}}<button class="users-action-item" type="button" role="menuitem" data-family-tool="preview" aria-haspopup="dialog">Просмотр как пользователь</button>{{#if (gt this.type 1)}}<button class="users-action-item" type="button" role="menuitem" data-family-tool="family" aria-haspopup="dialog">Связанные дети</button>{{/if}}{{/if}}{{/if}}<button class="users-action-item users-action-item--danger" type="button" role="menuitem" data-action="delete">Удалить</button></div></div></td>
+              <td><div class="user-actions"><button class="users-icon-button action-menu-toggle" type="button" aria-label="Действия пользователя {{this.name}}" aria-haspopup="menu" aria-expanded="false" aria-controls="user-actions-{{this.id}}" id="user-actions-button-{{this.id}}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button><div class="users-action-menu" id="user-actions-{{this.id}}" role="menu" aria-labelledby="user-actions-button-{{this.id}}" hidden><button class="users-action-item" type="button" role="menuitem" data-open-tab="profile">Профиль</button>{{#if @root.familyAdminToken}}{{#if this.familyEditable}}
+                <button class="users-action-item users-family-menu-item" type="button" role="menuitem" data-family-tool="family" aria-haspopup="dialog" aria-controls="user-family-tools"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M16.5 4.4a3 3 0 0 1 0 5.2M18 13a5 5 0 0 1 3 5v2" stroke-linecap="round"/></svg>Дети</button>
+              {{/if}}{{#if this.status}}
+                <button class="users-action-item users-family-menu-item" type="button" role="menuitem" data-family-tool="preview" aria-haspopup="dialog" aria-controls="user-family-tools"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2.2 12s3.6-6 9.8-6 9.8 6 9.8 6-3.6 6-9.8 6-9.8-6-9.8-6Z"/><circle cx="12" cy="12" r="2.35"/></svg>Просмотр сервисов</button>
+              {{/if}}{{/if}}<button class="users-action-item" type="button" role="menuitem" data-open-tab="roles">Доступы</button><button class="users-action-item" type="button" role="menuitem" data-open-tab="logins">Учётные записи</button><button class="users-action-item users-action-item--danger" type="button" role="menuitem" data-action="delete">Удалить</button></div></div></td>
             </tr>
           {{/each}}
           <tr class="users-no-results" id="users-no-results" hidden><td colspan="6">По вашему запросу ничего не найдено.</td></tr>
@@ -198,4 +202,4 @@
 </div><footer class="users-drawer-footer"><span class="users-drawer-message" id="user-drawer-message" role="status"></span><div class="users-drawer-actions"><button class="users-cancel-button" type="button" data-close-drawer>Закрыть</button><button class="users-secondary-button" id="btn-retry-user" type="button" hidden>Повторить загрузку</button><button class="users-save-button" id="btn-save-current" type="button">Сохранить профиль</button></div></footer></div></aside>
 
 {{#if familyAdminToken}}{{> userFamilyTools}}{{/if}}
-<script type="module" src="/js/users.js?v=family-1"></script>
+<script type="module" src="/js/users.js?v=family-2"></script>

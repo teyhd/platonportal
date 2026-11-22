@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 const studentRole = 1;
 const parentRole = 6;
 const portalAdminRole = 5;
@@ -62,6 +64,12 @@ const active = "status = 1 AND lifecycle_state = 'active'";
 const parentEligibility = `(u.type = ${parentRole}
   OR EXISTS (SELECT 1 FROM rights r WHERE r.usr_id = u.id AND r.role_id = ${parentRole})
   OR EXISTS (SELECT 1 FROM parents_kids pk WHERE pk.parent_id = u.id))`;
+const eligibleParent = `u.status = 1 AND u.lifecycle_state = 'active' AND u.type > ${studentRole} AND ${parentEligibility}`;
+
+function familyRevision(childIds) {
+  const ids = [...childIds].sort((a, b) => a - b);
+  return createHash('sha256').update(ids.join(',')).digest('base64url');
+}
 
 export function createFamilyAccess(openConnection) {
   async function withConnection(operation) {
@@ -73,7 +81,7 @@ export function createFamilyAccess(openConnection) {
   async function getParent(connection, parentId, lock = false) {
     const [[parent]] = await connection.query(
       `SELECT u.id FROM users u
-       WHERE u.id = ? AND u.${active} AND u.type > ${studentRole} AND ${parentEligibility}
+       WHERE u.id = ? AND ${eligibleParent}
        ${lock ? 'FOR UPDATE' : ''}`,
       [parentId]
     );
@@ -108,13 +116,62 @@ export function createFamilyAccess(openConnection) {
     return rows;
   }
 
+  async function editFamily(parentId, operation) {
+    return withConnection(async connection => {
+      await connection.beginTransaction();
+      try {
+        const parent = await getParent(connection, parentId, true);
+        const result = parent ? await operation(connection) : null;
+        await connection.commit();
+        return result;
+      } catch (error) {
+        await connection.rollback();
+        throw error;
+      }
+    });
+  }
+
   return {
+    getEligibleParentIds() {
+      return withConnection(async connection => {
+        const [rows] = await connection.query(`SELECT u.id FROM users u WHERE ${eligibleParent}`);
+        return new Set(rows.map(row => Number(row.id)));
+      });
+    },
+
     getFamily(parentId, { includeInactive = false, includeGrants = !includeInactive } = {}) {
       return withConnection(async connection => {
         if (!await getParent(connection, parentId)) return null;
         const children = await getChildren(connection, parentId, includeInactive);
         const rights = includeGrants ? await serviceGrants(connection, parentId) : [];
-        return { children, rights };
+        return includeInactive ? { children, rights, revision: familyRevision(children.map(child => child.id)) } : { children, rights };
+      });
+    },
+
+    findCandidates(parentId, query) {
+      return withConnection(async connection => {
+        if (!await getParent(connection, parentId)) return null;
+        const normalized = query.normalize('NFKC').trim().toLowerCase().replaceAll('ё', 'е');
+        if (!normalized) return [];
+        const terms = normalized.replace(/\bid\s*[:#]?\s*(?=\d)/g, '').split(/\s+/).map(term => term.replace(/^#(?=\d+$)/, ''));
+        const params = [];
+        const filters = terms.map(term => {
+          if (/^\d+$/.test(term)) {
+            params.push(term);
+            return 'LOCATE(?, CAST(u.id AS CHAR)) > 0';
+          }
+          params.push(term);
+          return "LOCATE(?, REPLACE(LOWER(u.name), 'ё', 'е')) > 0";
+        });
+        const [rows] = await connection.query(
+          `SELECT u.id, u.name, COALESCE(k.name, '') AS className
+           FROM users u LEFT JOIN kaf_name k ON k.id = u.kaf
+           WHERE u.type = ${studentRole} AND u.status = 1 AND u.lifecycle_state = 'active'
+             AND ${filters.join(' AND ')}
+           ORDER BY (u.id = ?) DESC, u.name, u.id LIMIT 20`,
+          [...params, positiveUserId(terms.find(term => /^\d+$/.test(term)))]
+        );
+        return rows.map(row => ({ id: Number(row.id), name: row.name, className: row.className }));
       });
     },
 
@@ -140,38 +197,52 @@ export function createFamilyAccess(openConnection) {
       });
     },
 
-    updateChild(parentId, childId, action) {
-      return withConnection(async connection => {
-        await connection.beginTransaction();
-        try {
-          // Serialize edits to a parent's relationships using the existing parent row.
-          if (!await getParent(connection, parentId, true)) {
-            await connection.rollback();
-            return false;
-          }
-          if (action === 'add') {
-            const [[student]] = await connection.query(
-              `SELECT id FROM users WHERE id = ? AND type = ? AND ${active} FOR UPDATE`,
-              [childId, studentRole]
-            );
-            if (!student) {
-              await connection.rollback();
-              return false;
-            }
-            await connection.query(
-              `INSERT INTO parents_kids (parent_id, kid_id) SELECT ?, ?
-               WHERE NOT EXISTS (SELECT 1 FROM parents_kids WHERE parent_id = ? AND kid_id = ?)`,
-              [parentId, childId, parentId, childId]
-            );
-          } else {
-            await connection.query('DELETE FROM parents_kids WHERE parent_id = ? AND kid_id = ?', [parentId, childId]);
-          }
-          await connection.commit();
-          return true;
-        } catch (error) {
-          await connection.rollback();
-          throw error;
+    replaceChildren(parentId, childIds, revision) {
+      return editFamily(parentId, async connection => {
+        // Protect the relationship rows as well as the parent, including edits from other services.
+        await connection.query('SELECT kid_id FROM parents_kids WHERE parent_id = ? FOR UPDATE', [parentId]);
+        const current = await getChildren(connection, parentId, true);
+        const currentIds = new Set(current.map(child => child.id));
+        const requested = new Set(childIds);
+        const currentRevision = familyRevision(currentIds);
+        const added = childIds.filter(id => !currentIds.has(id));
+        const removed = [...currentIds].filter(id => !requested.has(id));
+        if (!added.length && !removed.length) return { children: current, revision: currentRevision, added, removed };
+        if (currentRevision !== revision) return { code: 'family_conflict' };
+
+        if (added.length) {
+          const [students] = await connection.query(
+            `SELECT id FROM users WHERE id IN (?) AND type = ? AND ${active} ORDER BY id FOR UPDATE`,
+            [added, studentRole]
+          );
+          if (students.length !== added.length) return { code: 'invalid_child' };
+          await connection.query('INSERT INTO parents_kids (parent_id, kid_id) VALUES ?', [added.map(id => [parentId, id])]);
         }
+        if (removed.length) {
+          await connection.query('DELETE FROM parents_kids WHERE parent_id = ? AND kid_id IN (?)', [parentId, removed]);
+        }
+        const children = await getChildren(connection, parentId, true);
+        return { children, revision: familyRevision(children.map(child => child.id)), added, removed };
+      });
+    },
+
+    updateChild(parentId, childId, action) {
+      return editFamily(parentId, async connection => {
+        if (action === 'add') {
+          const [[student]] = await connection.query(
+            `SELECT id FROM users WHERE id = ? AND type = ? AND ${active} FOR UPDATE`,
+            [childId, studentRole]
+          );
+          if (!student) return false;
+          await connection.query(
+            `INSERT INTO parents_kids (parent_id, kid_id) SELECT ?, ?
+             WHERE NOT EXISTS (SELECT 1 FROM parents_kids WHERE parent_id = ? AND kid_id = ?)`,
+            [parentId, childId, parentId, childId]
+          );
+        } else {
+          await connection.query('DELETE FROM parents_kids WHERE parent_id = ? AND kid_id = ?', [parentId, childId]);
+        }
+        return true;
       });
     },
   };
