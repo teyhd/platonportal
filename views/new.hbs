@@ -10,6 +10,10 @@
       {{/unless}}
     {{/unless}}
 
+    {{#if family}}
+      {{> familySelector}}
+    {{/if}}
+
     {{#if showRoomOccupancy}}
       <link rel="stylesheet" href="/css/room-occupancy.css?v=5">
       {{> roomOccupancy}}
@@ -30,6 +34,8 @@
         </a>
       </div>
     {{/if}}
+
+    {{> projectsWidget}}
 
     <section class="mt-6" data-catalog aria-labelledby="services-title">
       <div class="flex flex-wrap items-center justify-between gap-3">

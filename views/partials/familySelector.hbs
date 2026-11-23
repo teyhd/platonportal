@@ -1,0 +1,60 @@
+<link rel="stylesheet" href="/css/family.css?v=1">
+<section class="family-context" id="family" aria-labelledby="family-title">
+  <div class="family-context-heading">
+    <div>
+      <h2 id="family-title">Мои дети</h2>
+      {{#if family.unavailable}}
+        <p>Список временно недоступен. <a href="/">Обновить</a></p>
+      {{else}}
+        {{#unless family.selected}}
+          <p>Дети пока не привязаны к вашей учётной записи. Обратитесь к администратору школы.</p>
+        {{/unless}}
+      {{/if}}
+    </div>
+    {{#if family.multiple}}
+      <form action="/family/child" method="post" class="family-choice" data-family-selection>
+        <input type="hidden" name="csrf" value="{{family.csrf}}">
+        <label for="family-child">Ребёнок</label>
+        <select id="family-child" name="childId">
+          {{#each family.children}}
+            <option value="{{id}}"{{#if (eq id ../family.selected.id)}} selected{{/if}}>{{name}}{{#if className}} · {{className}}{{/if}}</option>
+          {{/each}}
+        </select>
+        <button type="submit" class="family-submit">Показать</button>
+      </form>
+    {{else}}
+      {{#if family.selected}}
+        <div class="family-single">
+          <span>{{family.selected.name}}</span>
+          {{#if family.selected.className}}<small>{{family.selected.className}}</small>{{/if}}
+        </div>
+      {{/if}}
+    {{/if}}
+  </div>
+  {{#if family.selectionNotice}}
+    <p class="family-notice" role="status">Список детей изменился. Проверьте текущий выбор.</p>
+  {{/if}}
+  {{#if family.selected}}
+    <nav class="family-services" aria-label="Портфолио выбранного ребёнка">
+      <a href="https://proj.platoniks.ru/portfolio/{{family.selected.id}}"><span>Проекты и подтверждённые навыки</span><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+    </nav>
+  {{/if}}
+  {{#if family.services.length}}
+    <nav class="family-services" aria-label="Сервисы для выбранного ребёнка">
+      {{#each family.services}}
+        <a href="{{href}}"><img src="{{image}}" alt="" width="24" height="24"><span>{{label}}</span><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+      {{/each}}
+    </nav>
+  {{else}}
+    {{#if family.selected}}<p>Учебные сервисы ещё не назначены. Обратитесь к администратору школы.</p>{{/if}}
+  {{/if}}
+</section>
+{{#if family.multiple}}
+  <script>
+    {
+      const familyForm = document.querySelector('[data-family-selection]');
+      familyForm.classList.add('is-enhanced');
+      familyForm.querySelector('select').addEventListener('change', () => familyForm.requestSubmit());
+    }
+  </script>
+{{/if}}
