@@ -1,0 +1,127 @@
+<link rel="stylesheet" href="/css/cards-admin.css?v=1">
+<dialog id="cards-admin-drawer" class="cards-admin" data-cards-admin aria-labelledby="cards-admin-title">
+  <div class="cards-admin__layout">
+    <header class="cards-admin__header">
+      <button type="button" data-card-back class="cards-admin__button cards-admin__back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14"/></svg>
+        <span>К списку</span>
+      </button>
+      <h2 id="cards-admin-title">Управление карточками</h2>
+      <button type="button" data-card-admin-close class="cards-admin__button cards-admin__close" aria-label="Закрыть" autofocus>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m18 6-12 12M6 6l12 12"/></svg>
+      </button>
+    </header>
+
+    <div class="cards-admin__workspace">
+      <section class="cards-admin__library" aria-label="Список карточек">
+        <div class="cards-admin__toolbar">
+          <div class="cards-admin__search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+            <input type="search" data-card-search aria-label="Поиск карточек" placeholder="Поиск карточек">
+          </div>
+          <button type="button" data-card-new class="cards-admin__button cards-admin__primary" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Создать</span>
+          </button>
+          <div class="cards-admin__filters" role="group" aria-label="Фильтр карточек">
+            <button type="button" data-card-filter="all" aria-pressed="true">Все</button>
+            <button type="button" data-card-filter="services" aria-pressed="false">Сервисы</button>
+            <button type="button" data-card-filter="materials" aria-pressed="false">Материалы</button>
+            <button type="button" data-card-filter="hidden" aria-pressed="false">Скрытые</button>
+          </div>
+        </div>
+        <div class="cards-admin__results" data-card-results>
+          <p data-card-list-status class="cards-admin__count" role="status"></p>
+          <button type="button" data-card-retry class="cards-admin__button" hidden>Повторить загрузку</button>
+          <ul data-card-list class="cards-admin__list"></ul>
+          <div data-card-empty class="cards-admin__empty" hidden>
+            <p data-card-empty-text></p>
+            <button type="button" data-card-reset class="cards-admin__button" hidden>Сбросить фильтры</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="cards-admin__editor" aria-label="Редактор карточки">
+        <div data-card-placeholder class="cards-admin__placeholder">
+          <p>Выберите карточку из списка или создайте новую.</p>
+        </div>
+        <form id="cards-admin-form" data-card-form hidden>
+          <div class="cards-admin__fields" data-card-fields>
+            <div class="cards-admin__editor-heading">
+              <h3 data-card-editor-title tabindex="-1">Новая карточка</h3>
+              <span data-card-editor-id></span>
+            </div>
+            <label>
+              <span>Заголовок</span>
+              <input type="text" data-card-title required maxlength="50">
+            </label>
+            <fieldset class="cards-admin__pair">
+              <label>
+                <span>Тип карточки</span>
+                <select data-card-type>
+                  <option value="0">Сервис</option>
+                  <option value="1">Материал</option>
+                </select>
+              </label>
+              <label data-card-service-field>
+                <span>Ссылка</span>
+                <input type="text" data-card-link inputmode="url" autocapitalize="off" spellcheck="false" maxlength="3000" placeholder="https://… или /раздел">
+              </label>
+              <label data-card-material-field hidden>
+                <span>Содержимое HTML</span>
+                <textarea data-card-html rows="5" maxlength="3000" spellcheck="false"></textarea>
+              </label>
+            </fieldset>
+            <label>
+              <span>Кому видна</span>
+              <select data-card-role required aria-describedby="card-audience-hint"></select>
+            </label>
+            <p id="card-audience-hint" data-card-audience class="cards-admin__hint"></p>
+            <fieldset class="cards-admin__pair cards-admin__visibility">
+              <label>
+                <span>Порядок</span>
+                <input type="number" min="0" max="127" data-card-order required aria-describedby="card-order-hint">
+              </label>
+              <label class="cards-admin__check">
+                <input type="checkbox" data-card-shows>
+                <span>Показывать в каталоге</span>
+              </label>
+            </fieldset>
+            <p id="card-order-hint" class="cards-admin__hint">Меньшее число поднимает карточку выше.</p>
+
+            <div class="cards-admin__image">
+              <img data-card-image-preview src="/img/platon.png" alt="">
+              <div>
+                <label>
+                  <span>Файл изображения</span>
+                  <input type="text" data-card-pic maxlength="50" autocapitalize="off" spellcheck="false" placeholder="Имя файла в каталоге">
+                </label>
+                <label class="cards-admin__button cards-admin__upload">
+                  <span>Загрузить изображение</span>
+                  <input type="file" data-card-image-file accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" aria-label="Загрузить изображение">
+                </label>
+              </div>
+            </div>
+            <details data-card-preview class="cards-admin__preview">
+              <summary>Предпросмотр</summary>
+              <div data-card-service-preview class="cards-admin__service-preview">
+                <img data-card-service-image src="/img/platon.png" alt="">
+                <p data-card-service-title></p>
+              </div>
+              <iframe data-card-html-preview title="Фрагмент материала" sandbox="" tabindex="-1" inert hidden></iframe>
+            </details>
+          </div>
+
+          <footer class="cards-admin__footer">
+            <div>
+              <p data-card-save-status role="status"></p>
+              <a href="/" data-card-refresh hidden>Обновить каталог</a>
+            </div>
+            <button type="submit" data-card-save class="cards-admin__button cards-admin__primary">Сохранить</button>
+          </footer>
+        </form>
+      </section>
+    </div>
+  </div>
+</dialog>
+<script src="/js/cards-admin.js?v=1" defer></script>

@@ -618,6 +618,7 @@ function getCardImageSrc(pic = '') {
 
 const CARD_IMAGE_UPLOAD_DIR = path.join(publicPath, 'img', 'cards');
 const CARD_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
+const CARD_IMAGE_PIC_MAX_LENGTH = 50;
 const CARD_IMAGE_TYPES = new Map([
   ['image/png', 'png'],
   ['image/jpeg', 'jpg'],
@@ -645,7 +646,7 @@ async function validateCardPayload(body = {}) {
 
   const title = getLimitedString(body.title, 50);
   const cont = getLimitedString(body.cont, 3000);
-  const pic = getLimitedString(body.pic, 50);
+  const pic = getLimitedString(body.pic, CARD_IMAGE_PIC_MAX_LENGTH);
   const role = Number(body.role);
   const shows = Number(body.shows);
   const crdorder = Number(body.crdorder);
@@ -653,7 +654,7 @@ async function validateCardPayload(body = {}) {
   if (!title) return { error: 'title required' };
   if ((body.title ?? '').toString().trim().length > 50) return { error: 'title too long' };
   if ((body.cont ?? '').toString().trim().length > 3000) return { error: 'content too long' };
-  if ((body.pic ?? '').toString().trim().length > 50) return { error: 'pic too long' };
+  if ((body.pic ?? '').toString().trim().length > CARD_IMAGE_PIC_MAX_LENGTH) return { error: 'pic too long' };
   if (!Number.isInteger(role)) return { error: 'role required' };
   if (!Number.isInteger(shows) || ![0, 1].includes(shows)) return { error: 'shows must be 0 or 1' };
   if (!Number.isInteger(crdorder) || crdorder < 0 || crdorder > 127) return { error: 'crdorder must be from 0 to 127' };
@@ -736,9 +737,10 @@ function getSafeImageFileName(fileName = 'card', extension = 'webp') {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-zA-Z0-9_-]+/g, '-')
     .replace(/^-+|-+$/g, '')
-    .slice(0, 16) || 'card';
+    .slice(0, 8) || 'card';
+  const stamp = Date.now().toString(36);
   const suffix = crypto.randomBytes(4).toString('hex');
-  return `${baseName}-${Date.now()}-${suffix}.${extension}`;
+  return `${baseName}-${stamp}-${suffix}.${extension}`;
 }
 
 function getLinkMeta(href = '') {
