@@ -27,12 +27,12 @@ if (panel) {
   const element = (tag, className, value) => { const node = document.createElement(tag); if (className) node.className = className; if (value != null) text(node, value); return node; };
   const when = value => value ? Date.parse(value) : NaN;
   const formatTime = value => Number.isFinite(when(value)) ? clockFormat.format(new Date(value)) : '';
-  const remaining = duration => duration < 60_000 ? 'меньше минуты' : `${Math.ceil(duration / 60_000)} мин`;
+  const remaining = duration => duration < 60_000 ? 'меньше минуты' : formatCountdown(duration);
   const setClock = value => { const parsed = Date.parse(value); if (Number.isFinite(parsed)) { baseTime = parsed; basePerformance = performance.now(); } };
   const query = extra => new URLSearchParams({ context, ...(childId && context === 'personal' ? { childId } : {}), ...extra });
   const workday = $('[data-important-workday]');
 
-  function beginningDuration(duration) {
+  function formatCountdown(duration) {
     if (duration < 60_000) return `${Math.ceil(duration / 1000)} сек`;
     const minutes = Math.ceil(duration / 60_000);
     const hours = Math.floor(minutes / 60);
@@ -101,7 +101,7 @@ if (panel) {
       const lessonSummary = [details, count || simultaneous].filter(Boolean).join(' · ');
       const previewTomorrow = lesson ? [`Завтра ${formatTime(lesson.start)}`, lessonSummary].filter(Boolean).join(' · ') : '';
       if (first && now < when(first.start)) {
-        text(title, `${first.kind === 'shift' ? 'До начала рабочего дня' : 'До первого урока'} ${beginningDuration(when(first.start) - now)}`);
+        text(title, `${first.kind === 'shift' ? 'До начала рабочего дня' : 'До первого урока'} ${formatCountdown(when(first.start) - now)}`);
         text(caption, [`Начало в ${formatTime(first.start)}`, previewTomorrow].filter(Boolean).join(' · '));
       } else if (current) {
         text(title, current.kind === 'shift' ? 'Ваша смена' : 'Ваши занятия сегодня');
@@ -200,8 +200,7 @@ if (panel) {
     const active = current || upcoming;
     const showClock = node.timeMode.getAttribute('aria-pressed') === 'true';
     const duration = (upcoming ? start : end) - now;
-    const countdown = duration < 60_000 ? `${Math.ceil(duration / 1000)} сек` : remaining(duration);
-    text(node.timeValue, active && !showClock ? countdown : upcoming ? startTime : endTime);
+    text(node.timeValue, active && !showClock ? formatCountdown(duration) : upcoming ? startTime : endTime);
     text(node.timeCaption, current ? (showClock ? 'конец' : 'до конца')
       : upcoming ? (showClock ? 'начало' : 'до начала') : 'завершилось');
     node.timeMode.hidden = !active;
