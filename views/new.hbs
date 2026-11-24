@@ -8,6 +8,10 @@
       {{/unless}}
     </header>
 
+    {{#if showBookpc}}
+      {{> bookpc}}
+    {{/if}}
+
     {{#if canManageCards}}
       <div class="mt-4 flex flex-wrap items-center gap-3">
         <button type="button" data-card-admin-open aria-haspopup="dialog" aria-controls="cards-admin-drawer"

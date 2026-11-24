@@ -1,0 +1,197 @@
+.bookpc {
+  margin-top: 1rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: .75rem;
+  color: #0f172a;
+}
+.bookpc [hidden] { display: none !important; }
+.bookpc__toggle {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: .5rem .9rem;
+  min-height: 3.25rem;
+  padding: .65rem .95rem;
+  text-align: left;
+  font-weight: 650;
+  border-radius: inherit;
+}
+.bookpc__toggle::after {
+  content: '';
+  flex: 0 0 .48rem;
+  height: .48rem;
+  border: solid #64748b;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translate(-2px, -2px);
+}
+.bookpc__toggle[aria-expanded='true']::after { transform: rotate(225deg); }
+.bookpc__summary {
+  flex: 1;
+  color: #475569;
+  text-align: right;
+  font-size: .8125rem;
+  font-weight: 500;
+}
+.bookpc__body { border-top: 1px solid #e2e8f0; padding: .8rem .95rem; }
+.bookpc__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: .35rem .75rem;
+  margin-bottom: .6rem;
+  font-size: .8125rem;
+}
+.bookpc__toolbar a { padding-block: .35rem; color: #1d4ed8; font-weight: 600; text-decoration: underline; }
+.bookpc__legend { display: flex; flex-wrap: wrap; gap: .25rem .8rem; color: #475569; }
+.bookpc__legend li, .bookpc__tile { display: flex; gap: .35rem; align-items: center; }
+.bookpc__legend li::before, .bookpc__tile::before {
+  content: '';
+  flex: 0 0 .42rem;
+  height: .42rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+.bookpc__legend li::before { color: var(--bookpc-ink); }
+.bookpc__legend .bookpc__issue-key::before { color: #b45b0a; }
+.bookpc [data-state='free'] { --bookpc-ink: #08634a; --bookpc-bg: #e7f7ef; --bookpc-border: #b8e5ce; }
+.bookpc [data-state='occupied'] { --bookpc-ink: #9f2850; --bookpc-bg: #fff0f3; --bookpc-border: #f5cbd6; }
+.bookpc [data-state='own'] { --bookpc-ink: #2158a5; --bookpc-bg: #ebf3ff; --bookpc-border: #bfd6f9; }
+.bookpc [data-state='unknown'] { --bookpc-ink: #475569; --bookpc-bg: #f1f5f9; --bookpc-border: #d8e1eb; }
+.bookpc__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(3.75rem, 1fr));
+  gap: .375rem;
+}
+.bookpc__tile, .bookpc__badge {
+  border: 1px solid var(--bookpc-border);
+  color: var(--bookpc-ink);
+  background: var(--bookpc-bg);
+  border-radius: .55rem;
+  font-weight: 650;
+}
+.bookpc__tile {
+  position: relative;
+  justify-content: center;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: .2rem;
+  font-size: .875rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.bookpc__tile[data-has-issue]::after {
+  content: '!';
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  display: grid;
+  place-items: center;
+  width: .95rem;
+  height: .95rem;
+  border-radius: 50%;
+  outline: 1px solid #fff;
+  background: #fbbf24;
+  color: #482503;
+  font-size: .6875rem;
+  font-weight: 800;
+}
+.bookpc__tile[aria-expanded='true'] { box-shadow: inset 0 0 0 1px currentColor; }
+.bookpc :focus-visible { outline: 2px solid #3081ed; outline-offset: 2px; }
+.bookpc__card, .bookpc__dialog {
+  box-sizing: border-box;
+  width: min(23rem, calc(100% - 24px));
+  border: 1px solid #dbe4f0;
+  border-radius: 1rem;
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 .75rem 2rem #0f172a2b, 0 .15rem .4rem #0f172a15;
+  padding: 1rem;
+  overflow: auto;
+}
+.bookpc__card { position: fixed; inset: auto; margin: 0; }
+.bookpc__card-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .4rem .65rem;
+  min-height: 2.5rem;
+  padding-right: 2.55rem;
+}
+.bookpc__card h3, .bookpc__dialog h3 { font-size: 1.1875rem; font-weight: 730; line-height: 1.2; }
+.bookpc__badge { padding: .15rem .5rem; border-radius: 1rem; font-size: .75rem; }
+.bookpc__card-caption { margin-top: .55rem; font-size: .8125rem; color: #475569; }
+.bookpc__details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .6rem .45rem;
+  margin-top: .5rem;
+  font-size: .875rem;
+}
+.bookpc__details:empty { display: none; }
+.bookpc__detail { display: grid; gap: .1rem; }
+.bookpc__detail dt { color: #475569; font-size: .75rem; }
+.bookpc__detail dd { overflow-wrap: anywhere; white-space: pre-wrap; }
+.bookpc__detail--compact, .bookpc__detail--pin { padding: .45rem .6rem; background: #f1f5f9; border-radius: .6rem; }
+.bookpc__detail--compact dd, .bookpc__detail--pin dd { font-weight: 650; font-variant-numeric: tabular-nums; }
+.bookpc__detail--wide, .bookpc__detail--pin { grid-column: 1 / -1; }
+.bookpc__detail--pin { display: flex; justify-content: space-between; align-items: center; background: #eaf2ff; }
+.bookpc__issue {
+  margin-top: .65rem;
+  padding: .6rem .7rem;
+  border-left: 3px solid #d98c24;
+  border-radius: .4rem;
+  background: #fffaeb;
+  color: #633708;
+  font-size: .8125rem;
+  overflow-wrap: anywhere;
+}
+.bookpc__issue-label { font-weight: 750; }
+.bookpc__issue a { display: inline-flex; align-items: center; min-height: 2.75rem; text-decoration: underline; }
+.bookpc__close {
+  position: absolute;
+  top: .6rem;
+  right: .6rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: .6rem;
+  color: #475569;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+.bookpc__close:hover { background: #f1f5f9; }
+.bookpc__primary, .bookpc__retry {
+  min-height: 2.75rem;
+  padding: .45rem .8rem;
+  border-radius: .6rem;
+  font-weight: 650;
+}
+.bookpc__primary { color: white; background: #19499b; }
+.bookpc__primary:hover { background: #153e83; }
+.bookpc__primary:disabled { opacity: .55; }
+.bookpc__card .bookpc__primary { width: 100%; margin-top: .85rem; }
+.bookpc__retry { border: 1px solid #cbd5e1; }
+.bookpc__dialog { position: fixed; inset: 0; margin: auto; max-height: calc(100dvh - 24px); }
+.bookpc__dialog::backdrop { background: #0f172a80; }
+.bookpc__form { display: grid; gap: .85rem; }
+.bookpc__form label { display: grid; gap: .35rem; font-size: .875rem; }
+.bookpc__form select, .bookpc__form textarea {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: .5rem .6rem;
+  color: inherit;
+  color-scheme: light;
+  background: #f8fafc;
+  border: 1px solid #a3b5ca;
+  border-radius: .5rem;
+  font-size: 1rem;
+}
+.bookpc__form-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .5rem; }
+.bookpc__message { color: #475569; font-size: .875rem; margin: .6rem 0; }
+.bookpc__dialog .bookpc__message { color: #475569; margin: 0; }
+.bookpc__message:empty { display: none; }
+@media (max-width: 400px) {
+  .bookpc__toggle, .bookpc__body { padding-inline: .65rem; }
+  .bookpc__grid { grid-template-columns: repeat(auto-fill, minmax(3.1rem, 1fr)); }
+}
