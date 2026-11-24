@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/css/cards-admin.css?v=1">
+<link rel="stylesheet" href="/css/cards-admin.css?v=2">
 <dialog id="cards-admin-drawer" class="cards-admin" data-cards-admin aria-labelledby="cards-admin-title">
   <div class="cards-admin__layout">
     <header class="cards-admin__header">
@@ -100,6 +100,7 @@
                   <span>Загрузить изображение</span>
                   <input type="file" data-card-image-file accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" aria-label="Загрузить изображение">
                 </label>
+                <p data-card-image-status class="cards-admin__image-status" role="status"></p>
               </div>
             </div>
             <details data-card-preview class="cards-admin__preview">
@@ -113,15 +114,13 @@
           </div>
 
           <footer class="cards-admin__footer">
-            <div>
-              <p data-card-save-status role="status"></p>
-              <a href="/" data-card-refresh hidden>Обновить каталог</a>
-            </div>
-            <button type="submit" data-card-save class="cards-admin__button cards-admin__primary">Сохранить</button>
+            <p data-card-save-status role="status"></p>
+            <button type="button" data-card-save-retry class="cards-admin__button" aria-label="Повторить автосохранение" hidden>Повторить</button>
+            <a href="/" data-card-refresh hidden>Обновить каталог</a>
           </footer>
         </form>
       </section>
     </div>
   </div>
 </dialog>
-<script src="/js/cards-admin.js?v=1" defer></script>
+<script src="/js/cards-admin.js?v=2" defer></script>

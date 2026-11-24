@@ -18,8 +18,9 @@
   const formBody = find('[data-card-fields]');
   const formPlaceholder = find('[data-card-placeholder]');
   const editorTitle = find('[data-card-editor-title]');
-  const save = find('[data-card-save]');
   const saveStatus = find('[data-card-save-status]');
+  const saveRetry = find('[data-card-save-retry]');
+  const imageStatus = find('[data-card-image-status]');
   const refresh = find('[data-card-refresh]');
   const catalogRefresh = document.querySelector('[data-catalog-refresh]');
   const preview = find('[data-card-preview]');
@@ -41,19 +42,24 @@
   const fallbackIcon = '/img/platon.png';
   const supportedImageTypes = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/webp']);
   const supportedImageName = /\.(png|jpe?g|webp)$/i;
+  const saveDelay = 650;
   const state = {
     cards: [],
     roles: [],
     filter: 'all',
     selectedId: null,
     savedValues: null,
+    saved: false,
+    failure: null,
     loaded: false,
     catalogChanged: false,
     busy: '',
-    message: '',
-    messageType: '',
     opener: null,
   };
+  let saveTimer;
+  let saveRequest;
+  let navigating = false;
+  let composing = false;
 
   async function api(url, options = {}) {
     const response = await fetch(url, {
@@ -81,6 +87,7 @@
       'role is not allowed': 'Выберите доступную аудиторию.',
       'crdorder must be from 0 to 127': 'Введите число от 0 до 127.',
       'Not found': 'Карточка больше недоступна. Откройте панель заново после обновления страницы.',
+      'ambiguous card creation': 'Найдено несколько похожих карточек. Проверьте список.',
     })[error.message] || fallback;
   }
 
@@ -100,32 +107,46 @@
     return state.savedValues !== null && state.savedValues !== JSON.stringify(payload());
   }
 
+  function validationMessage(values = payload()) {
+    if (!values.title) return 'Введите заголовок для автосохранения.';
+    if (values.role === null) return 'Выберите аудиторию.';
+    if (!Number.isInteger(values.crdorder) || values.crdorder < 0 || values.crdorder > 127) {
+      return 'Укажите порядок от 0 до 127.';
+    }
+    return '';
+  }
+
   function warnBeforeLeaving(event) {
     event.preventDefault();
     event.returnValue = '';
   }
 
   function updateStatus() {
-    const busyMessage = { saving: 'Сохраняем…', uploading: 'Загружаем изображение…' }[state.busy];
     const dirty = isDirty();
-    saveStatus.textContent = busyMessage || state.message || (dirty ? 'Есть несохранённые изменения.' : '');
-    saveStatus.dataset.status = busyMessage ? '' : state.messageType;
-    save.disabled = Boolean(state.busy) || !dirty;
-    refresh.hidden = Boolean(state.busy) || dirty || !state.catalogChanged;
-    if (dirty || busyMessage) window.addEventListener('beforeunload', warnBeforeLeaving);
+    const busyMessage = state.busy === 'uploading' ? 'Загружаем изображение…' : saveRequest ? 'Сохраняем…' : '';
+    const error = state.failure?.message || (dirty ? validationMessage() : '');
+    const saved = !busyMessage && !error && !dirty && state.saved;
+    const idleMessage = state.selectedId === null
+      ? 'Автосохранение включено. Новая карточка по умолчанию скрыта.'
+      : 'Автосохранение включено.';
+    const message = busyMessage || error || (dirty ? 'Ожидает автосохранения…' : saved ? 'Сохранено' : idleMessage);
+    if (saveStatus.textContent !== message) saveStatus.textContent = message;
+    saveStatus.dataset.status = !busyMessage && error ? 'error' : saved ? 'success' : '';
+    saveRetry.hidden = Boolean(busyMessage) || !state.failure;
+    refresh.hidden = Boolean(busyMessage) || dirty || Boolean(state.failure) || !state.catalogChanged;
+    if (dirty || busyMessage || hasUnconfirmedSave()) window.addEventListener('beforeunload', warnBeforeLeaving);
     else window.removeEventListener('beforeunload', warnBeforeLeaving);
   }
 
   function setBusy(busy) {
     state.busy = busy;
-    const writing = busy === 'saving' || busy === 'uploading';
+    const uploading = busy === 'uploading';
     Object.values(fields).forEach(control => { control.disabled = Boolean(busy); });
     create.disabled = Boolean(busy) || !state.loaded;
     list.querySelectorAll('button').forEach(button => { button.disabled = Boolean(busy); });
-    close.disabled = writing;
-    back.disabled = writing;
+    close.disabled = uploading;
+    back.disabled = uploading;
     retry.disabled = Boolean(busy);
-    form.setAttribute('aria-busy', String(writing));
     updateStatus();
   }
 
@@ -190,19 +211,15 @@
       row.append(button);
       return row;
     });
+    const focusedRow = list.contains(document.activeElement) && document.activeElement.dataset.cardSelect;
     list.replaceChildren(...rows);
     updateSelectedRow();
+    if (focusedRow) (list.querySelector(`[data-card-select="${focusedRow}"]`) || search).focus({ preventScroll: true });
   }
 
-  function clearMessage() {
-    state.message = '';
-    state.messageType = '';
-  }
-
-  function showMessage(message, type) {
-    state.message = message;
-    state.messageType = type;
-    updateStatus();
+  function showImageStatus(message, type = '') {
+    imageStatus.textContent = message;
+    imageStatus.dataset.status = type;
   }
 
   function setView(view) {
@@ -217,12 +234,14 @@
     fields.html.value = fields.type.value === '1' ? card?.cont ?? '' : '';
     fields.role.value = String(card?.role ?? 7);
     fields.order.value = String(card?.crdorder ?? 100);
-    fields.shows.checked = Number(card?.shows ?? 1) === 1;
+    fields.shows.checked = Number(card?.shows ?? 0) === 1;
     fields.pic.value = card?.pic ?? '';
     fields.file.value = '';
     find('[data-card-editor-id]').textContent = card ? `#${card.id}` : '';
     state.savedValues = JSON.stringify(payload());
-    clearMessage();
+    state.saved = false;
+    state.failure = null;
+    showImageStatus('');
     updateImage();
     updateEditor();
     updateStatus();
@@ -244,25 +263,42 @@
   }
 
   function discardDraft() {
-    if (!isDirty()) return true;
-    if (!window.confirm('Сбросить несохранённые изменения?')) return false;
     if (state.selectedId !== null) {
       fillForm(selectedCard());
     } else {
       form.hidden = true;
       formPlaceholder.hidden = false;
       state.savedValues = null;
-      clearMessage();
+      state.failure = null;
       updateStatus();
     }
-    return true;
+  }
+
+  async function navigate(action) {
+    if (navigating || state.busy === 'uploading') return;
+    navigating = true;
+    try {
+      // Wait for the current write, then flush any newer edits before leaving.
+      while (saveRequest || canSave()) {
+        await (saveRequest || saveChanges());
+      }
+      if (isDirty() || hasUnconfirmedSave()) {
+        if (!window.confirm('Изменения не сохранены. Выйти из редактора?')) return;
+        discardDraft();
+      }
+      action();
+    } finally {
+      navigating = false;
+      scheduleSave();
+    }
   }
 
   function goBack() {
-    if (back.disabled || !discardDraft()) return;
-    setView('list');
-    const row = list.querySelector(`[data-card-select="${state.selectedId}"]`);
-    (row || search).focus();
+    navigate(() => {
+      setView('list');
+      const row = list.querySelector(`[data-card-select="${state.selectedId}"]`);
+      (row || search).focus();
+    });
   }
 
   function openDrawer(event) {
@@ -274,11 +310,12 @@
   }
 
   function closeDrawer() {
-    if (close.disabled || !discardDraft()) return;
-    drawer.close();
-    document.documentElement.classList.remove('cards-admin-open');
-    state.opener?.focus({ preventScroll: true });
-    state.opener = null;
+    navigate(() => {
+      drawer.close();
+      document.documentElement.classList.remove('cards-admin-open');
+      state.opener?.focus({ preventScroll: true });
+      state.opener = null;
+    });
   }
 
   function cardImageSrc(pic) {
@@ -357,37 +394,87 @@
     }
   }
 
-  async function saveCard(event) {
-    event.preventDefault();
-    if (state.busy || !state.loaded || !isDirty()) return;
-    const values = payload();
-    if (!values.title) {
-      showMessage('Введите заголовок.', 'error');
-      fields.title.focus();
-      return;
-    }
+  function hasUnconfirmedSave() {
+    return Boolean(state.failure?.unconfirmedCreation || state.failure?.uncertainUpdate);
+  }
 
+  function canSave() {
+    return state.loaded && !state.busy && !state.failure && !composing && isDirty() && !validationMessage();
+  }
+
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    if (!saveRequest && !navigating && canSave()) saveTimer = setTimeout(saveChanges, saveDelay);
+    updateStatus();
+  }
+
+  function saveChanges(retryFailed = false) {
+    clearTimeout(saveTimer);
+    if (saveRequest) return saveRequest;
+    const failure = retryFailed ? state.failure : null;
+    if (state.busy || (!failure && !canSave())) return;
+    state.failure = null;
+    saveRequest = writeCard(payload(), failure).finally(() => {
+      saveRequest = null;
+      scheduleSave();
+    });
+    updateStatus();
+    return saveRequest;
+  }
+
+  function acceptSavedCard(card, values) {
+    if (!card?.id) throw new Error();
+    state.selectedId = Number(card.id);
+    state.savedValues = JSON.stringify(values);
+    state.saved = true;
+    state.cards = state.cards.filter(item => Number(item.id) !== state.selectedId);
+    state.cards.push(card);
+    state.cards.sort((a, b) => a.type - b.type || a.crdorder - b.crdorder || a.id - b.id);
+    find('[data-card-editor-id]').textContent = `#${card.id}`;
+    renderList();
+    state.catalogChanged = true;
+    catalogRefresh?.classList.remove('hidden');
+  }
+
+  async function checkCreation(values) {
+    const { cards } = await api('/api/cards');
+    const knownIds = new Set(state.cards.map(card => Number(card.id)));
+    const matches = cards.filter(card => !knownIds.has(Number(card.id)) && Object.entries(values).every(([key, value]) =>
+      typeof value === 'number' ? Number(card[key]) === value : String(card[key] ?? '').trim() === value,
+    ));
+    if (matches.length > 1) throw new Error('ambiguous card creation');
+    return matches[0];
+  }
+
+  async function writeCard(values, failure) {
     const id = state.selectedId;
-    setBusy('saving');
+    let unconfirmedCreation = failure?.unconfirmedCreation;
+    let uncertainUpdate = failure?.uncertainUpdate;
     try {
+      if (unconfirmedCreation) {
+        const existing = await checkCreation(unconfirmedCreation);
+        if (existing) {
+          acceptSavedCard(existing, unconfirmedCreation);
+          return;
+        }
+        unconfirmedCreation = null;
+      }
+      if (validationMessage(values) || (!isDirty() && !uncertainUpdate)) return;
       const { card } = await api(id ? `/api/cards/${id}` : '/api/cards', {
         method: id ? 'PUT' : 'POST',
         body: JSON.stringify(values),
       });
-      if (!card?.id) throw new Error();
-      state.cards = state.cards.filter(item => Number(item.id) !== Number(card.id));
-      state.cards.push(card);
-      state.cards.sort((a, b) => a.type - b.type || a.crdorder - b.crdorder || a.id - b.id);
-      fillForm(card);
-      renderList();
-      state.catalogChanged = true;
-      catalogRefresh?.classList.remove('hidden');
-      showMessage('Карточка сохранена.', 'success');
+      acceptSavedCard(card, values);
     } catch (error) {
-      showMessage(errorMessage(error, 'Не удалось сохранить карточку. Повторите попытку.'), 'error');
-    } finally {
-      setBusy('');
-      (save.disabled ? refresh : save).focus({ preventScroll: true });
+      if (!(error.status >= 400 && error.status < 500)) {
+        if (id === null) unconfirmedCreation ||= values;
+        else uncertainUpdate = true;
+      }
+      state.failure = {
+        message: errorMessage(error, 'Не удалось сохранить карточку. Повторите попытку.'),
+        unconfirmedCreation,
+        uncertainUpdate,
+      };
     }
   }
 
@@ -421,12 +508,13 @@
   async function uploadImage() {
     const file = fields.file.files?.[0];
     fields.file.value = '';
-    if (!file || state.busy) return;
+    if (!file || state.busy || navigating) return;
     if (!isSupportedImageFile(file)) {
-      showMessage('Выберите изображение в формате PNG, JPG или WebP.', 'error');
+      showImageStatus('Выберите изображение в формате PNG, JPG или WebP.', 'error');
       return;
     }
 
+    showImageStatus('');
     setBusy('uploading');
     try {
       const contentBase64 = await imageDataUrl(file);
@@ -437,14 +525,15 @@
       if (!pic || pic.length > fields.pic.maxLength) throw new Error();
       fields.pic.value = pic;
       updateImage();
-      showMessage('Изображение загружено. Сохраните карточку.', 'success');
+      showImageStatus('Изображение загружено.', 'success');
     } catch (error) {
       const message = error.message === 'image too large'
         ? 'Не удалось уменьшить изображение. Выберите файл меньшего размера.'
         : 'Не удалось загрузить изображение. Проверьте файл и повторите попытку.';
-      showMessage(errorMessage(error, message), 'error');
+      showImageStatus(errorMessage(error, message), 'error');
     } finally {
       setBusy('');
+      scheduleSave();
       fields.file.focus({ preventScroll: true });
     }
   }
@@ -471,6 +560,7 @@
     await loadCards();
     if (drawer.open) (retry.hidden ? search : retry).focus();
   });
+  saveRetry.addEventListener('click', () => saveChanges(true));
   filters.forEach(button => button.addEventListener('click', () => applyFilter(button.dataset.cardFilter)));
   search.addEventListener('input', () => applyFilter(state.filter));
   reset.addEventListener('click', () => {
@@ -485,8 +575,8 @@
     if (id === state.selectedId && !form.hidden) {
       setView('editor');
       editorTitle.focus({ preventScroll: true });
-    } else if (discardDraft()) {
-      editCard(state.cards.find(card => Number(card.id) === id));
+    } else {
+      navigate(() => editCard(state.cards.find(card => Number(card.id) === id)));
     }
   });
   create.addEventListener('click', () => {
@@ -494,15 +584,27 @@
     if (state.selectedId === null && !form.hidden) {
       setView('editor');
       editorTitle.focus({ preventScroll: true });
-    } else if (discardDraft()) {
-      editCard();
+    } else {
+      navigate(() => editCard());
     }
   });
-  form.addEventListener('submit', saveCard);
-  form.addEventListener('input', () => {
-    clearMessage();
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    saveChanges();
+  });
+  form.addEventListener('input', event => {
+    if (event.isComposing || event.target === fields.file) return;
     updateEditor();
-    updateStatus();
+    scheduleSave();
+  });
+  form.addEventListener('compositionstart', () => {
+    composing = true;
+    clearTimeout(saveTimer);
+  });
+  form.addEventListener('compositionend', () => {
+    composing = false;
+    updateEditor();
+    scheduleSave();
   });
   fields.pic.addEventListener('change', updateImage);
   fields.file.addEventListener('change', uploadImage);
