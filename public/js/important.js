@@ -289,6 +289,9 @@ if (panel) {
     const timing = element('p', 'important-item-timing');
     const title = element('h3', 'important-item-title');
     const subtitle = element('p', 'important-item-subtitle');
+    const studentName = element('strong', 'important-student-name'); studentName.hidden = true;
+    const subtitleText = element('span');
+    subtitle.append(studentName, subtitleText);
     const studentStatus = element('p', 'important-item-subtitle'); studentStatus.hidden = true;
     const notes = element('div', 'important-notes');
     const timeBox = element('div', 'important-timebox');
@@ -335,7 +338,7 @@ if (panel) {
     top.append(content, timeBox, metric);
     controls.append(primaryActions, toggle, actions);
     article.append(top, timeline, contacts, controls, body);
-    const node = { article, timing, title, subtitle, studentStatus, notes, timeBox, timeValue, timeCaption, timeMode,
+    const node = { article, timing, title, subtitle, subtitleText, studentName, studentStatus, notes, timeBox, timeValue, timeCaption, timeMode,
       timeline, timelineStart, timelineEnd, progress, progressFill,
       metric, metricValue, metricLabel, controls, primaryActions, actions, toggle, toggleText, checkCount,
       contacts, body, actionKey: '', contactKey: '', detailRevision: '' };
@@ -451,9 +454,13 @@ if (panel) {
       node.article.dataset.kind = item.kind;
       node.article.dataset.pair = String(index < 2 && lesson);
       text(node.title, item.title);
-      const subtitle = school && item.kind === 'attendance' && item.recordCount != null ? `Записей: ${item.recordCount}` : item.subtitle;
-      text(node.subtitle, subtitle);
-      node.subtitle.hidden = !subtitle || (school && count > 0 && subtitle === `Записей: ${count}` && item.kind !== 'attendance');
+      let subtitle = item.studentName ? item.studentSubtitle : item.subtitle;
+      if (school && item.kind === 'attendance' && item.recordCount != null) subtitle = `Записей: ${item.recordCount}`;
+      text(node.studentName, item.studentName);
+      node.studentName.hidden = !item.studentName;
+      node.studentName.dataset.arrivalMark = item.arrivalMark || '';
+      text(node.subtitleText, item.studentName && subtitle ? ` · ${subtitle}` : subtitle);
+      node.subtitle.hidden = (!subtitle && !item.studentName) || (school && count > 0 && subtitle === `Записей: ${count}` && item.kind !== 'attendance');
       text(node.studentStatus, item.studentStatus);
       node.studentStatus.hidden = !item.studentStatus;
       renderContacts(node, item.contacts);
@@ -597,6 +604,7 @@ if (panel) {
         row = { node, name, status, annotations, link }; state.rows.set(person.id, row);
       }
       text(row.name, person.name); text(row.status, person.description); text(row.annotations, (person.annotations ?? []).join(' · '));
+      row.name.dataset.arrivalMark = person.arrivalMark || '';
       row.node.dataset.attention = String(person.needsAttention); row.link.hidden = !person.href;
       if (person.href) row.link.href = person.href;
       if (!row.node.contains(document.activeElement)) state.students.append(row.node);

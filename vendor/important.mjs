@@ -36,6 +36,8 @@ export function attendanceRow(person, fact, lesson, now) {
   const absences = (fact.absences ?? []).filter(absence => ms(absence.start) < ms(end) && (!absence.end || ms(absence.end) > at));
   const scheduleRelease = releaseIntervals(person).some(period=>ms(period.start)<=at&&ms(period.end)>at);
   const currentAbsence = scheduleRelease || absences.some(absence => ms(absence.start) <= at && (!absence.end || ms(absence.end) > at));
+  const onsite = lesson && !lesson.online && !['online', 'mixed'].includes(person.mode) &&
+    (lesson.format !== 'mixed' || person.mode === 'onsite');
   const last = fact.lastEvent;
   row.description = last?.type === 'arrival' ? `Приход отмечен в ${timeLabel(last.at)}` : last?.type === 'departure' ? `Уход отмечен в ${timeLabel(last.at)}` : 'Приход пока не отмечен';
   row.physicalStatus = last?.type === 'arrival' ? 'arrival' : last?.type === 'departure' ? 'departure' : 'none';
@@ -44,9 +46,12 @@ export function attendanceRow(person, fact, lesson, now) {
     row.description = 'Нужно проверить противоречащие отметки';
     row.needsAttention = true;
     row.physicalStatus = 'conflict';
-  } else if (!currentAbsence && lesson && person.mode !== 'online' && person.mode !== 'mixed' && !lesson.online && (lesson.format !== 'mixed' || person.mode === 'onsite')
-      && ms(lesson.start) - +now <= 10 * minute && ms(lesson.end) > +now) {
-    row.needsAttention = !last || last.type === 'departure';
+  } else if (onsite) {
+    if (row.physicalStatus === 'arrival') row.arrivalMark = 'arrived';
+    if (last === null && !currentAbsence) row.arrivalMark = 'missing';
+    if (!currentAbsence && ms(lesson.start) - +now <= 10 * minute && ms(lesson.end) > +now) {
+      row.needsAttention = !last || last.type === 'departure';
+    }
   }
   if (absences.some(absence => absence.needsAttention || ['needs_clarification', 'system_conflict'].includes(absence.confirmation))) row.needsAttention = true;
   if (person.mode === 'online' || lesson?.online) row.annotations.push('По расписанию онлайн');
@@ -65,9 +70,10 @@ function lessonItem(lesson, facts, now, canVcall, allowAttendance) {
   const roomLabel = rooms.length ? `${rooms.length > 1 ? 'Кабинеты' : 'Кабинет'} ${rooms.join(', ')}` : '';
   const classes = (lesson.classes ?? []).join(', ');
   const audience = student?.name || classes || (lesson.individual ? 'Индивидуальное занятие' : rows.length > 1 ? 'Класс не указан' : '');
-  const subtitle = [child ? 'У ребёнка' : '', audience,
-    lesson.format === 'mixed' ? 'Смешанный формат' : '',
-    lesson.online ? 'Онлайн' : roomLabel || (lesson.format === 'mixed' ? '' : 'Кабинет не указан')].filter(Boolean).join(' · ');
+  const format = lesson.format === 'mixed' ? 'Смешанный формат' : '';
+  const location = lesson.online ? 'Онлайн' : roomLabel || (format ? '' : 'Кабинет не указан');
+  const familyLabel = child ? 'У ребёнка' : '';
+  const subtitle = [familyLabel, audience, format, location].filter(Boolean).join(' · ');
   const notes = [];
   for (const [index, person] of (lesson.students ?? []).entries()) {
     for (const period of releaseIntervals(person)) {
@@ -79,7 +85,7 @@ function lessonItem(lesson, facts, now, canVcall, allowAttendance) {
   if (checkOnline) notes.push('Приход в школу пока не отмечен. Уточните, подключится ли ученик онлайн.');
   else if (attention) notes.push(`Требуют проверки: ${attention}`);
   const studentStatus = student && [
-    !checkOnline && (student.needsAttention || ['arrival', 'departure'].includes(student.physicalStatus)) ? student.description : '',
+    !checkOnline && (student.arrivalMark || student.needsAttention || ['arrival', 'departure'].includes(student.physicalStatus)) ? student.description : '',
     ...student.annotations.filter(note => !lesson.online || note !== 'По расписанию онлайн'),
   ].filter(Boolean).join(' · ');
   const actions = [{ label: 'Расписание', href: safeLink(lesson.href, 'https://rasp.platoniks.ru') }];
@@ -87,7 +93,10 @@ function lessonItem(lesson, facts, now, canVcall, allowAttendance) {
   if (canVcall && (lesson.online || lesson.format === 'mixed' || attention && lesson.individual)) actions.unshift(canVcall === 'join' ? { label:'Открыть комнаты',href:'#room' } : { label: 'Открыть V.CALL', href: '#lesson' });
   return { key: `lesson:${lesson.key}`, kind: 'lesson', audience: child ? 'child' : 'self',
     title: lesson.subject || 'Занятие', subtitle, notes,
-    ...(student ? { singleStudent: true, studentStatus } : {}),
+    ...(student ? {
+      singleStudent: true, studentName: student.name, studentStatus, arrivalMark: student.arrivalMark,
+      studentSubtitle: [familyLabel, format, location].filter(Boolean).join(' · '),
+    } : {}),
     priority: current && lesson.own ? 0 : current ? 5 : 15, tone: attention ? 'attention' : current ? 'current' : 'neutral',
     start: lesson.start, end: lesson.end, displayNumber: lesson.displayNumber ?? null, segment: lesson.segment,
     attentionCount: attention, detailCount: rows.length, detailLabel: 'Дети и подробности', actions, rows,

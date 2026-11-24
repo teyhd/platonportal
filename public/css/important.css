@@ -437,6 +437,8 @@
   border-top: 1px solid #ecf0f5;
 }
 .important-student-name { font-weight: 630; overflow-wrap: anywhere; }
+.important-panel:not([data-offline="true"]) .important-student-name[data-arrival-mark="arrived"] { color: #176247; }
+.important-panel:not([data-offline="true"]) .important-student-name[data-arrival-mark="missing"] { color: #a52b37; }
 .important-student-description {
   color: var(--important-muted);
   font-size: 13px;

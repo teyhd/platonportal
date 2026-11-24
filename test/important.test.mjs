@@ -21,7 +21,10 @@ test('current individual preserves zero lesson number and offers a cautious chec
 test('a scoped single student is identified inline and a mixed-class group keeps its class names',()=>{
   const individual = view().items[0];
   assert.equal(individual.singleStudent,true);
+  assert.equal(individual.studentName,'Тестовый ученик');
   assert.equal(individual.subtitle,'Тестовый ученик · Кабинет 204');
+  assert.equal(individual.studentSubtitle,'Кабинет 204');
+  assert.equal(individual.arrivalMark,'missing');
   assert.ok(individual.actions.some(action=>action.label==='Посещаемость'));
 
   const group = {...lesson,key:'group',individual:false,classes:['7-1','7-2'],
@@ -33,7 +36,10 @@ test('a scoped single student is identified inline and a mixed-class group keeps
 
   const parentLesson = {...group,own:false,contexts:['child'],students:[child]};
   const parent = view({...schedule,roles:['parent'],lessons:[parentLesson]}).items[0];
+  assert.equal(parent.studentName,'Тестовый ученик');
   assert.equal(parent.subtitle,'У ребёнка · Тестовый ученик · Кабинет 204');
+  assert.equal(parent.studentSubtitle,'У ребёнка · Кабинет 204');
+  assert.equal(parent.arrivalMark,undefined);
   assert.ok(!parent.actions.some(action=>action.label==='Посещаемость'));
 });
 
@@ -64,6 +70,28 @@ test('arrival and departure are physical observations, never lesson attendance',
     assert.equal(row.needsAttention,type==='departure');
   }
 });
+test('arrival badges only use confirmed records for pupils expected onsite',()=>{
+  const fact = attendance.students[0];
+  const arrival = { type:'arrival', at:'2026-11-17T08:54:00+03:00' };
+  const arrived = view(schedule,{...attendance,students:[{...fact,lastEvent:arrival}]}).items[0];
+  assert.equal(arrived.arrivalMark,'arrived');
+  assert.equal(arrived.studentStatus,'Приход отмечен в 08:54');
+
+  const group = {...lesson,individual:false,students:[child,{...child,id:12,name:'Другой ученик'}]};
+  const groupItem = view({...schedule,lessons:[group]}, {students:[{...fact,lastEvent:arrival},{...fact,id:12}]}).items[0];
+  assert.deepEqual(groupItem.rows.map(row=>row.arrivalMark),['arrived','missing']);
+
+  const unavailable = view(schedule,attendance,{sources:{...sources,attendance:{status:'unavailable'}}});
+  assert.equal(unavailable.items[0].arrivalMark,undefined);
+  assert.equal(attendanceRow(child,null,lesson,now).arrivalMark,undefined);
+  assert.equal(attendanceRow(child,{...fact,lastEvent:undefined},lesson,now).arrivalMark,undefined);
+  assert.equal(attendanceRow({...child,mode:'online'},fact,lesson,now).arrivalMark,undefined);
+  assert.equal(attendanceRow(child,fact,{...lesson,online:true},now).arrivalMark,undefined);
+  assert.equal(attendanceRow(child,{...fact,lastEvent:{...arrival,type:'departure'}},lesson,now).arrivalMark,undefined);
+  assert.equal(attendanceRow(child,{...fact,lastEvent:arrival,conflicts:1},lesson,now).arrivalMark,undefined);
+  assert.equal(attendanceRow(child,{...fact,absences:[{start:lesson.start,end:lesson.end}]},lesson,now).arrivalMark,undefined);
+});
+
 test('finished lesson checks disappear and unpublished differs from no lessons',()=>{
   assert.equal(view(schedule,attendance,{now:new Date('2026-11-17T10:00:00+03:00')}).items.length,0);
   assert.match(view({...schedule,state:'unpublished',lessons:[]}).daySummary,/не опубликовано/);
