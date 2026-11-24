@@ -134,6 +134,20 @@
   cursor: default;
 }
 
+@container (min-width: 920px) {
+  .room-occ__preview {
+    --occ-preview-spacing: clamp(2px, calc(1cqi - 8px), 4px);
+    gap: var(--occ-preview-spacing);
+  }
+
+  .room-occ__preview .room-occ__mark {
+    flex-grow: 1;
+    min-height: 30px;
+    padding-inline: var(--occ-preview-spacing);
+    font-size: 12px;
+  }
+}
+
 .room-occ__preview-note {
   min-width: 0;
   overflow: hidden;
