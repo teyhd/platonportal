@@ -6,6 +6,12 @@ const clock = new Intl.DateTimeFormat("ru-RU", {
 });
 const schoolDay = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Moscow", dateStyle: "short" });
 const displayDay = new Intl.DateTimeFormat("ru-RU", { timeZone: "Europe/Moscow", dateStyle: "short" });
+const calendarMonth = new Intl.DateTimeFormat("ru-RU", { timeZone: "UTC", month: "long", year: "numeric" });
+const calendarDay = new Intl.DateTimeFormat("ru-RU", { timeZone: "UTC", dateStyle: "full" });
+const calendarStep = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+const utcDay = date => new Date(date + "T00:00:00Z");
+const isoDay = date => date.toISOString().slice(0, 10);
+const twoDigits = value => value.padStart(2, "0");
 const natural = new Intl.Collator("ru", { numeric: true });
 const roomKinds = ["free", "short", "soon", "busy", "unknown"];
 
@@ -83,12 +89,103 @@ function element(tag, className, text) {
   return node;
 }
 
+function bindPicker(dialog, trigger, getMoment, apply) {
+  const form = dialog.querySelector("[data-picker-form]");
+  const days = dialog.querySelector("[data-days]");
+  const monthLabel = dialog.querySelector("[data-month-label]");
+  const back = dialog.querySelector("[data-month-back]");
+  const forward = dialog.querySelector("[data-month-forward]");
+  const hour = dialog.querySelector("[data-hour]");
+  const minute = dialog.querySelector("[data-minute]");
+  let draftDate, today, month;
+
+  function renderCalendar(focusDate = draftDate) {
+    const first = new Date(month);
+    first.setUTCDate(1);
+    const nextMonth = new Date(first);
+    nextMonth.setUTCMonth(first.getUTCMonth() + 1);
+    const count = Math.round((nextMonth - first) / 86_400_000);
+    const dayButtons = Array.from({ length: count }, (_, index) => {
+      const date = new Date(first);
+      date.setUTCDate(index + 1);
+      const value = isoDay(date);
+      const button = element("button", "day", String(index + 1));
+      button.type = "button";
+      button.dataset.date = value;
+      button.tabIndex = -1;
+      button.setAttribute("aria-label", calendarDay.format(date));
+      button.setAttribute("aria-pressed", String(value === draftDate));
+      if (value === today) button.setAttribute("aria-current", "date");
+      return button;
+    });
+    dayButtons[0].style.gridColumnStart = String((first.getUTCDay() + 6) % 7 + 1);
+    const focused = dayButtons.find(button => button.dataset.date === focusDate) ?? dayButtons[0];
+    focused.tabIndex = 0;
+    days.replaceChildren(...dayButtons);
+    const label = calendarMonth.format(first);
+    if (monthLabel.textContent !== label) monthLabel.textContent = label;
+    back.disabled = first.getUTCFullYear() === 1 && first.getUTCMonth() === 0;
+    forward.disabled = first.getUTCFullYear() === 9999 && first.getUTCMonth() === 11;
+    return focused;
+  }
+
+  function moveMonth(amount) {
+    month.setUTCMonth(month.getUTCMonth() + amount, 1);
+    renderCalendar();
+  }
+
+  back.addEventListener("click", () => moveMonth(-1));
+  forward.addEventListener("click", () => moveMonth(1));
+  days.addEventListener("click", event => {
+    const button = event.target.closest("[data-date]");
+    if (!button) return;
+    draftDate = button.dataset.date;
+    renderCalendar().focus();
+  });
+  days.addEventListener("keydown", event => {
+    const step = calendarStep[event.key];
+    const value = event.target.dataset.date;
+    if (!step || !value) return;
+    event.preventDefault();
+    const date = utcDay(value);
+    date.setUTCDate(date.getUTCDate() + step);
+    if (date.getUTCFullYear() < 1 || date.getUTCFullYear() > 9999) return;
+    month = date;
+    renderCalendar(isoDay(date)).focus();
+  });
+  trigger.addEventListener("click", () => {
+    const moment = getMoment();
+    draftDate = schoolDay.format(moment.at);
+    today = schoolDay.format(moment.now);
+    month = utcDay(draftDate);
+    [hour.value, minute.value] = clock.format(moment.at).split(":");
+    const day = renderCalendar();
+    dialog.showModal();
+    day.focus({ preventScroll: true });
+  });
+  dialog.querySelector("[data-picker-cancel]").addEventListener("click", () => dialog.close());
+  dialog.addEventListener("click", event => {
+    if (event.target !== dialog) return;
+    const bounds = dialog.getBoundingClientRect();
+    if (event.clientX < bounds.left || event.clientX > bounds.right ||
+        event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
+  });
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    const time = twoDigits(hour.value) + ":" + twoDigits(minute.value);
+    const at = Date.parse(draftDate + "T" + time + ":00+03:00");
+    if (!Number.isFinite(at)) return;
+    dialog.close();
+    apply(draftDate, at);
+  });
+}
+
 function mount(card) {
   const select = name => card.querySelector("[data-" + name + "]");
   const toggle = select("toggle");
   const body = document.getElementById(toggle.getAttribute("aria-controls"));
   const preview = select("preview"), previewNote = select("preview-note"), selected = select("selected");
-  const dateInput = select("pick-date"), timeInput = select("pick-time"), reset = select("reset");
+  const picker = select("picker"), openPicker = select("open-picker"), reset = select("reset");
   const floors = select("floors"), time = select("time"), legend = select("legend");
   const totals = select("totals") ?? select("total");
   const message = select("message"), retry = select("retry");
@@ -179,21 +276,11 @@ function mount(card) {
     body.hidden = !open;
     toggle.setAttribute("aria-expanded", String(open));
     hideTooltip();
-    if (open && !selection) fillCurrentTime();
     draw();
   });
 
-  function fillCurrentTime() {
-    const now = Date.now() + offset;
-    dateInput.value = schoolDay.format(now);
-    timeInput.value = clock.format(now);
-  }
-
-  function chooseTime() {
+  function chooseTime(date, at) {
     reset.disabled = false;
-    const date = dateInput.value;
-    const at = Date.parse(date + "T" + timeInput.value + ":00+03:00");
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date.startsWith("0000") || !Number.isFinite(at)) return;
     const changedDate = date !== selection?.date;
     selection = { date, at };
     if (changedDate) failure = "";
@@ -206,7 +293,7 @@ function mount(card) {
     const reload = Boolean(selection);
     selection = undefined;
     reset.disabled = true;
-    fillCurrentTime();
+    if (picker.open) picker.close();
     hideTooltip();
     if (reload) failure = "";
     draw();
@@ -483,18 +570,19 @@ function mount(card) {
       }, 1000);
     }
   }
-  for (const input of [dateInput, timeInput]) input.addEventListener("change", chooseTime);
+  bindPicker(picker, openPicker, () => {
+    const now = Date.now() + offset;
+    return { now, at: selection?.at ?? now };
+  }, chooseTime);
   reset.addEventListener("click", () => {
-    dateInput.focus({ preventScroll: true });
+    openPicker.focus({ preventScroll: true });
     resetTime();
   });
-  card.querySelector(".room-occ__picker").addEventListener("input", () => { reset.disabled = false; });
   window.addEventListener("pageshow", event => {
     if (event.persisted) resetTime();
   });
   retry.addEventListener("click", refresh);
   document.addEventListener("visibilitychange", activate);
-  fillCurrentTime();
   activate();
 }
 

@@ -207,44 +207,28 @@
 }
 
 .room-occ__picker {
-  display: grid;
-  grid-template-columns: minmax(0, 9rem) minmax(0, 7.25rem) auto;
-  align-items: end;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
-  max-inline-size: 100%;
 }
 
-.room-occ__field {
-  display: grid;
-  gap: 3px;
-  min-inline-size: 0;
-  color: var(--occ-sub);
-  font-size: 12px;
-  font-weight: 650;
-}
-
-.room-occ__field input {
-  box-sizing: border-box;
-  width: 100%;
-  min-inline-size: 0;
+.room-occ__pick-button,
+.room-occ__dialog button {
   min-block-size: 36px;
-  padding: 4px 6px;
   border: 1px solid var(--occ-line);
   border-radius: 7px;
   background: var(--occ-wash);
   color: var(--occ-ink);
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 1.25;
-  font-weight: 600;
+  font-weight: 650;
+  cursor: pointer;
 }
 
-.dark .room-occ__field input,
-[data-theme="dark"] .room-occ__field input { color-scheme: dark; }
+.room-occ__pick-button { padding-inline: 12px; font-size: 13px; }
 
 .room-occ__reset {
   min-block-size: 36px;
-  padding-inline: 4px;
+  padding-inline: 5px;
   border-radius: 6px;
   color: var(--occ-focus);
   font-size: 12px;
@@ -252,20 +236,110 @@
   cursor: pointer;
 }
 
-.room-occ__reset:disabled {
+.room-occ__reset:disabled,
+.room-occ__dialog button:disabled {
   color: var(--occ-sub);
   opacity: .7;
   cursor: default;
 }
 
-.room-occ__field input:focus-visible,
-.room-occ__reset:focus-visible {
+.room-occ__picker button:focus-visible,
+.room-occ__dialog :is(button, input):focus-visible {
   outline: 2px solid var(--occ-focus);
   outline-offset: 2px;
 }
 
-@container (max-width: 599px) {
-  .room-occ__picker { gap: 6px; }
+.room-occ__dialog {
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  width: min(22rem, calc(100% - 24px));
+  max-height: calc(100% - 24px);
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: clamp(12px, 4vw, 18px);
+  overflow: auto;
+  border: 1px solid var(--occ-line);
+  border-radius: 12px;
+  background: var(--occ-panel);
+  color: var(--occ-ink);
+  box-shadow: 0 16px 52px #0f172a60;
+}
+
+.room-occ__dialog::backdrop { background: #0f172a70; }
+.room-occ__dialog h3 { margin: 0 0 8px; font-size: 17px; font-weight: 740; }
+
+.room-occ__month {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.room-occ__month button { font-size: 21px; line-height: 1; }
+
+.room-occ__weekdays,
+.room-occ__days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  text-align: center;
+}
+
+.room-occ__weekdays {
+  margin: 9px 0 4px;
+  color: var(--occ-sub);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.room-occ__dialog .room-occ__day {
+  min-inline-size: 0;
+  min-block-size: 34px;
+  font-size: 13px;
+}
+
+.room-occ__day[aria-current="date"] { text-decoration: underline; text-underline-offset: 3px; }
+
+.room-occ__clock {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-block: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--occ-line);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.room-occ__clock > span:first-child { margin-inline-end: auto; }
+.room-occ__separator { color: var(--occ-sub); }
+
+.room-occ__clock input {
+  box-sizing: border-box;
+  width: 46px;
+  min-block-size: 36px;
+  padding: 4px;
+  border: 1px solid var(--occ-line);
+  border-radius: 7px;
+  background: var(--occ-wash);
+  color: var(--occ-ink);
+  font: inherit;
+  font-size: 16px;
+  text-align: center;
+}
+
+.room-occ__picker-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.room-occ__picker-actions button { padding-inline: 12px; font-size: 13px; }
+
+.room-occ__dialog :is(.room-occ__apply, .room-occ__day[aria-pressed="true"]) {
+  border-color: var(--occ-focus);
+  background: var(--occ-focus);
+  color: var(--occ-panel);
 }
 
 .room-occ__readout {
@@ -609,16 +683,33 @@
 
 @media (pointer: coarse) {
   .room-occ__retry,
-  .room-occ__field input,
-  .room-occ__reset { min-height: 44px; }
-
-  .room-occ__field input { font-size: 16px; }
+  .room-occ__pick-button,
+  .room-occ__reset,
+  .room-occ__dialog :is(button, input) { min-height: 44px; }
 
   .room-occ__mark {
     min-width: 44px;
     min-height: 44px;
     font-size: 13px;
   }
+}
+
+@media (max-height: 490px) and (min-width: 560px) {
+  .room-occ__dialog { width: min(34rem, calc(100% - 24px)); padding: 10px; }
+  .room-occ__dialog form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 10.75rem;
+    gap: 6px 14px;
+  }
+  .room-occ__dialog h3 { grid-column: 1 / -1; margin: 0; line-height: 1.2; }
+  .room-occ__calendar { grid-row: 2 / 4; }
+  .room-occ__dialog .room-occ__month button { min-height: 34px; }
+  .room-occ__dialog .room-occ__day { min-height: 28px; }
+  .room-occ__weekdays { margin-top: 5px; }
+  .room-occ__days { gap: 3px 4px; }
+  .room-occ__clock { align-self: start; justify-content: flex-start; flex-wrap: wrap; margin: 0; padding: 3px 0; border: 0; }
+  .room-occ__clock > span:first-child { flex-basis: 100%; }
+  .room-occ__picker-actions { align-self: end; }
 }
 
 @media (max-width: 390px) {

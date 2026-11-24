@@ -11,14 +11,7 @@
   <div class="room-occ__body" id="room-occ-body" hidden>
     <header class="room-occ__header">
       <div class="room-occ__picker" role="group" aria-label="Момент проверки по московскому времени">
-        <label class="room-occ__field">
-          <span>Дата</span>
-          <input type="date" data-pick-date autocomplete="off">
-        </label>
-        <label class="room-occ__field">
-          <span>Время (МСК)</span>
-          <input type="time" data-pick-time autocomplete="off">
-        </label>
+        <button class="room-occ__pick-button" type="button" data-open-picker aria-haspopup="dialog" aria-controls="room-occ-picker">Дата и время</button>
         <button class="room-occ__reset" data-reset type="button" aria-label="Сейчас — сбросить дату и время" disabled>Сейчас</button>
       </div>
       <div class="room-occ__readout">
@@ -41,5 +34,31 @@
     <p class="room-occ__message" data-message role="status">Загрузка расписания…</p>
     <button class="room-occ__retry" data-retry type="button" hidden>Обновить</button>
   </div>
+  <dialog class="room-occ__dialog" id="room-occ-picker" data-picker aria-labelledby="room-occ-picker-title">
+    <form data-picker-form autocomplete="off">
+      <h3 id="room-occ-picker-title">Дата и время</h3>
+      <div class="room-occ__calendar">
+        <div class="room-occ__month">
+          <button type="button" data-month-back aria-label="Предыдущий месяц">‹</button>
+          <p data-month-label aria-live="polite"></p>
+          <button type="button" data-month-forward aria-label="Следующий месяц">›</button>
+        </div>
+        <div class="room-occ__weekdays" aria-hidden="true">
+          <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+        </div>
+        <div class="room-occ__days" data-days role="group" aria-label="День месяца"></div>
+      </div>
+      <div class="room-occ__clock" role="group" aria-labelledby="room-occ-clock-label">
+        <span id="room-occ-clock-label">Время (МСК)</span>
+        <input type="text" data-hour aria-label="Часы" inputmode="numeric" maxlength="2" required pattern="[01]?[0-9]|2[0-3]">
+        <span class="room-occ__separator" aria-hidden="true">:</span>
+        <input type="text" data-minute aria-label="Минуты" inputmode="numeric" maxlength="2" required pattern="[0-5]?[0-9]">
+      </div>
+      <div class="room-occ__picker-actions">
+        <button type="button" data-picker-cancel>Отмена</button>
+        <button class="room-occ__apply" type="submit">Показать</button>
+      </div>
+    </form>
+  </dialog>
   <div class="room-occ__tooltip" id="room-occ-issue" data-issue-tooltip role="tooltip" hidden></div>
 </section>
