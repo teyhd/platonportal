@@ -48,7 +48,7 @@ export function prepareSnapshot(payload) {
 }
 
 function issueLabel(issue) {
-  return issue.title + (issue.count > 1 ? " · ещё " + (issue.count - 1) : "");
+  return issue.title + (issue.count > 1 ? " · ещё\u00a0" + (issue.count - 1) : "");
 }
 
 function releaseCount(count) {
@@ -99,9 +99,9 @@ function mount(card) {
   status.setAttribute("aria-hidden", "true");
   tooltip.replaceChildren(heading, status, timing, following, issueText);
   const rows = new Map();
+  const previewItems = new Map();
   const roomByMark = new WeakMap();
   let snapshot, offset = 0, pending = false, timer, failure = "";
-  let previewSignature;
   let tooltipAnchor, pinned, hideTimer;
 
   function hideTooltip() {
@@ -122,16 +122,20 @@ function mount(card) {
   }
 
   function updateTooltip(mark) {
-    const { room, state } = roomByMark.get(mark);
-    tooltip.dataset.kind = state.kind;
-    heading.textContent = "Кабинет " + room.name;
-    status.textContent = state.label;
-    timing.textContent = state.timing;
-    timing.hidden = !state.timing;
-    following.textContent = state.following ?? "";
-    following.hidden = !state.following;
-    issueText.textContent = room.issue ? "Проблема · " + issueLabel(room.issue) : "";
-    issueText.hidden = !room.issue;
+    const { room, state, floor } = roomByMark.get(mark);
+    if (tooltip.dataset.kind !== state.kind) tooltip.dataset.kind = state.kind;
+    const values = [
+      [heading, "Кабинет " + room.name + (floor ? " · " + floor : "")],
+      [status, state.label],
+      [timing, state.timing],
+      [following, state.following ?? ""],
+      [issueText, room.issue ? "Проблема · " + issueLabel(room.issue) : ""],
+    ];
+    for (const [node, value] of values) {
+      if (node.textContent !== value) node.textContent = value;
+      const hidden = !value;
+      if (node.hidden !== hidden) node.hidden = hidden;
+    }
     positionTooltip(mark);
   }
 
@@ -166,40 +170,59 @@ function mount(card) {
   window.addEventListener("resize", () => {
     if (tooltipAnchor) positionTooltip(tooltipAnchor);
   });
+  preview.addEventListener("scroll", () => {
+    if (!preview.contains(tooltipAnchor)) return;
+    const rail = preview.getBoundingClientRect();
+    const anchor = tooltipAnchor.getBoundingClientRect();
+    if (anchor.right <= rail.left || anchor.left >= rail.right) hideTooltip();
+    else positionTooltip(tooltipAnchor);
+  });
 
   toggle.addEventListener("click", () => {
     const open = body.hidden;
     body.hidden = !open;
     toggle.setAttribute("aria-expanded", String(open));
-    if (!open) hideTooltip();
+    hideTooltip();
     draw();
   });
 
   function updatePreview(groups, hint) {
     const items = groups.flatMap(([floor, entries]) =>
-      entries.map(({ room, state }) => [room.name, floor, state.kind, state.label]));
+      entries.map(entry => ({ ...entry, floor })));
+    const active = document.activeElement;
+    const focused = preview.contains(active);
     preview.hidden = !body.hidden || !items.length;
     previewNote.hidden = !body.hidden || !!items.length;
     const note = hint || "Загрузка…";
     if (previewNote.textContent !== note) previewNote.textContent = note;
-    const signature = JSON.stringify(items);
-    if (previewSignature === signature) return;
-    previewSignature = signature;
+    if (!body.hidden) return;
 
-    items.sort(([a], [b]) => natural.compare(a, b));
-    preview.replaceChildren(...items.map(([name, floor, kind, label]) => {
-      const badge = element("li", "mark");
-      badge.dataset.kind = kind;
-      badge.title = ["Кабинет " + name, floor, label].filter(Boolean).join(" · ");
-      badge.setAttribute("aria-label", badge.title);
-      badge.append(element("span", "mark-name", name));
-      if (kind === "soon" || kind === "short") {
-        const clockMark = element("span", "mark-clock");
-        clockMark.setAttribute("aria-hidden", "true");
-        badge.append(clockMark);
+    items.sort((a, b) => natural.compare(a.room.name, b.room.name));
+    const seen = new Set();
+    items.forEach(({ room, state, floor }, index) => {
+      seen.add(room.id);
+      const interactive = Boolean(room.issue);
+      let entry = previewItems.get(room.id);
+      if (!entry || entry.controls.interactive !== interactive) {
+        const item = entry?.item ?? element("li", "preview-item");
+        const controls = createMark(interactive);
+        item.removeAttribute("aria-label");
+        item.removeAttribute("title");
+        item.replaceChildren(controls.mark);
+        entry = { item, controls };
+        previewItems.set(room.id, entry);
       }
-      return badge;
-    }));
+      updateRoomMark(entry.controls, room, state, floor);
+      if (preview.children[index] !== entry.item) preview.insertBefore(entry.item, preview.children[index] || null);
+    });
+    for (const [id, entry] of previewItems) {
+      if (!seen.has(id)) { entry.item.remove(); previewItems.delete(id); }
+    }
+    if (focused && !active.isConnected) (preview.hidden ? toggle : preview).focus({ preventScroll:true });
+    if (tooltipAnchor) {
+      if (preview.contains(tooltipAnchor)) updateTooltip(tooltipAnchor);
+      else hideTooltip();
+    }
   }
 
   function createGroup(floor) {
@@ -220,20 +243,17 @@ function mount(card) {
     return { section, bar, count, segments, marks: new Map() };
   }
 
-  function updateMark(group, room, state, index) {
-    let controls = group.marks.get(room.id);
-    if (!controls) {
-      const mark = element("button", "mark");
-      const name = element("span", "mark-name");
-      const clockMark = element("span", "mark-clock");
-      const alert = element("span", "alert", "!");
-      clockMark.setAttribute("aria-hidden", "true");
-      alert.setAttribute("aria-hidden", "true");
+  function createMark(interactive) {
+    const mark = element(interactive ? "button" : "span", "mark");
+    const name = element("span", "mark-name");
+    const clockMark = element("span", "mark-clock");
+    const alert = element("span", "alert", "!");
+    clockMark.setAttribute("aria-hidden", "true");
+    alert.setAttribute("aria-hidden", "true");
+    mark.append(name, clockMark, alert);
+    if (interactive) {
       mark.type = "button";
       mark.setAttribute("aria-pressed", "false");
-      mark.append(name, clockMark, alert);
-      controls = { mark, name, clockMark, alert };
-      group.marks.set(room.id, controls);
       mark.addEventListener("pointerenter", event => {
         if (event.pointerType !== "touch") showTooltip(mark);
       });
@@ -251,15 +271,34 @@ function mount(card) {
         }
       });
     }
-    const { mark, name, clockMark, alert } = controls;
-    roomByMark.set(mark, { room, state });
+    return { mark, name, clockMark, alert, interactive };
+  }
+
+  function updateRoomMark({ mark, name, clockMark, alert, interactive }, room, state, floor) {
+    const previous = roomByMark.get(mark);
+    roomByMark.set(mark, { room, state, floor });
+    if (previous?.room === room && previous.state.kind === state.kind && previous.state.label === state.label && previous.floor === floor) return;
     name.textContent = room.name;
     clockMark.hidden = state.kind !== "soon" && state.kind !== "short";
     alert.hidden = !room.issue;
-    if (group.bar.children[index] !== mark) group.bar.insertBefore(mark, group.bar.children[index] || null);
     mark.dataset.kind = state.kind;
     mark.toggleAttribute("data-issue", Boolean(room.issue));
-    mark.setAttribute("aria-label", ["Кабинет " + room.name, state.label, room.issue && "есть проблема"].filter(Boolean).join(" · "));
+    const label = ["Кабинет " + room.name, floor, state.label, room.issue && "есть проблема"].filter(Boolean).join(" · ");
+    if (interactive) mark.setAttribute("aria-label", label);
+    else {
+      mark.parentElement.setAttribute("aria-label", label);
+      mark.parentElement.title = label;
+    }
+  }
+
+  function updateMark(group, room, state, index) {
+    let controls = group.marks.get(room.id);
+    if (!controls) {
+      controls = createMark(true);
+      group.marks.set(room.id, controls);
+    }
+    updateRoomMark(controls, room, state);
+    if (group.bar.children[index] !== controls.mark) group.bar.insertBefore(controls.mark, group.bar.children[index] || null);
   }
 
   function updateTotals(counts) {
@@ -289,9 +328,13 @@ function mount(card) {
       snapshot?.state === "unpublished" ? "Нет опубликованного расписания на сегодня." :
       snapshot && !snapshot.groups.length ? "В справочнике нет кабинетов." : "");
     const show = !!snapshot && !hint;
+    const issuesCurrent = !failure && !expired && !snapshot?.issuesUnavailable;
     const groups = (snapshot?.groups ?? []).map(([floor, rooms]) => [
       floor,
-      rooms.map(room => ({ room, state: roomStatus(show ? room.spans : null, now) })),
+      rooms.map(room => ({
+        room: !issuesCurrent && room.issue ? { ...room, issue:null } : room,
+        state: roomStatus(show ? room.spans : null, now),
+      })),
     ]);
     updatePreview(groups, hint);
     if (body.hidden) return;

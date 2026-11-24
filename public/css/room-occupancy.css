@@ -123,8 +123,12 @@
   scrollbar-color: var(--occ-line) transparent;
 }
 
-.room-occ__preview .room-occ__mark {
+.room-occ__preview-item {
   flex: none;
+}
+
+.room-occ__preview .room-occ__mark {
+  width: 100%;
   min-width: 0;
   min-height: 24px;
   gap: 3px;
@@ -134,14 +138,28 @@
   cursor: default;
 }
 
+.room-occ__preview button.room-occ__mark { cursor: pointer; }
+
+.room-occ__preview .room-occ__mark:is(:focus-visible, [aria-pressed="true"]) { outline-offset: -2px; }
+
+.room-occ__preview .room-occ__alert {
+  position: static;
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border: 0;
+  font-size: 9px;
+}
+
 @container (min-width: 920px) {
   .room-occ__preview {
     --occ-preview-spacing: clamp(2px, calc(1cqi - 8px), 4px);
     gap: var(--occ-preview-spacing);
   }
 
+  .room-occ__preview-item { flex-grow: 1; }
+
   .room-occ__preview .room-occ__mark {
-    flex-grow: 1;
     min-height: 30px;
     padding-inline: var(--occ-preview-spacing);
     font-size: 12px;
