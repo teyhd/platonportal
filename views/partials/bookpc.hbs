@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/css/bookpc.css?v=2">
+<link rel="stylesheet" href="/css/bookpc.css?v=3">
 <section class="bookpc" data-bookpc aria-labelledby="bookpc-title">
   <header class="bookpc__header">
     <h2 id="bookpc-title" tabindex="-1">Ноутбуки</h2>
@@ -10,6 +10,7 @@
       <li data-state="free">Свободен</li>
       <li data-state="occupied">Занят</li>
       <li data-state="own">У вас</li>
+      <li data-state="not-rentable" data-restricted-key hidden>Вне аренды</li>
       <li class="bookpc__issue-key" data-issue-key hidden>Есть жалоба</li>
     </ul>
     <a href="https://pc.platoniks.ru/" aria-label="Открыть BookPC">BookPC</a>
@@ -45,6 +46,7 @@
       <label data-comment-field>Проблема с ноутбуком, если есть
         <textarea name="comment" rows="3" maxlength="1000" placeholder="Например, не работает зарядка"></textarea>
       </label>
+      <p class="bookpc__force-note" data-force-note hidden></p>
       <p class="bookpc__message" data-form-message role="status"></p>
       <div class="bookpc__form-actions">
         <button class="bookpc__retry" type="button" data-cancel>Отмена</button>
@@ -53,4 +55,4 @@
     </form>
   </dialog>
 </section>
-<script type="module" src="/js/bookpc.js?v=2"></script>
+<script type="module" src="/js/bookpc.js?v=3"></script>

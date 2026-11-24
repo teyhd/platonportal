@@ -107,7 +107,9 @@ export function createBookpcBlock({
           }
           headers['Content-Type'] = 'application/json';
           headers['X-Portal-Request-Id'] = requestId;
-          body = JSON.stringify(operation === 'rent' ? { computer_id, room } : { computer_id, rental_id, comment });
+          body = JSON.stringify(operation === 'rent' ? { computer_id, room } : {
+            computer_id, rental_id, ...(operation === 'return' && { comment }),
+          });
         }
         try {
           const response = await fetch(`${upstream}${upstreamPath}${operation ? `/${operation}` : ''}`, {
@@ -124,6 +126,7 @@ export function createBookpcBlock({
       router.get('/', proxy());
       router.post('/rent', proxy('rent'));
       router.post('/return', proxy('return'));
+      router.post('/force-return', proxy('force-return'));
       router.use((error, _req, res, _next) => {
         res.status(error.status === 413 ? 413 : 400).json({ error: 'invalid_request_body' });
       });
