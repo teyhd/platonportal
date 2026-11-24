@@ -32,6 +32,7 @@ const actionLabels = { rent: 'Взять', return: 'Сдать', 'force-return':
 const rentalSlot = document.querySelector('[data-important-rentals]');
 const locationSlot = document.querySelector('[data-important-laptop-locations]');
 const tiles = new Map();
+const locationTiles = new Map();
 let shown;
 let pinned = false;
 let closeTimer;
@@ -137,7 +138,8 @@ function closeCard({ restoreFocus = false } = {}) {
   const { button } = shown;
   shown = undefined;
   pinned = false;
-  card.hidePopover();
+  if (card.matches(':popover-open')) card.hidePopover();
+  root.append(card);
   button.setAttribute('aria-expanded', 'false');
   if (restoreFocus) {
     restoringFocus = true;
@@ -168,14 +170,35 @@ function scheduleClose() {
   }, 190);
 }
 
-function paintDevices(devices) {
+function bindCardTrigger(tile) {
+  const { button } = tile;
+  button.setAttribute('aria-controls', card.id);
+  button.setAttribute('aria-expanded', 'false');
+  button.addEventListener('pointerenter', event => {
+    if (event.pointerType === 'mouse' && !pinned && !dialog.open) showCard(tile);
+  });
+  button.addEventListener('pointerleave', scheduleClose);
+  button.addEventListener('focus', () => {
+    if (!restoringFocus && button.matches(':focus-visible') && !dialog.open) showCard(tile);
+  });
+  button.addEventListener('click', () => {
+    if (shown === tile && pinned) closeCard();
+    else showCard(tile, true);
+  });
+}
+
+function removeMissingTiles(collection, devices) {
   const ids = new Set(devices.map(device => device.id));
-  for (const [id, tile] of tiles) {
-    if (ids.has(id)) continue;
+  for (const [id, tile] of collection) {
+    if (ids.has(id) && tile.item.isConnected) continue;
     if (shown === tile) closeCard();
     tile.item.remove();
-    tiles.delete(id);
+    collection.delete(id);
   }
+}
+
+function paintDevices(devices) {
+  removeMissingTiles(tiles, devices);
   for (const device of devices) {
     let tile = tiles.get(device.id);
     if (!tile) {
@@ -183,42 +206,19 @@ function paintDevices(devices) {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'bookpc__tile';
-      const number = document.createElement('span');
-      number.textContent = String(device.id);
-      const assignee = document.createElement('small');
-      assignee.className = 'bookpc__assignee';
-      assignee.hidden = true;
-      button.append(number, assignee);
-      button.setAttribute('aria-controls', card.id);
-      button.setAttribute('aria-expanded', 'false');
+      button.textContent = String(device.id);
       item.append(button);
       grid.append(item);
-      tile = { item, button, assignee };
+      tile = { item, button };
       tiles.set(device.id, tile);
-      button.addEventListener('pointerenter', event => {
-        if (event.pointerType === 'mouse' && !pinned && !dialog.open) showCard(tile);
-      });
-      button.addEventListener('pointerleave', scheduleClose);
-      button.addEventListener('focus', () => {
-        if (!restoringFocus && button.matches(':focus-visible') && !dialog.open) showCard(tile);
-      });
-      button.addEventListener('click', () => {
-        if (shown === tile && pinned) closeCard();
-        else showCard(tile, true);
-      });
+      bindCardTrigger(tile);
     }
     tile.device = device;
     const tone = deviceTone(device);
-    const assignee = device.assignment?.label;
     tile.button.dataset.state = tone;
-    tile.item.toggleAttribute('data-named-assignment', Boolean(assignee));
-    tile.assignee.hidden = !assignee;
-    const room = device.assignment?.room;
-    tile.assignee.textContent = assignee ? [assignee, room ? `каб. ${room}` : ''].filter(Boolean).join(' · ') : '';
     tile.button.toggleAttribute('data-has-issue', Boolean(device.issue));
-    tile.button.setAttribute('aria-label', `Ноутбук №${device.id}, ${states[tone]}${assignee ? `, сотрудник: ${assignee}` : ''}${device.issue ? ', есть жалоба' : ''}`);
+    tile.button.setAttribute('aria-label', `Ноутбук №${device.id}, ${states[tone]}${device.issue ? ', есть жалоба' : ''}`);
   }
-  if (shown) paintCard();
   const rentable = devices.filter(device => !device.assignment);
   const freeCount = rentable.filter(device => device.state === 'free').length;
   const ownCount = rentable.filter(device => device.own).length;
@@ -255,18 +255,29 @@ function paintOwnRentals(devices) {
 
 function paintLocations(devices) {
   if (!locationSlot) return;
-  const rows = devices.filter(device => device.assignment?.showInImportant).map(({ id, assignment }) => {
-    const row = document.createElement('div');
-    row.className = 'bookpc-rental important-laptop-location';
-    const title = document.createElement('strong');
-    title.textContent = `Резервный ноутбук №${id}`;
-    const location = document.createElement('span');
-    location.textContent = `${assignment.label} · Кабинет ${assignment.room}`;
-    row.append(title, location);
-    return row;
-  });
-  locationSlot.replaceChildren(...rows);
-  locationSlot.hidden = !rows.length;
+  const locations = devices.filter(device => device.assignment?.showInImportant);
+  removeMissingTiles(locationTiles, locations);
+  for (const device of locations) {
+    let tile = locationTiles.get(device.id);
+    if (!tile) {
+      const item = document.createElement('div');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'bookpc-rental important-laptop-location';
+      const title = document.createElement('strong');
+      title.textContent = `Резервный ноутбук №${device.id}`;
+      const location = document.createElement('span');
+      button.append(title, location);
+      item.append(button);
+      locationSlot.append(item);
+      tile = { item, button, location };
+      locationTiles.set(device.id, tile);
+      bindCardTrigger(tile);
+    }
+    tile.device = device;
+    tile.location.textContent = `Кабинет ${device.assignment.room}`;
+  }
+  locationSlot.hidden = !locations.length;
 }
 
 function refresh(feedback = '') {
@@ -279,6 +290,7 @@ function refresh(feedback = '') {
       paintDevices(devices.filter(device => device.rentable || device.assignment));
       paintOwnRentals(ownRentals);
       paintLocations(devices);
+      if (shown) paintCard();
       issueMessage.textContent = issuesStatus === 'unavailable' ? 'Данные техподдержки временно недоступны.' : '';
       message.textContent = feedback;
       return true;
