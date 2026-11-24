@@ -28,6 +28,7 @@ const dateFormat = new Intl.DateTimeFormat('ru-RU', {
   hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
 });
 const states = { free: 'Свободно', occupied: 'Занято', own: 'У вас', unknown: 'Статус неизвестен' };
+const rentalSlot = document.querySelector('[data-important-rentals]');
 const tiles = new Map();
 let shown;
 let pinned = false;
@@ -196,6 +197,32 @@ function paintDevices(devices) {
   summary.textContent = devices.length ? `Свободно ${freeCount} из ${devices.length}${ownCount ? ` · У вас ${ownCount}` : ''}` : 'Нет ноутбуков';
 }
 
+function paintOwnRentals(devices) {
+  if (!rentalSlot) return;
+  const focusedDevice = rentalSlot.contains(document.activeElement) ? document.activeElement.dataset.returnDevice : null;
+  const rows = [];
+  for (const device of devices) {
+    if (device.state !== 'occupied' || device.own !== true || !device.rental?.id) continue;
+    const row = document.createElement('div');
+    row.className = 'bookpc-rental';
+    const title = document.createElement('strong');
+    title.textContent = `У вас ноутбук №${device.id}`;
+    const pin = document.createElement('span');
+    pin.textContent = device.rental.pin ? `PIN: ${device.rental.pin}` : 'PIN недоступен';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'Сдать';
+    button.dataset.returnDevice = String(device.id);
+    button.setAttribute('aria-label', `Сдать ноутбук №${device.id}`);
+    button.addEventListener('click', () => openOperation(device, button));
+    row.append(title, pin, button);
+    rows.push(row);
+  }
+  rentalSlot.replaceChildren(...rows);
+  rentalSlot.hidden = !rows.length;
+  if (focusedDevice) Array.from(rentalSlot.querySelectorAll('button')).find(button => button.dataset.returnDevice === focusedDevice)?.focus();
+}
+
 function refresh(feedback = '') {
   if (loading) return loading;
   retry.hidden = true;
@@ -204,11 +231,13 @@ function refresh(feedback = '') {
       const { devices, issuesStatus } = await request();
       fresh = true;
       paintDevices(devices);
+      paintOwnRentals(devices);
       issueMessage.textContent = issuesStatus === 'unavailable' ? 'Данные техподдержки временно недоступны.' : '';
       message.textContent = feedback || (devices.length ? '' : 'В BookPC пока нет зарегистрированных ноутбуков.');
       return true;
     } catch (error) {
       fresh = false;
+      paintOwnRentals([]);
       if (error.status === 401 || error.status === 403) paintDevices([]);
       if (shown) paintCard();
       summary.textContent = tiles.size ? 'Данные не обновились' : 'Статус недоступен';
@@ -248,8 +277,9 @@ document.addEventListener('keydown', event => {
 window.addEventListener('resize', placeCard);
 window.addEventListener('scroll', placeCard, { passive: true });
 
-action.addEventListener('click', () => {
-  const { device, button } = shown;
+action.addEventListener('click', () => openOperation(shown.device, shown.button));
+
+function openOperation(device, button) {
   const operation = device.own ? 'return' : 'rent';
   pending = { device, button, operation, payload: null };
   const rent = operation === 'rent';
@@ -264,7 +294,7 @@ action.addEventListener('click', () => {
   submit.textContent = rent ? 'Взять' : 'Сдать';
   closeCard();
   dialog.showModal();
-});
+}
 
 const errorMessages = {
   computer_occupied: 'Ноутбук уже взяли. Статус обновлён.',
