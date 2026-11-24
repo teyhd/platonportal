@@ -38,6 +38,7 @@ export function createUserFamilyTools({ drawer, openDrawer }) {
   const save = $('[data-family-save]');
   const serviceSelect = $('[data-preview-service]');
   const childSelect = $('[data-preview-child]');
+  const previewTab = $('[data-preview-tab]');
   const entries = $('[data-preview-entries]');
   const date = $('[data-preview-date]');
   let targetId, mode, revision, retryAction, requestController, searchController, searchTimer;
@@ -94,6 +95,8 @@ export function createUserFamilyTools({ drawer, openDrawer }) {
     $('[data-preview-roles]').replaceChildren();
     $('[data-preview-controls]').hidden = true;
     $('[data-preview-details]').hidden = true;
+    previewTab.hidden = true;
+    previewTab.removeAttribute('action');
     date.hidden = true;
     editor.removeAttribute('aria-busy');
     preview.removeAttribute('aria-busy');
@@ -359,9 +362,13 @@ export function createUserFamilyTools({ drawer, openDrawer }) {
 
   async function loadPreview() {
     const service = services.find(item => String(item.id) === serviceSelect.value);
+    previewTab.hidden = !service;
     if (!service) return;
     const { current, signal } = startRequest();
     const child = service.family ? children.find(item => String(item.id) === childSelect.value) : null;
+    previewTab.action = `/users/${encodeURIComponent(targetId)}/service-preview`;
+    previewTab.elements.namedItem('serviceId').value = service.id;
+    previewTab.elements.namedItem('childId').value = child?.id ?? '';
     $('[data-preview-child-field]').hidden = !service.family || !children.length;
     $('[data-preview-controls]').toggleAttribute('data-child-visible', Boolean(child));
     $('[data-preview-child-id]').textContent = child ? childIdentity(child) : '';
@@ -407,6 +414,7 @@ export function createUserFamilyTools({ drawer, openDrawer }) {
     const { current, signal } = startRequest();
     $('[data-preview-controls]').hidden = true;
     $('[data-preview-details]').hidden = true;
+    previewTab.hidden = true;
     preview.setAttribute('aria-busy', 'true');
     showStatus('Загружаем список сервисов…');
     try {

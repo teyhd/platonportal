@@ -152,10 +152,12 @@ export function createFamilyRoutes({ db, important, sessionSecret, audit }) {
     }
   });
 
-  router.post('/api/users/:id/service-preview', requireAdmin, requireAdminToken, async (req, res) => {
+  async function servicePreview(req, res, page = false) {
     const { familyActorId: actorId, familyTargetId: targetId } = res.locals;
-    const { serviceId, childId: rawChildId } = req.body ?? {};
+    const { serviceId, childId: submittedChildId } = req.body ?? {};
+    const rawChildId = page && submittedChildId === '' ? null : submittedChildId;
     const childId = rawChildId == null ? null : positiveUserId(rawChildId);
+    if (page && !positiveUserId(serviceId)) return res.sendStatus(400);
     if (rawChildId != null && !childId) return res.sendStatus(400);
     try {
       const [target, family, actor] = await Promise.all([
@@ -179,17 +181,42 @@ export function createFamilyRoutes({ db, important, sessionSecret, audit }) {
 
       const service = services.find(item => item.id === String(positiveUserId(serviceId)));
       if (!service) return res.sendStatus(404);
-      if (!service.previewAvailable) return res.json({ state: 'permissions_only' });
       const integration = previewServices.find(item => item.ids.includes(Number(service.id)));
-      const hasParentRole = target.rights.some(right => Number(right.srv_id) === Number(service.id) && Number(right.role_id) === 6);
-      const selected = hasParentRole ? selectedFamilyChild(children, childId) : null;
-      if (integration.path && hasParentRole && !selected) return res.json({ state: 'no_child' });
-      const snapshot = await important.previewSource(targetId, integration.key, selected?.id ?? null);
-      return res.json(snapshot);
+      const selected = service.family ? selectedFamilyChild(children, childId) : null;
+      let snapshot;
+      if (!service.previewAvailable) snapshot = { state: 'permissions_only' };
+      else if (service.family && !selected) snapshot = { state: 'no_child' };
+      else snapshot = await important.previewSource(targetId, integration.key, selected?.id ?? null);
+
+      if (!page) return res.json(snapshot);
+      const messages = {
+        ready: snapshot.entries?.length ? '' : 'За этот период в сводке пока нет записей.',
+        permissions_only: 'Для этого просмотра доступны назначенные роли.',
+        no_child: 'У пользователя пока нет активных связанных детей.',
+        forbidden: 'Сервис не предоставил сводку для выбранного профиля.',
+        unavailable: 'Сервис временно недоступен.',
+      };
+      return res.render('servicePreview', {
+        layout: false, target, service, selected, snapshot,
+        message: messages[snapshot.state] ?? messages.unavailable,
+        hasSummary: snapshot.state !== 'permissions_only',
+      });
     } catch {
       return temporaryFailure(res);
     }
-  });
+  }
+
+  router.post('/api/users/:id/service-preview', requireAdmin, requireAdminToken, (req, res) => servicePreview(req, res));
+  router.post('/users/:id/service-preview', requireAdmin, express.urlencoded({ extended: false, limit: '1kb' }),
+    (req, res) => {
+      res.set({
+        'Content-Security-Policy': "default-src 'none'; style-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+        'Referrer-Policy': 'no-referrer',
+        'X-Robots-Tag': 'noindex',
+      });
+      if (!req.is('application/x-www-form-urlencoded') || !tokenMatches(req, req.body?.csrf)) return res.sendStatus(403);
+      return servicePreview(req, res, true);
+    });
 
   return { formToken, homeContext, router };
 }

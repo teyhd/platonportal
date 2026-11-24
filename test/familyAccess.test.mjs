@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import express from 'express';
+import { create } from 'express-handlebars';
+import { fileURLToPath } from 'node:url';
 import { contextualizeFamilyCard, makeFamilyLinks, positiveUserId, selectedFamilyChild } from '../vendor/familyAccess.mjs';
 import { createImportantService } from '../vendor/important.mjs';
 import { createFamilyRoutes } from '../vendor/familyRoutes.mjs';
@@ -28,7 +30,7 @@ test('family selection, protected editing and scoped preview keep the real porta
   const accounts = new Map([
     [900, { id: 900, type: 5, active: true, rights: [{ srv_id: 8, role_id: 5 }] }],
     [901, { id: 901, type: 7, active: true, rights: [{ srv_id: 8, role_id: 5 }] }],
-    [600, { id: 600, type: 6, active: true, rights: parentGrants }],
+    [600, { id: 600, name: 'Тестовый родитель <имя>', type: 6, active: true, rights: parentGrants }],
     [601, { id: 601, type: 6, active: true, rights: parentGrants }],
     [500, { id: 500, type: 2, active: true, rights: [{ srv_id: 8, role_id: 5, service: 'rasp', role: 'Админ' }] }],
   ]);
@@ -63,6 +65,9 @@ test('family selection, protected editing and scoped preview keep the real porta
   });
 
   const app = express();
+  app.engine('hbs', create({ extname: '.hbs' }).engine);
+  app.set('view engine', 'hbs');
+  app.set('views', fileURLToPath(new URL('../views', import.meta.url)));
   app.use(express.json());
   app.use((req, _res, next) => {
     const uid = Number(req.get('x-test-user'));
@@ -113,6 +118,30 @@ test('family selection, protected editing and scoped preview keep the real porta
   assert.equal((await post(900, preview, { serviceId: 8, childId: 102 })).status, 200);
   assert.deepEqual(snapshots, [[600, 'schedule', 102]]);
   assert.equal((await (await post(900, '/api/users/601/service-preview', { serviceId: 8 })).json()).state, 'no_child');
+  const openTab = (uid, body, csrf = routes.formToken({ sessionID: String(uid) }), target = 600) => call(
+    uid, `/users/${target}/service-preview`, {
+      method: 'POST', body: new URLSearchParams({ csrf, ...body }),
+    }
+  );
+  assert.equal((await openTab(0, { serviceId: 8 })).status, 401);
+  assert.equal((await openTab(901, { serviceId: 8 })).status, 403);
+  assert.equal((await openTab(900, { serviceId: 8 }, 'bad-token')).status, 403);
+  assert.equal((await openTab(900, { serviceId: 8, childId: 999 })).status, 403);
+  assert.equal((await openTab(900, { serviceId: 13 })).status, 404);
+  assert.equal((await openTab(900, {})).status, 400);
+  const page = await openTab(900, { serviceId: 8, childId: 102 });
+  assert.equal(page.status, 200);
+  assert.equal(page.headers.get('cache-control'), 'private, no-store');
+  assert.match(page.headers.get('content-security-policy'), /frame-ancestors 'none'/);
+  const html = await page.text();
+  assert.match(html, /Тестовый родитель &lt;имя&gt;/);
+  assert.match(html, /Второй ребёнок · ID 102/);
+  assert.match(html, /Назначенные роли/);
+  assert.match(html, /Родитель/);
+  assert.match(html, /Сводка сервиса/);
+  const protectedTab = await openTab(900, { serviceId: 8 }, undefined, 500);
+  assert.match(await protectedTab.text(), /доступны назначенные роли/);
+  assert.deepEqual(snapshots, [[600, 'schedule', 102], [600, 'schedule', 102]]);
   assert.deepEqual(sessions.get(900), { uid: 900 });
   assert(reads.some(entry => /actor=900 subject=600 service=8 child=102/.test(entry)));
   assert.equal((await post(901, '/api/users/600/family', { childId: 102, action: 'remove' })).status, 403);

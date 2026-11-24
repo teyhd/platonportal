@@ -66,6 +66,12 @@
       </div>
       <div class="users-drawer-actions" data-preview-actions hidden>
         <button class="users-secondary-button" type="button" data-close-drawer>Закрыть</button>
+        <form data-preview-tab method="post" target="_blank" rel="noopener noreferrer" hidden>
+          <input type="hidden" name="csrf" value="{{familyAdminToken}}">
+          <input type="hidden" name="serviceId">
+          <input type="hidden" name="childId">
+          <button class="users-save-button" type="submit">Открыть в новой вкладке</button>
+        </form>
       </div>
     </footer>
   </div>
