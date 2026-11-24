@@ -24,7 +24,7 @@
   const refresh = find('[data-card-refresh]');
   const catalogRefresh = document.querySelector('[data-catalog-refresh]');
   const preview = find('[data-card-preview]');
-  const materialPreview = find('[data-card-html-preview]');
+  const materialPreviewTemplate = find('[data-card-html-preview]');
   const servicePreview = find('[data-card-service-preview]');
   const previewImages = [find('[data-card-image-preview]'), find('[data-card-service-image]')];
   const fields = {
@@ -58,6 +58,7 @@
   };
   let saveTimer;
   let saveRequest;
+  let materialPreview;
   let navigating = false;
   let composing = false;
 
@@ -249,10 +250,10 @@
   }
 
   function editCard(card) {
+    preview.open = false;
     fillForm(card);
     formPlaceholder.hidden = true;
     form.hidden = false;
-    preview.open = false;
     setView('editor');
     formBody.scrollTop = 0;
     editorTitle.focus({ preventScroll: true });
@@ -342,6 +343,29 @@
     });
   }
 
+  function renderMaterialPreview(title) {
+    const safeTitle = document.createElement('h3');
+    safeTitle.textContent = title;
+    const fragment = document.createElement('template');
+    fragment.innerHTML = fields.html.value;
+    for (const script of fragment.content.querySelectorAll('script')) script.remove();
+    for (const node of fragment.content.querySelectorAll('*')) {
+      for (const name of node.getAttributeNames()) {
+        if (name.toLowerCase().startsWith('on')) node.removeAttribute(name);
+      }
+    }
+    const html = `<!doctype html><html lang="ru"><meta charset="utf-8"><style>
+      html{overflow:hidden}body{font:14px/1.55 system-ui;margin:12px;color:#0f172a;overflow-wrap:anywhere}
+      img{max-width:100%;height:auto}h3{margin-top:0}a{color:#1d4ed8}</style><body>${safeTitle.outerHTML}${fragment.innerHTML}</body></html>`;
+    if (materialPreview) {
+      if (materialPreview.srcdoc !== html) materialPreview.srcdoc = html;
+    } else {
+      materialPreview = materialPreviewTemplate.content.firstElementChild.cloneNode();
+      materialPreview.srcdoc = html;
+      materialPreviewTemplate.after(materialPreview);
+    }
+  }
+
   function updateEditor() {
     const title = fields.title.value.trim() || (state.selectedId === null ? 'Новая карточка' : 'Без названия');
     const isMaterial = fields.type.value === '1';
@@ -355,20 +379,15 @@
       7: 'Карточку увидят модераторы и администраторы.',
     };
     find('[data-card-audience]').textContent = audienceHints[role] || `Уровень доступа «${roleName(role)}» и выше.`;
+    if (!preview.open || !isMaterial) {
+      materialPreview?.remove();
+      materialPreview = undefined;
+    }
     if (!preview.open) return;
 
     servicePreview.hidden = isMaterial;
-    materialPreview.hidden = !isMaterial;
-    if (isMaterial) {
-      const safeTitle = document.createElement('h3');
-      safeTitle.textContent = title;
-      const html = `<!doctype html><html lang="ru"><meta charset="utf-8"><style>
-        html{overflow:hidden}body{font:14px/1.55 system-ui;margin:12px;color:#0f172a;overflow-wrap:anywhere}
-        img{max-width:100%;height:auto}h3{margin-top:0}a{color:#1d4ed8}</style><body>${safeTitle.outerHTML}${fields.html.value}</body></html>`;
-      if (materialPreview.srcdoc !== html) materialPreview.srcdoc = html;
-    } else {
-      find('[data-card-service-title]').textContent = title;
-    }
+    if (isMaterial) renderMaterialPreview(title);
+    else find('[data-card-service-title]').textContent = title;
   }
 
   async function loadCards() {
