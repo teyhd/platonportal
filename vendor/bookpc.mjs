@@ -97,12 +97,16 @@ export function createBookpcBlock({
   async function applyAssignments(result, userId, assignments) {
     const access = assignments.size ? await getAssignmentAccess(userId).catch(() => null) : null;
     const ownRentals = result.devices.filter(device => device.own === true && device.state === 'occupied' && device.rental?.id);
-    const devices = result.devices.flatMap(device => {
-      const label = assignments.get(Number(device.id));
-      if (!label) return [device];
-      if (access !== 'admin' && access !== 'moderator') return [];
-      return [{ id: device.id, state: device.state, assignment: access === 'admin' ? { label } : {} }];
-    });
+    const devices = result.devices.filter(device => !assignments.has(Number(device.id)));
+    if (access === 'admin' || access === 'moderator') {
+      const liveStates = new Map(result.devices.map(device => [Number(device.id), device.state]));
+      for (const [id, label] of assignments) {
+        devices.push({
+          id, state: liveStates.get(id) ?? 'unknown', assignment: access === 'admin' ? { label } : {},
+        });
+      }
+      devices.sort((first, second) => first.id - second.id);
+    }
     return { ...result, devices, ownRentals };
   }
 

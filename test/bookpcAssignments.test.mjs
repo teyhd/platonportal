@@ -17,7 +17,7 @@ test('assigned laptops are filtered by portal role while an owner can still retu
     secret: '0'.repeat(64),
     origin,
     issuesToken: null,
-    getAssignments: async () => new Map([[19, 'Сотрудник']]),
+    getAssignments: async () => new Map([[19, 'Сотрудник'], [25, 'Психолог']]),
     getAssignmentAccess: async id => ({ 5: 'admin', 7: 'moderator' })[id],
     fetchImpl: async (url, options) => {
       if (options.method === 'POST') {
@@ -50,9 +50,11 @@ test('assigned laptops are filtered by portal role while an owner can still retu
     assert.deepEqual(owner.ownRentals.map(device => device.rental.pin), ['1234']);
     const moderator = await (await request(7)).json();
     assert.deepEqual(moderator.devices[1], { id: 19, state: 'occupied', assignment: {} });
+    assert.deepEqual(moderator.devices[2], { id: 25, state: 'unknown', assignment: {} });
     assert.deepEqual(moderator.ownRentals, []);
     const admin = await (await request(5)).json();
     assert.deepEqual(admin.devices[1].assignment, { label: 'Сотрудник' });
+    assert.deepEqual(admin.devices[2].assignment, { label: 'Психолог' });
     assert.equal((await request(5, '/rent')).status, 409);
     assert.equal((await request(2, '/return')).status, 200);
     assert.deepEqual(actions, ['return']);
