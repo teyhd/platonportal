@@ -39,6 +39,31 @@ if (panel) {
   const orderSlot = $('[data-important-orders]');
   const approvals = $('[data-important-approvals]');
   const approvalList = $('[data-important-approval-list]');
+  const pendingReports = $('[data-important-pending-reports]');
+  const isPendingReport = item => ['progress_report_pending_fill', 'feedback_pending_fill'].includes(item.kind);
+  const reportCountFormat = new Intl.NumberFormat('ru-RU');
+
+  function renderPendingReports(items) {
+    const signature = JSON.stringify(items.map(({ key, title, cardCount, actions }) => [key, title, cardCount, actions]));
+    if (pendingReports.dataset.items === signature) return;
+    const focused = pendingReports.contains(document.activeElement) ? document.activeElement.href : '';
+    pendingReports.dataset.items = signature;
+    pendingReports.hidden = !items.length;
+    let nextFocus;
+    pendingReports.replaceChildren(...items.map(item => {
+      const row = element('li');
+      const content = element('div');
+      content.append(element('strong', '', item.title), element('span', '', `Не заполнено: ${reportCountFormat.format(item.cardCount)}`));
+      const action = item.actions[0];
+      const link = element('a', '', action.label);
+      link.href = action.href;
+      link.setAttribute('aria-label', `${action.label} · ${item.title}`);
+      if (focused === link.href) nextFocus = link;
+      row.append(content, link);
+      return row;
+    }));
+    if (focused) (nextFocus || refreshButton).focus({ preventScroll: true });
+  }
 
   function renderApprovals(items) {
     const signature = JSON.stringify(items.map(({ key, title, subtitle, start, actions }) => [key, title, subtitle, start, actions]));
@@ -320,6 +345,7 @@ if (panel) {
     if (networkFailed && performance.now() - lastSuccess > 120_000) {
       list.hidden = true;
       renderApprovals([]);
+      renderPendingReports([]);
       const footer = $('[data-important-day]');
       text(footer, 'Сводка устарела. Восстановите соединение или откройте нужный сервис ниже.');
       footer.hidden = false;
@@ -470,6 +496,7 @@ if (panel) {
     panel.dataset.contextMode = context;
     renderOrders(context === 'personal' ? data.orders : null);
     renderApprovals(data.visible ? data.items.filter(item => item.kind === 'calendar_approval') : []);
+    renderPendingReports(data.visible && context === 'personal' ? data.items.filter(isPendingReport) : []);
     updatePanelVisibility();
     if (!data.visible) {
       status.hidden = true;
@@ -493,7 +520,7 @@ if (panel) {
     status.dataset.state = issues.length ? 'warning' : 'ready';
     text(status, issues.length ? issues.map(source => `${source.label}: ${source.status==='ready' && source.partial ? 'часть сведений временно недоступна' : source.checkedAt ? `последние данные ${formatTime(source.checkedAt)}` : 'временно недоступно'}`).join(' · ')
       : `Обновлено в ${formatTime(data.serverTime)}`);
-    const items = data.items.filter(item => item.kind !== 'calendar_approval');
+    const items = data.items.filter(item => item.kind !== 'calendar_approval' && !isPendingReport(item));
     const wanted = new Set(items.map(item => item.key));
     for (const [key, node] of nodes) if (!wanted.has(key)) {
       if (node.article.contains(document.activeElement)) $('[data-important-refresh]').focus({ preventScroll: true });
@@ -742,6 +769,7 @@ if (panel) {
     list.replaceChildren(); nodes.clear(); details.clear(); data = null; etag = ''; panel.hidden = true;
     renderOrders(null);
     renderApprovals([]);
+    renderPendingReports([]);
     $('[data-important-clock]').hidden = true;
     if (workday) {
       workday.hidden = true; workday.open = false;
@@ -824,7 +852,7 @@ if (panel) {
     }
     cancelScopeRequests();
     data = { ...data, selectedChildId:childId, daySummary:'', scheduleFingerprint:'',
-      items:data.items.filter(item => item.kind === 'calendar_approval' || (item.kind === 'lesson' && item.audience === 'self')) };
+      items:data.items.filter(item => isPendingReport(item) || item.kind === 'calendar_approval' || (item.kind === 'lesson' && item.audience === 'self')) };
     etag = ''; boundary = ''; noticeUntil = 0;
     render();
     status.dataset.state = 'loading';

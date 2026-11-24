@@ -397,6 +397,9 @@ export function expandImportantView(view, { schedule, attendance, integrated, no
       const actions = sourceActions(value.actions, origin);
       const rows = sourceRows(value.rows, origin);
       const kind = text(value.kind, 80) || source;
+      const pendingFill = ['progress_report_pending_fill', 'feedback_pending_fill'].includes(kind);
+      if (pendingFill && (source !== 'progress' || view.context !== 'personal' ||
+          !Number.isSafeInteger(value.cardCount) || value.cardCount <= 0 || !actions.length)) continue;
       const published = kind.endsWith('_published') && Number.isFinite(instant(value.publishedAt));
       const publishedDate = published
         ? shortDate.format(new Date(value.publishedAt))
@@ -416,6 +419,7 @@ export function expandImportantView(view, { schedule, attendance, integrated, no
       }
       view.items.push({
         key: `${source}:${key}`, kind, title, subtitle, actions, rows,
+        ...(pendingFill ? { cardCount: value.cardCount } : {}),
         ...(kind === 'progress_draft_group' ? { detailLabel:'Карточки' } : {}),
         detailCount: rows.length, tone: kind.includes('published') || kind==='weekly_attendance' ? 'neutral' : 'attention',
         priority: kind.includes('published') || kind==='weekly_attendance' ? 45 : 22,

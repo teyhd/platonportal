@@ -120,6 +120,21 @@ test('own current and next lessons leave the third place for the most urgent act
   assert.equal(result.items.find(item=>item.key==='lesson:family').audience,'child');
 });
 
+test('pending Progress counts stay separate and links stay on the authorized source origin', () => {
+  const result = buildImportantView({ now, context:'personal' });
+  const make = (kind, cardCount, href) => ({key:kind, kind, title:kind, cardCount, actions:[{label:'К заполнению',href}]});
+  expandImportantView(result,{now,integrated:{progress:{items:[
+    make('progress_report_pending_fill', 3, '/my-pending-reports'),
+    make('feedback_pending_fill', 2, '/feedback?pendingFill=1'),
+    {...make('feedback_pending_fill', 0, '/feedback'),key:'zero'},
+    {...make('feedback_pending_fill', 7, 'https://example.com/feedback'),key:'foreign'},
+  ]}}});
+  assert.deepEqual(result.items.map(item => [item.cardCount, item.actions[0].href]).sort((a,b)=>a[0]-b[0]), [
+    [2,'https://rep.platoniks.ru/feedback?pendingFill=1'],
+    [3,'https://rep.platoniks.ru/my-pending-reports'],
+  ]);
+});
+
 test('Progress groups drafts by exact due time with a direct link per report', () => {
   const drafts=Array.from({ length:160 }, (_,index)=>({
     key:`card:${index}`,kind:'progress_draft',title:'Ваш отчёт ждёт заполнения',
