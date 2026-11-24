@@ -299,7 +299,6 @@
   transform: scaleX(0);
   transform-origin: left center;
 }
-.important-item[data-imminent="true"] .important-progress { background: #f0dfc6; }
 .important-timeline-labels {
   display: flex;
   flex-wrap: wrap;

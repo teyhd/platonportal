@@ -7,10 +7,9 @@ const stages = new Map([
   ['Доставляем', 3],
   ['Ожидает получения', 4],
   ['Получен', 5],
-  ['Отменен', 0],
-  ['Отменён', 0],
 ]);
 const ordersPage = 'https://buy.platoniks.ru/myorders';
+const receiptWindowMs = 7 * 24 * 60 * 60 * 1000;
 
 function configuredKey() {
   try {
@@ -29,7 +28,8 @@ export function createImportantOrders({
   return async actorId => {
     if (!key || !Number.isSafeInteger(actorId) || actorId <= 0) return null;
     const body = JSON.stringify({ actorId });
-    const timestamp = String(Math.floor(now() / 1000));
+    const time = now();
+    const timestamp = String(Math.floor(time / 1000));
     const signature = createHmac('sha256', key).update(`${timestamp}\n${body}`).digest('hex');
     try {
       const response = await fetchImpl(new URL('/internal/v1/mainportal/orders', upstream), {
@@ -51,19 +51,18 @@ export function createImportantOrders({
         const title = typeof item?.title === 'string' ? item.title.trim() : '';
         const id = Number(item?.id);
         if (stage === undefined || !title || !Number.isSafeInteger(id) || id <= 0) return [];
+        if (stage === 5) {
+          const receivedAt = Date.parse(item.receivedAt);
+          if (!Number.isFinite(receivedAt) || receivedAt > time || receivedAt < time - receiptWindowMs) return [];
+        }
         const quantity = Number(item.quantity);
         return [{
-          id, title, stage, status: stage === 0 ? 'Отменён' : item.status,
+          id, title, stage, status: item.status,
           ...(Number.isFinite(quantity) && quantity > 0 ? { quantity } : {}),
         }];
       });
       if (!items.length) return null;
-      const total = Number(payload.total);
-      return {
-        href: ordersPage,
-        total: Number.isSafeInteger(total) && total >= items.length ? total : items.length,
-        items,
-      };
+      return { href: ordersPage, total: items.length, items };
     } catch {
       return null;
     }

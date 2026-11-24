@@ -242,7 +242,7 @@ if (panel) {
     }
     const progress = current ? (now - start) / (end - start) : 0;
     const percent = String(Math.floor(100 * progress));
-    node.progress.setAttribute('aria-hidden', String(!current));
+    node.progress.hidden = !current;
     if (node.progress.getAttribute('aria-valuenow') !== percent) node.progress.setAttribute('aria-valuenow', percent);
     node.progressFill.style.transform = `scaleX(${progress})`;
     return current;
@@ -310,6 +310,7 @@ if (panel) {
     const timelineEnd = element('span');
     timelineLabels.append(timelineStart, timelineEnd);
     const progress = element('div', 'important-progress');
+    progress.hidden = true;
     const progressFill = element('span');
     progress.setAttribute('role', 'progressbar');
     progress.setAttribute('aria-label', 'Ход урока');
