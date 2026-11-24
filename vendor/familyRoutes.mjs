@@ -195,7 +195,7 @@ export function createFamilyRoutes({ db, important, sessionSecret, audit, native
       if (!service.nativePreviewAvailable) {
         return res.status(403).send('Для выбранного сервиса или роли недоступен просмотр интерфейса.');
       }
-      const destination = await nativePreview.launchSchedule({ actorId, targetId, childId: selected?.id ?? null });
+      const destination = await nativePreview.launch(integration.key, { actorId, targetId, childId: selected?.id ?? null });
       if (!destination) return res.status(403).send('Просмотр интерфейса недоступен для этой роли.');
       return res.redirect(303, destination);
     } catch {

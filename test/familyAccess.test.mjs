@@ -27,7 +27,7 @@ test('child preference and service links are scoped to membership and service ro
 
 test('family selection, protected editing and scoped preview keep the real portal identity', async t => {
   const accounts = new Map([
-    [900, { id: 900, type: 5, active: true, rights: [{ srv_id: 8, role_id: 5 }] }],
+    [900, { id: 900, type: 5, active: true, rights: [8, 11, 15, 3].map(srv_id => ({ srv_id, role_id: 5 })) }],
     [901, { id: 901, type: 7, active: true, rights: [{ srv_id: 8, role_id: 5 }] }],
     [600, { id: 600, name: 'Тестовый родитель <имя>', type: 6, active: true, rights: parentGrants }],
     [601, { id: 601, type: 6, active: true, rights: parentGrants }],
@@ -63,7 +63,13 @@ test('family selection, protected editing and scoped preview keep the real porta
     important: { previewSource: async (...args) => (snapshots.push(args), { state: 'ready', entries: [] }) },
     audit: entry => reads.push(entry),
     nativePreview: createNativeServicePreview({
-      env: { MAINPORTAL_SCHEDULE_TOKEN: 'fixture-service-key' },
+      env: {
+        MAINPORTAL_SCHEDULE_TOKEN: 'fixture-service-key',
+        MAINPORTAL_DIARY_KEY: 'fixture-service-key',
+        MAINPORTAL_CALENDAR_KEY: 'fixture-service-key',
+        MAINPORTAL_PROGRESS_KEY: 'fixture-service-key',
+        ATTENDANCE_MAINPORTAL_SERVICE_KEY: 'fixture-service-key',
+      },
       fetchImpl: async (url, request) => {
         assert.equal(url.pathname, '/internal/integrations/mainportal/v1/role-preview');
         assert.equal(request.method, 'POST');
@@ -117,15 +123,15 @@ test('family selection, protected editing and scoped preview keep the real porta
   const serviceList = await (await post(900, preview, {})).json();
   assert.equal(serviceList.services.find(service => service.id === '8').previewAvailable, true);
   assert.equal(serviceList.services.find(service => service.id === '8').nativePreviewAvailable, true);
-  assert.equal(serviceList.services.find(service => service.id === '11').nativePreviewAvailable, false);
-  assert.equal(serviceList.services.find(service => service.id === '3').previewAvailable, false);
+  assert.equal(serviceList.services.find(service => service.id === '11').nativePreviewAvailable, true);
+  assert.equal(serviceList.services.find(service => service.id === '3').previewAvailable, true);
   assert.deepEqual(serviceList.children.map(child => child.id), [101, 102]);
   assert.equal((await post(900, preview, { serviceId: 8, childId: 404 })).status, 403);
   assert.equal((await post(900, preview, { serviceId: 13 })).status, 404);
-  assert.equal((await (await post(900, preview, { serviceId: 3 })).json()).state, 'permissions_only');
+  assert.equal((await (await post(900, preview, { serviceId: 3 })).json()).state, 'ready');
   assert.equal((await (await post(900, '/api/users/500/service-preview', { serviceId: 8 })).json()).state, 'permissions_only');
   assert.equal((await post(900, preview, { serviceId: 8, childId: 102 })).status, 200);
-  assert.deepEqual(snapshots, [[600, 'schedule', 102]]);
+  assert.deepEqual(snapshots, [[600, 'progress', 101], [600, 'schedule', 102]]);
   assert.equal((await (await post(900, '/api/users/601/service-preview', { serviceId: 8 })).json()).state, 'no_child');
   const openTab = (uid, body, csrf = routes.formToken({ sessionID: String(uid) }), target = 600) => call(
     uid, `/users/${target}/service-preview`, {
@@ -148,9 +154,21 @@ test('family selection, protected editing and scoped preview keep the real porta
   assert.equal(location.searchParams.get('child_id'), '102');
   assert.equal(location.hash, '#code=' + 'a'.repeat(64));
   assert.deepEqual(launches, [{ actor_id: 900, subject_id: 600 }]);
-  assert.equal((await openTab(900, { serviceId: 11 })).status, 403);
+  const diary = await openTab(900, { serviceId: 11, childId: 102 });
+  assert.equal(diary.status, 303);
+  const diaryURL = new URL(diary.headers.get('location'));
+  assert.equal(diaryURL.origin, 'https://diary.platoniks.ru');
+  assert.equal(diaryURL.pathname, '/audit/children/overview');
+  assert.equal(diaryURL.searchParams.get('viewer'), 'parent');
+  assert.equal(diaryURL.searchParams.get('studentId'), '102');
+  for (const [serviceId, origin] of [[15, 'https://event.platoniks.ru'], [3, 'https://rep.platoniks.ru']]) {
+    const tab = await openTab(900, { serviceId, childId: 102 });
+    assert.equal(tab.status, 303);
+    assert.equal(new URL(tab.headers.get('location')).origin, origin);
+    assert.deepEqual(launches.at(-1), { actor_id: 900, subject_id: 600, child_id: 102 });
+  }
   assert.equal((await openTab(900, { serviceId: 8 }, undefined, 500)).status, 403);
-  assert.deepEqual(snapshots, [[600, 'schedule', 102]]);
+  assert.deepEqual(snapshots, [[600, 'progress', 101], [600, 'schedule', 102]]);
   assert.deepEqual(sessions.get(900), { uid: 900 });
   assert(reads.some(entry => /actor=900 subject=600 service=8 child=102/.test(entry)));
   assert.equal((await post(901, '/api/users/600/family', { childId: 102, action: 'remove' })).status, 403);

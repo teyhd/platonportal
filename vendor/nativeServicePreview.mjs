@@ -1,14 +1,44 @@
+const adapters = {
+  schedule: {
+    origin: 'https://rasp.platoniks.ru', port: 3011, key: 'MAINPORTAL_SCHEDULE_TOKEN',
+    base: 'MAINPORTAL_SCHEDULE_URL', childPath: '/audit/schedule/personal', childParam: 'child_id',
+  },
+  diary: {
+    origin: 'https://diary.platoniks.ru', port: 3003, key: 'MAINPORTAL_DIARY_KEY',
+    base: 'MAINPORTAL_DIARY_URL', childPath: '/audit/children/overview?viewer=parent', childParam: 'studentId',
+  },
+  calendar: {
+    origin: 'https://event.platoniks.ru', port: 3031, key: 'MAINPORTAL_CALENDAR_KEY',
+    base: 'MAINPORTAL_CALENDAR_URL', childAtExchange: true,
+  },
+  progress: {
+    origin: 'https://rep.platoniks.ru', port: 89, key: 'MAINPORTAL_PROGRESS_KEY',
+    base: 'MAINPORTAL_PROGRESS_URL', childAtExchange: true,
+  },
+  attendance: {
+    origin: 'https://stud.platoniks.ru', port: 789, key: 'ATTENDANCE_MAINPORTAL_SERVICE_KEY',
+    base: 'MAINPORTAL_ATTENDANCE_URL',
+  },
+};
+
 export function createNativeServicePreview({ env = process.env, fetchImpl = fetch } = {}) {
-  const token = env.MAINPORTAL_SCHEDULE_TOKEN;
+  const adapterFor = service => Object.hasOwn(adapters, service) ? adapters[service] : null;
   return {
-    supports: service => service === 'schedule' && Boolean(token),
-    async launchSchedule({ actorId, targetId, childId }) {
+    supports: service => Boolean(env[adapterFor(service)?.key]),
+    async launch(service, { actorId, targetId, childId }) {
+      const adapter = adapterFor(service);
+      const token = env[adapter?.key];
+      if (!token) return null;
       const endpoint = new URL('/internal/integrations/mainportal/v1/role-preview',
-        env.MAINPORTAL_SCHEDULE_URL || 'http://127.0.0.1:3011');
+        env[adapter.base] || 'http://127.0.0.1:' + adapter.port);
       const response = await fetchImpl(endpoint, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ actor_id: actorId, subject_id: targetId }),
+        body: JSON.stringify({
+          actor_id: actorId,
+          subject_id: targetId,
+          ...(adapter.childAtExchange && childId ? { child_id: childId } : {}),
+        }),
         redirect: 'error',
         signal: AbortSignal.timeout(5000),
       });
@@ -16,8 +46,8 @@ export function createNativeServicePreview({ env = process.env, fetchImpl = fetc
       if (!response.ok) throw new Error('Native preview unavailable');
       const { code } = await response.json();
       if (typeof code !== 'string' || !/^[a-f0-9]{64}$/.test(code)) throw new Error('Invalid native preview code');
-      const destination = new URL(childId ? '/audit/schedule/personal' : '/audit/', 'https://rasp.platoniks.ru');
-      if (childId) destination.searchParams.set('child_id', childId);
+      const destination = new URL(childId && adapter.childPath ? adapter.childPath : '/audit/', adapter.origin);
+      if (childId && adapter.childParam) destination.searchParams.set(adapter.childParam, childId);
       destination.hash = 'code=' + code;
       return destination.href;
     },
