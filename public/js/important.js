@@ -289,6 +289,7 @@ if (panel) {
     const timing = element('p', 'important-item-timing');
     const title = element('h3', 'important-item-title');
     const subtitle = element('p', 'important-item-subtitle');
+    const studentStatus = element('p', 'important-item-subtitle'); studentStatus.hidden = true;
     const notes = element('div', 'important-notes');
     const timeBox = element('div', 'important-timebox');
     const timeValue = element('span', 'important-time-value');
@@ -330,11 +331,11 @@ if (panel) {
     const body = element('div', 'important-details'); body.hidden = true;
     const bodyID = `important-detail-${++itemSequence}-${generation}`;
     body.id = bodyID; toggle.setAttribute('aria-controls', bodyID);
-    content.append(timing, title, subtitle, notes);
+    content.append(timing, title, subtitle, studentStatus, notes);
     top.append(content, timeBox, metric);
     controls.append(primaryActions, toggle, actions);
     article.append(top, timeline, contacts, controls, body);
-    const node = { article, timing, title, subtitle, notes, timeBox, timeValue, timeCaption, timeMode,
+    const node = { article, timing, title, subtitle, studentStatus, notes, timeBox, timeValue, timeCaption, timeMode,
       timeline, timelineStart, timelineEnd, progress, progressFill,
       metric, metricValue, metricLabel, controls, primaryActions, actions, toggle, toggleText, checkCount,
       contacts, body, actionKey: '', contactKey: '', detailRevision: '' };
@@ -453,6 +454,8 @@ if (panel) {
       const subtitle = school && item.kind === 'attendance' && item.recordCount != null ? `Записей: ${item.recordCount}` : item.subtitle;
       text(node.subtitle, subtitle);
       node.subtitle.hidden = !subtitle || (school && count > 0 && subtitle === `Записей: ${count}` && item.kind !== 'attendance');
+      text(node.studentStatus, item.studentStatus);
+      node.studentStatus.hidden = !item.studentStatus;
       renderContacts(node, item.contacts);
       node.metric.hidden = !school || !(count > 0);
       text(node.metricValue, count);
@@ -492,7 +495,17 @@ if (panel) {
         }
         node.actionKey = actionKey;
       }
-      node.toggle.hidden = !lesson && !item.detailCount;
+      if (item.singleStudent && (node.body.contains(document.activeElement) || node.toggle === document.activeElement)) {
+        node.actions.querySelector('a')?.focus({ preventScroll: true });
+      }
+      node.toggle.hidden = Boolean(item.singleStudent) || (!lesson && !item.detailCount);
+      if (item.singleStudent && !node.body.hidden) {
+        node.body.hidden = true;
+        node.toggle.setAttribute('aria-expanded', 'false');
+        details.get(item.key)?.controller?.abort();
+        details.delete(item.key);
+        node.body.replaceChildren();
+      }
       node.controls.hidden = node.toggle.hidden && !item.actions?.length;
       const detailCountLabel = school && count > 0 ? '' : ` · ${item.detailCount}`;
       const detailLabel = lesson ? 'Ученики' : item.detailLabel || 'Подробнее';

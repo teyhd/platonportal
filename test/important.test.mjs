@@ -18,6 +18,25 @@ test('current individual preserves zero lesson number and offers a cautious chec
   assert.match(item.notes.join(' '),/Приход в школу пока не отмечен/);
   assert.doesNotMatch(item.notes.join(' '),/прогул|отсутствует на уроке/);
 });
+test('a scoped single student is identified inline and a mixed-class group keeps its class names',()=>{
+  const individual = view().items[0];
+  assert.equal(individual.singleStudent,true);
+  assert.equal(individual.subtitle,'Тестовый ученик · Кабинет 204');
+  assert.ok(individual.actions.some(action=>action.label==='Посещаемость'));
+
+  const group = {...lesson,key:'group',individual:false,classes:['7-1','7-2'],
+    students:[child,{id:12,name:'Другой ученик',classId:8,mode:'onsite'}]};
+  const groupItem = view({...schedule,lessons:[group]}).items[0];
+  assert.equal(groupItem.singleStudent,undefined);
+  assert.equal(groupItem.subtitle,'7-1, 7-2 · Кабинет 204');
+  assert.equal(groupItem.detailCount,2);
+
+  const parentLesson = {...group,own:false,contexts:['child'],students:[child]};
+  const parent = view({...schedule,roles:['parent'],lessons:[parentLesson]}).items[0];
+  assert.equal(parent.subtitle,'У ребёнка · Тестовый ученик · Кабинет 204');
+  assert.ok(!parent.actions.some(action=>action.label==='Посещаемость'));
+});
+
 test('preparation starts at ten minutes, not earlier',()=>{
   const future={...lesson,start:'2026-11-17T09:15:00+03:00',end:'2026-11-17T09:35:00+03:00'};
   assert.equal(view({...schedule,lessons:[future]}).items[0].attentionCount,1);

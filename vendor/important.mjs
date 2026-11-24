@@ -57,12 +57,15 @@ export function attendanceRow(person, fact, lesson, now) {
 function lessonItem(lesson, facts, now, canVcall, allowAttendance) {
   const rows = (lesson.students ?? []).map(person => allowAttendance ? attendanceRow(person, facts.get(id(person.id)), lesson, now)
     : {id:id(person.id),name:person.name||'Ученик',description:person.mode==='online'?'Онлайн по расписанию':'Участник по расписанию',needsAttention:false,annotations:[]});
+  const student = rows.length === 1 ? rows[0] : null;
   const attention = rows.filter(row => row.needsAttention).length;
   const current = ms(lesson.start) <= +now && ms(lesson.end) > +now;
   const child = lesson.contexts?.includes('child') && !lesson.own;
   const rooms = lesson.rooms ?? [];
   const roomLabel = rooms.length ? `${rooms.length > 1 ? 'Кабинеты' : 'Кабинет'} ${rooms.join(', ')}` : '';
-  const subtitle = [child ? 'У ребёнка' : '', lesson.individual ? 'Индивидуальное занятие' : (lesson.classes ?? []).join(', '),
+  const classes = (lesson.classes ?? []).join(', ');
+  const audience = student?.name || classes || (lesson.individual ? 'Индивидуальное занятие' : rows.length > 1 ? 'Класс не указан' : '');
+  const subtitle = [child ? 'У ребёнка' : '', audience,
     lesson.format === 'mixed' ? 'Смешанный формат' : '',
     lesson.online ? 'Онлайн' : roomLabel || (lesson.format === 'mixed' ? '' : 'Кабинет не указан')].filter(Boolean).join(' · ');
   const notes = [];
@@ -72,12 +75,19 @@ function lessonItem(lesson, facts, now, canVcall, allowAttendance) {
     }
   }
   if (!lesson.rosterComplete) notes.push('Состав участников уточняется');
-  if (attention && lesson.individual && !lesson.online && rows[0]?.physicalStatus === 'none') notes.push('Приход в школу пока не отмечен. Уточните, подключится ли ученик онлайн.');
+  const checkOnline = attention && lesson.individual && !lesson.online && student?.physicalStatus === 'none';
+  if (checkOnline) notes.push('Приход в школу пока не отмечен. Уточните, подключится ли ученик онлайн.');
   else if (attention) notes.push(`Требуют проверки: ${attention}`);
+  const studentStatus = student && [
+    !checkOnline && (student.needsAttention || ['arrival', 'departure'].includes(student.physicalStatus)) ? student.description : '',
+    ...student.annotations.filter(note => !lesson.online || note !== 'По расписанию онлайн'),
+  ].filter(Boolean).join(' · ');
   const actions = [{ label: 'Расписание', href: safeLink(lesson.href, 'https://rasp.platoniks.ru') }];
+  if (student?.href) actions.push({ label: 'Посещаемость', href: student.href });
   if (canVcall && (lesson.online || lesson.format === 'mixed' || attention && lesson.individual)) actions.unshift(canVcall === 'join' ? { label:'Открыть комнаты',href:'#room' } : { label: 'Открыть V.CALL', href: '#lesson' });
   return { key: `lesson:${lesson.key}`, kind: 'lesson', audience: child ? 'child' : 'self',
     title: lesson.subject || 'Занятие', subtitle, notes,
+    ...(student ? { singleStudent: true, studentStatus } : {}),
     priority: current && lesson.own ? 0 : current ? 5 : 15, tone: attention ? 'attention' : current ? 'current' : 'neutral',
     start: lesson.start, end: lesson.end, displayNumber: lesson.displayNumber ?? null, segment: lesson.segment,
     attentionCount: attention, detailCount: rows.length, detailLabel: 'Дети и подробности', actions, rows,
@@ -493,7 +503,13 @@ export function createImportantService({
       if (schedule && view.context === 'personal') {
         await addLessonContacts(view.items, schedule, loadContactContext);
       }
-      return {...view,items:view.items.map(({rows,detailActions,remoteDetail,remoteScheduleDetail,...item})=>({...item,remoteDetails:Boolean(remoteDetail||remoteScheduleDetail),detailRevision:crypto.createHash('sha256').update(JSON.stringify([rows??[],detailActions??[]])).digest('hex')}))};
+      const items = view.items.map(({rows,detailActions,remoteDetail,remoteScheduleDetail,...item}) => ({
+        ...item,
+        ...(item.singleStudent && detailActions?.length ? { actions: [...item.actions, ...detailActions] } : {}),
+        remoteDetails: Boolean(remoteDetail || remoteScheduleDetail),
+        detailRevision: crypto.createHash('sha256').update(JSON.stringify([rows ?? [], detailActions ?? []])).digest('hex'),
+      }));
+      return { ...view, items };
     },
     async details(session,query) {
       const offset=Number(query.offset??0);
