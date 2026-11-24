@@ -17,6 +17,7 @@
     <p class="important-source-status" data-important-sources role="status">Загружаем вашу сводку…</p>
   </div>
   <p class="important-update" data-important-update role="status" hidden>Расписание обновлено</p>
+  {{#if showBookpc}}<section data-important-rentals aria-label="Активная аренда ПК" hidden></section>{{/if}}
   <div class="important-items" id="important-items" data-important-items></div>
   <div class="important-footer">
     <p data-important-day></p>
