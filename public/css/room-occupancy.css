@@ -114,17 +114,16 @@
 .room-occ__preview {
   display: flex;
   flex: 1;
+  flex-wrap: wrap;
   align-items: center;
   min-width: 0;
   gap: 4px;
-  padding: 3px 0;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--occ-line) transparent;
+  padding: 7px 0;
 }
 
 .room-occ__preview-item {
   flex: none;
+  max-inline-size: 100%;
 }
 
 .room-occ__preview .room-occ__mark {
@@ -134,7 +133,6 @@
   gap: 3px;
   padding: 2px 4px;
   font-size: 11px;
-  white-space: nowrap;
   cursor: default;
 }
 
@@ -157,12 +155,25 @@
     gap: var(--occ-preview-spacing);
   }
 
-  .room-occ__preview-item { flex-grow: 1; }
+  .room-occ__preview-item {
+    flex-grow: 1;
+    min-inline-size: max-content;
+    max-inline-size: 3.25rem;
+  }
 
   .room-occ__preview .room-occ__mark {
     min-height: 30px;
     padding-inline: var(--occ-preview-spacing);
     font-size: 12px;
+  }
+}
+
+@container (max-width: 599px) {
+  .room-occ__summary { flex-wrap: wrap; gap: 0 12px; }
+
+  .room-occ__preview {
+    flex-basis: 100%;
+    padding: 0 0 10px;
   }
 }
 

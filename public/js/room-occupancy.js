@@ -170,13 +170,6 @@ function mount(card) {
   window.addEventListener("resize", () => {
     if (tooltipAnchor) positionTooltip(tooltipAnchor);
   });
-  preview.addEventListener("scroll", () => {
-    if (!preview.contains(tooltipAnchor)) return;
-    const rail = preview.getBoundingClientRect();
-    const anchor = tooltipAnchor.getBoundingClientRect();
-    if (anchor.right <= rail.left || anchor.left >= rail.right) hideTooltip();
-    else positionTooltip(tooltipAnchor);
-  });
 
   toggle.addEventListener("click", () => {
     const open = body.hidden;
