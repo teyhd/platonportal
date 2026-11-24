@@ -164,6 +164,12 @@ app.use(session({name: 'sso.sid',resave:true,saveUninitialized:false, secret: SE
   httpOnly: true}
 }))
 
+app.use((req, res, next) => {
+  const uid = Number(req.session?.uid);
+  if (Number.isSafeInteger(uid) && uid > 0) res.locals.portalThemeAccount = uid;
+  next();
+});
+
 app.use("/sso", makeSsoRouter({
   issuer: process.env.SSOADR,
   jwtSecret: process.env.JWTSECRET,

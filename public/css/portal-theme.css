@@ -1,0 +1,324 @@
+.portal-document {
+  color-scheme: light;
+  --portal-canvas: #f5f5f7;
+  --portal-surface: #fff;
+  --portal-raised: #f1f5f9;
+  --portal-hover: #e9eff7;
+  --portal-line: #d8e1ec;
+  --portal-control: #7a8ca4;
+  --portal-text: #172439;
+  --portal-muted: #4c5e75;
+  --portal-accent: #2553b2;
+  --portal-accent-wash: #e9f0fd;
+  --portal-accent-line: #a6bced;
+  --portal-primary: #214fba;
+  --portal-danger: #a32140;
+  --portal-danger-wash: #fff0f3;
+  --portal-danger-line: #df9eac;
+  --portal-success: #176846;
+  --portal-success-wash: #e8f7ef;
+  --portal-success-line: #95cdb2;
+  --portal-warning: #814808;
+  --portal-warning-wash: #fff3dd;
+  --portal-warning-line: #d7b078;
+  --portal-violet: #5b4391;
+  --portal-violet-wash: #f2ecff;
+  --portal-bar: rgb(255 255 255 / 94%);
+  --portal-shadow: 0 14px 36px rgb(14 26 46 / 16%);
+}
+
+.portal-document.dark {
+  color-scheme: dark;
+  --portal-canvas: #09111d;
+  --portal-surface: #101c2b;
+  --portal-raised: #18273a;
+  --portal-hover: #21334a;
+  --portal-line: #293b50;
+  --portal-control: #697f98;
+  --portal-text: #f0f4fa;
+  --portal-muted: #a5b3c7;
+  --portal-accent: #91b9ff;
+  --portal-accent-wash: #142d4e;
+  --portal-accent-line: #476c9a;
+  --portal-primary: #285bbd;
+  --portal-danger: #ffa9bb;
+  --portal-danger-wash: #382332;
+  --portal-danger-line: #80485c;
+  --portal-success: #8de2b9;
+  --portal-success-wash: #16352e;
+  --portal-success-line: #406f5b;
+  --portal-warning: #ffcf84;
+  --portal-warning-wash: #372b22;
+  --portal-warning-line: #84643e;
+  --portal-violet: #d7c4ff;
+  --portal-violet-wash: #302647;
+  --portal-bar: rgb(9 17 29 / 94%);
+  --portal-shadow: 0 16px 42px rgb(0 0 0 / 45%);
+}
+
+.portal-document, .portal-page {
+  background: var(--portal-canvas);
+  color: var(--portal-text);
+}
+
+.portal-page .portal-topbar {
+  background: var(--portal-bar);
+  border-color: var(--portal-line);
+}
+
+.portal-preferences { position: relative; font-size: .875rem; }
+.portal-preferences svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.portal-preferences__trigger {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  padding: 0 .5rem;
+  border-radius: .5rem;
+  color: var(--portal-text);
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+.portal-preferences__trigger::-webkit-details-marker { display: none; }
+.portal-preferences__trigger .portal-preferences__chevron { width: .875rem; height: .875rem; color: var(--portal-muted); }
+.portal-preferences[open] .portal-preferences__chevron { transform: rotate(180deg); }
+.portal-preferences[open] .portal-preferences__trigger, .portal-preferences__trigger:hover {
+  background: var(--portal-raised);
+}
+.portal-preferences__panel {
+  position: absolute;
+  inset-block-start: calc(100% + .5rem);
+  inset-inline-end: 0;
+  width: min(15.75rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 4.25rem);
+  max-height: calc(100dvh - 4.25rem);
+  overflow-y: auto;
+  border: 1px solid var(--portal-line);
+  border-radius: .875rem;
+  padding: .5rem;
+  background: var(--portal-surface);
+  color: var(--portal-text);
+  box-shadow: var(--portal-shadow);
+}
+.portal-preferences__choices { min-width: 0; margin: 0; padding: 0; border: 0; }
+.portal-preferences__choices legend {
+  padding: .35rem .625rem .5rem;
+  color: var(--portal-muted);
+  font-size: .8125rem;
+  font-weight: 600;
+}
+.portal-preferences__option { display: block; position: relative; cursor: pointer; }
+.portal-preferences__option > span, .portal-preferences__actions > :is(a, button) {
+  display: flex;
+  width: 100%;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: .6rem;
+  padding: .45rem .625rem;
+  border: 1px solid transparent;
+  border-radius: .5rem;
+  text-align: start;
+  font-weight: 600;
+}
+.portal-preferences__option > span::after {
+  content: "";
+  width: .45rem;
+  height: .7rem;
+  margin-inline: auto .2rem;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: translateY(-1px) rotate(45deg);
+  visibility: hidden;
+}
+.portal-preferences__option:hover > span,
+.portal-preferences__actions > :is(a, button):hover { background: var(--portal-raised); }
+.portal-preferences__option input:checked + span,
+.portal-preferences__actions > a[aria-current="page"] {
+  background: var(--portal-accent-wash);
+  color: var(--portal-accent);
+}
+.portal-preferences__option input:checked + span::after { visibility: visible; }
+.portal-preferences__actions { margin-top: .375rem; padding-top: .375rem; border-top: 1px solid var(--portal-line); }
+.portal-preferences__actions .portal-preferences__signout { color: var(--portal-danger); }
+.portal-preferences__actions .portal-preferences__signout:hover { background: var(--portal-danger-wash); }
+.portal-preferences__trigger:focus-visible,
+.portal-preferences__option input:focus-visible + span,
+.portal-preferences__actions > :focus-visible {
+  outline: 2px solid var(--portal-accent);
+  outline-offset: -2px;
+}
+@media (max-width: 420px) {
+  .portal-preferences__panel { position: fixed; inset: 3.5rem 1rem auto auto; }
+}
+@media (forced-colors: active) {
+  .portal-preferences__option input:checked + span { border-color: Highlight; }
+}
+
+/* Shared Handlebars pages and the utility classes used by their scripts. */
+.dark .portal-page .bg-\[\#f5f5f7\] { background-color: var(--portal-canvas); }
+.dark .portal-page :is(.bg-white, .bg-white\/95) { background-color: var(--portal-surface); }
+.dark .portal-page :is(.bg-gray-50, .bg-slate-50, .bg-slate-100, .bg-gray-100) { background-color: var(--portal-raised); }
+.dark .portal-page :is(.bg-gray-200, .bg-slate-200, .hover\:bg-slate-100:hover, .hover\:bg-slate-200:hover, .hover\:bg-white:hover) { background-color: var(--portal-hover); }
+.dark .portal-page :is(.border-gray-200, .border-slate-200, .border-slate-200\/80) { border-color: var(--portal-line); }
+.dark .portal-page :is(.border-gray-300, .border-slate-300) { border-color: var(--portal-control); }
+.dark .portal-page :is(.border-blue-100, .border-blue-200, .hover\:border-blue-300:hover, .hover\:border-slate-300:hover) { border-color: var(--portal-accent-line); }
+.dark .portal-page .divide-slate-200 > :not([hidden]) ~ :not([hidden]) { border-color: var(--portal-line); }
+.dark .portal-page :is(.text-gray-900, .text-slate-950, .text-slate-900, .text-slate-800) { color: var(--portal-text); }
+.dark .portal-page :is(.text-gray-500, .text-gray-600, .text-slate-400, .text-slate-500, .text-slate-600, .text-slate-700, .hover\:text-slate-700:hover) { color: var(--portal-muted); }
+.dark .portal-page :is(.text-blue-600, .text-blue-700, .text-blue-800, .hover\:text-blue-700:hover, .hover\:text-blue-800:hover, .group:hover .group-hover\:text-blue-700) { color: var(--portal-accent); }
+.dark .portal-page :is(.bg-blue-50, .bg-blue-100) { background-color: var(--portal-accent-wash); }
+.dark .portal-page :is(.text-red-700, .text-rose-700, .text-rose-800, .text-red-800) { color: var(--portal-danger); }
+.dark .portal-page :is(.bg-red-50, .bg-rose-50, .hover\:bg-red-50:hover) { background-color: var(--portal-danger-wash); }
+.dark .portal-page :is(.border-red-200, .border-rose-200) { border-color: var(--portal-danger-line); }
+.dark .portal-page :is(.text-emerald-700, .text-emerald-800, .text-emerald-950, .text-green-700) { color: var(--portal-success); }
+.dark .portal-page :is(.bg-emerald-50, .bg-emerald-100, .bg-green-100) { background-color: var(--portal-success-wash); }
+.dark .portal-page .border-emerald-200 { border-color: var(--portal-success-line); }
+.dark .portal-page :is(.text-amber-700, .text-amber-800, .text-amber-900) { color: var(--portal-warning); }
+.dark .portal-page :is(.bg-amber-50, .bg-amber-100) { background-color: var(--portal-warning-wash); }
+.dark .portal-page .border-amber-200 { border-color: var(--portal-warning-line); }
+.dark .portal-page :is(.text-indigo-700, .text-indigo-800) { color: var(--portal-violet); }
+.dark .portal-page .bg-indigo-50 { background-color: var(--portal-violet-wash); }
+.dark .portal-page :is(.placeholder\:text-slate-400, .bg-white, .bg-slate-50)::placeholder { color: var(--portal-muted); }
+.dark .portal-page :is(input, select, textarea).bg-white,
+.dark .portal-page :is(input, select, textarea).bg-slate-50 { border-color: var(--portal-control); }
+.dark .portal-page input[type="file"]::file-selector-button { background: var(--portal-raised); color: var(--portal-text); }
+.dark .portal-page input[type="file"]:hover::file-selector-button { background: var(--portal-hover); }
+.dark .portal-page [class*="focus-visible:ring-"] { --tw-ring-color: var(--portal-accent); --tw-ring-offset-color: var(--portal-canvas); }
+.dark .portal-page [class*="focus-visible:ring-"]:focus-visible { --tw-ring-color: var(--portal-accent); }
+.dark .portal-page .bg-blue-600 { background-color: var(--portal-primary); }
+.dark .portal-page :is(.bg-blue-600:hover, .hover\:bg-blue-700:hover) { background-color: #224b9b; }
+.dark .portal-page input[type="checkbox"].text-blue-600 { color: var(--portal-primary); }
+
+/* Service widgets use their own stylesheets and shared theme colors. */
+.dark :is(.important-panel, .bookpc, .cards-admin, .school-card, .family-context) {
+  background: var(--portal-surface);
+  border-color: var(--portal-line);
+  color: var(--portal-text);
+}
+.dark .important-panel {
+  --important-ink: var(--portal-text);
+  --important-muted: var(--portal-muted);
+  --important-border: var(--portal-line);
+  --important-blue: var(--portal-accent);
+  --important-blue-wash: var(--portal-accent-wash);
+  --important-warn: var(--portal-warning);
+  --important-warn-wash: var(--portal-warning-wash);
+}
+.dark .important-panel :is(.important-contexts, .important-item, .important-workday, .important-orders, .important-footer) {
+  background: var(--portal-raised);
+  border-color: var(--portal-line);
+}
+.dark .important-panel .important-item[data-current="true"] { border-color: var(--portal-accent-line); }
+.dark .important-panel .important-item[data-imminent="true"]:not([data-current="true"]) { border-color: var(--portal-warning-line); }
+.dark .important-panel .important-item[data-tone="attention"]:not([data-current="true"]) {
+  background: var(--portal-warning-wash);
+  border-color: var(--portal-warning-line);
+}
+.dark .important-panel :is(.important-contexts button[aria-pressed="true"], .important-time-mode, .important-item-actions a, .important-details-toggle, .important-more-rows, .important-details) {
+  background: var(--portal-surface);
+  border-color: var(--portal-line);
+}
+.dark .important-panel :is(.important-time-mode:hover, .important-time-mode[aria-pressed="true"], .important-item-actions a:hover, .important-details-toggle:hover, .important-details-toggle[aria-expanded="true"], .important-more-rows:hover) {
+  background: var(--portal-accent-wash);
+  border-color: var(--portal-accent-line);
+}
+.dark .important-panel .important-item-actions a[data-primary="true"] { background: var(--portal-primary); border-color: transparent; color: #fff; }
+.dark .important-panel .important-progress { background: var(--portal-hover); }
+.dark .important-panel :is(.important-toolbar select, .important-detail-tools input) {
+  background-color: var(--portal-raised);
+  border-color: var(--portal-control);
+  color: var(--portal-text);
+}
+.dark .important-panel :is(.important-student, .important-workday-lesson) { border-color: var(--portal-line); }
+.dark .important-panel:not([data-offline="true"]) .important-student-name[data-arrival-mark="arrived"] { color: var(--portal-success); }
+.dark .important-panel:not([data-offline="true"]) .important-student-name[data-arrival-mark="missing"] { color: var(--portal-danger); }
+.dark :is(.important-orders-heading a, .important-orders details summary) { color: var(--portal-accent); }
+.dark .important-order-name small { color: var(--portal-muted); }
+.dark .important-order-status { background: var(--portal-accent-wash); color: var(--portal-accent); }
+.dark .important-order-status[data-stage="0"] { background: var(--portal-hover); color: var(--portal-muted); }
+.dark .important-order-status[data-stage="3"] { background: var(--portal-violet-wash); color: var(--portal-violet); }
+.dark .important-order-status:is([data-stage="4"], [data-stage="5"]) { background: var(--portal-success-wash); color: var(--portal-success); }
+
+.dark :is(.bookpc__card, .bookpc__dialog) { background: var(--portal-surface); border-color: var(--portal-line); color: var(--portal-text); box-shadow: var(--portal-shadow); }
+.dark .bookpc [data-state="free"] { --bookpc-ink: var(--portal-success); --bookpc-bg: var(--portal-success-wash); --bookpc-border: var(--portal-success-line); }
+.dark .bookpc [data-state="occupied"] { --bookpc-ink: var(--portal-danger); --bookpc-bg: var(--portal-danger-wash); --bookpc-border: var(--portal-danger-line); }
+.dark .bookpc [data-state="own"] { --bookpc-ink: var(--portal-accent); --bookpc-bg: var(--portal-accent-wash); --bookpc-border: var(--portal-accent-line); }
+.dark .bookpc :is([data-state="unknown"], [data-state="assigned"]) { --bookpc-ink: var(--portal-muted); --bookpc-bg: var(--portal-raised); --bookpc-border: var(--portal-line); }
+.dark .bookpc :is([data-state="assigned-admin"], .bookpc__card .bookpc__badge[data-state="assigned-admin"]) {
+  --bookpc-ink: var(--portal-warning); --bookpc-bg: var(--portal-warning-wash); --bookpc-border: var(--portal-warning-line);
+}
+.dark :is(.bookpc__summary, .bookpc__card-caption, .bookpc__detail dt, .bookpc__close, .bookpc__force-note, .bookpc__message, .bookpc__dialog .bookpc__message) { color: var(--portal-muted); }
+.dark :is(.bookpc__detail--compact, .bookpc__close:hover) { background: var(--portal-raised); }
+.dark :is(.bookpc__detail--pin, .bookpc-rental) { background: var(--portal-accent-wash); color: var(--portal-accent); border-color: var(--portal-accent-line); }
+.dark :is(.bookpc__issue, .bookpc-rental.important-laptop-location) { background: var(--portal-warning-wash); color: var(--portal-warning); border-color: var(--portal-warning-line); }
+.dark :is(.bookpc__retry, .bookpc__form select, .bookpc__form textarea) { border-color: var(--portal-control); }
+.dark .bookpc__form :is(select, textarea) { color-scheme: dark; background: var(--portal-raised); color: var(--portal-text); }
+
+.dark .cards-admin { --card-line: var(--portal-line); --card-ink: var(--portal-text); --card-muted: var(--portal-muted); --card-accent: var(--portal-primary); }
+.dark .cards-admin :is(.cards-admin__button:not(.cards-admin__primary), .cards-admin__row, .cards-admin__preview, .cards-admin__footer) { background: var(--portal-surface); }
+.dark .cards-admin :is(.cards-admin__editor, .cards-admin__results, .cards-admin__filters button:hover) { background: var(--portal-raised); }
+.dark .cards-admin :is(input:not([type="checkbox"], [type="file"]), select, textarea) { background-color: var(--portal-raised); border-color: var(--portal-control); color: var(--portal-text); }
+.dark .cards-admin input::placeholder { color: var(--portal-muted); }
+.dark .cards-admin :is(.cards-admin__button:not(.cards-admin__primary):hover:not(:disabled), .cards-admin__row[aria-pressed="true"], .cards-admin__filters button[aria-pressed="true"]) { background: var(--portal-accent-wash); border-color: var(--portal-accent-line); color: var(--portal-accent); }
+.dark .cards-admin .cards-admin__row-visibility { background: var(--portal-success-wash); color: var(--portal-success); }
+.dark .cards-admin .cards-admin__row-visibility[data-hidden="true"] { background: var(--portal-warning-wash); color: var(--portal-warning); }
+.dark .cards-admin [data-status="error"] { color: var(--portal-danger); }
+.dark .cards-admin [data-status="success"] { color: var(--portal-success); }
+
+.dark .school-card { --school-line: var(--portal-line); --school-muted: var(--portal-muted); }
+.dark .school-card :is(h3, .school-card-list, .school-card-contact-name) { color: var(--portal-text); }
+.dark .school-card :is(.school-card-section, .school-card-more) { background: var(--portal-raised); }
+.dark .school-card .school-card-disclosure button { background: var(--portal-raised); border-color: var(--portal-line); color: var(--portal-accent); }
+.dark .school-card .school-card-disclosure button:is(:hover, [aria-expanded="true"]) { background: var(--portal-accent-wash); }
+.dark .family-context :is(p, label, small) { color: var(--portal-muted); }
+.dark .family-context :is(select, .family-submit, .family-single, .family-services a) { background-color: var(--portal-raised); border-color: var(--portal-control); color: var(--portal-text); }
+.dark .family-context .family-services a:hover { background-color: var(--portal-hover); }
+.dark .family-context .family-notice { color: var(--portal-warning); }
+.dark .projects-teaser { border-color: var(--portal-line); }
+.dark .projects-teaser :is(.projects-teaser-heading h2, .projects-teaser-card h3) { color: var(--portal-text); }
+.dark .projects-teaser :is(.projects-teaser-heading p, .projects-teaser-card p, .projects-teaser-likes, .projects-teaser-status) { color: var(--portal-muted); }
+.dark .projects-teaser .projects-teaser-open { color: var(--portal-accent); }
+.dark .projects-teaser :is(.projects-teaser-controls button, .projects-teaser-image) { background: var(--portal-raised); border-color: var(--portal-line); color: var(--portal-text); }
+.dark .projects-teaser .projects-teaser-controls button[aria-pressed="true"] { background: var(--portal-primary); border-color: var(--portal-accent-line); color: #fff; }
+.portal-document.dark .security-page { --sec-bg: var(--portal-canvas); --sec-panel: var(--portal-surface); --sec-raised: var(--portal-raised); --sec-ink: var(--portal-text); --sec-muted: var(--portal-muted); --sec-line: var(--portal-line); }
+
+/* The users workspace already has a dark palette. Give it a light counterpart. */
+.portal-document:not(.dark) .users-route {
+  --users-bg: var(--portal-canvas);
+  --users-surface: var(--portal-surface);
+  --users-surface-raised: var(--portal-raised);
+  --users-border: var(--portal-line);
+  --users-border-soft: var(--portal-line);
+  --users-text: var(--portal-text);
+  --users-muted: var(--portal-muted);
+  --users-accent: var(--portal-primary);
+  --users-accent-hover: #193e98;
+  --users-danger: var(--portal-danger);
+  --users-success: var(--portal-success);
+}
+.portal-document:not(.dark) .users-route :is(.users-list, .users-action-menu, .users-drawer-panel, .users-family-dropdown, .user-row) { background: var(--portal-surface); }
+.portal-document:not(.dark) .users-route :is(.users-table thead, .user-row:hover, .users-input, .users-select, .users-check-chip, .users-issue-item, .users-service-actions button, .users-family-list > li, .users-family-footer) { background: var(--portal-raised); }
+.portal-document:not(.dark) .users-route :is(.users-count, .users-secondary-button, .users-menu-button, .users-cancel-button, .users-filter, .users-select, .users-sort-button:hover, .users-table td, .users-service-table td, .user-name, .user-role, .user-pin, .users-icon-button, .users-action-item, .users-drawer-title, .users-tab[aria-selected="true"], .users-form-section h4, .users-input, .users-switch, .users-advanced summary, .users-check-chip, .users-login-service, .users-issue-item, .users-service-actions button, .users-family-label, .users-family-option, .users-family-list > li) { color: var(--portal-text); }
+.portal-document:not(.dark) .users-route :is(.users-table th, .user-secondary, .user-id, .user-pin svg, .users-drawer-close, .users-tab, .users-field label, .users-field-label, .users-field-hint, .users-role-service legend, .users-reveal-button, .users-code-note, .users-issue-meta, .users-service-table th, .users-family-person, .users-family-note, .users-family-option-hint, .users-family-option[aria-disabled="true"], .users-family-record small, .users-family-empty) { color: var(--portal-muted); }
+.portal-document:not(.dark) .users-route :is(.user-avatar, .users-preview-badge, .users-preview-roles li, .users-family-option[aria-selected="true"], .users-family-option:not([aria-disabled="true"]):hover) { background: var(--portal-accent-wash); color: var(--portal-accent); }
+.portal-document:not(.dark) .users-route :is(.user-id, .user-role, .users-action-item:hover, .users-issue-item:hover) { background: var(--portal-hover); }
+.portal-document:not(.dark) .users-route :is(.users-alert:not(.users-alert--ok), .user-status--blocked, .users-action-item--danger:hover) { background: var(--portal-danger-wash); color: var(--portal-danger); }
+.portal-document:not(.dark) .users-route :is(.users-alert span, .users-action-item--danger, .users-drawer-message.is-error, .users-issue-missing, .users-family-record .users-family-marker--removed) { color: var(--portal-danger); }
+.portal-document:not(.dark) .users-route :is(.users-alert--ok, .user-status--active) { background: var(--portal-success-wash); color: var(--portal-success); }
+.portal-document:not(.dark) .users-route :is(.users-alert--ok span, .users-drawer-message.is-success, .users-family-record .users-family-marker) { color: var(--portal-success); }
+.portal-document:not(.dark) .users-route :is(.users-reset, .users-sort-icon, .users-family-menu-item svg) { color: var(--portal-accent); }
+.portal-document:not(.dark) .users-route :is(.users-secondary-button, .users-menu-button, .users-cancel-button, .users-icon-button, .users-action-item:not(.users-action-item--danger), .users-reveal-button, .users-drawer-close, .user-pin):hover { color: var(--portal-text); }
+.portal-document:not(.dark) .users-route .users-alert--ok:hover { background: var(--portal-success-wash); border-color: var(--portal-success-line); }
+.portal-document:not(.dark) .users-route .users-list { box-shadow: 0 8px 24px rgb(14 26 46 / 7%); }
+.portal-document:not(.dark) .users-route :is(.users-input, .users-search)::placeholder { color: var(--portal-muted); }
+.portal-document:not(.dark) .users-route .users-input[type="date"] { color-scheme: light; }

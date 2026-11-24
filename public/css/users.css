@@ -13,11 +13,6 @@
 }
 
 body.users-route{background:var(--users-bg);color:var(--users-text)}
-body.users-route>header{border-color:rgba(38,56,77,.92)!important;background:rgba(9,17,29,.94)!important;color:var(--users-text)!important}
-body.users-route>header .text-slate-950{color:var(--users-text)!important}
-body.users-route>header .text-slate-500{color:var(--users-muted)!important}
-body.users-route>header .bg-slate-950{background:var(--users-accent)!important}
-body.users-route>header .hover\:bg-slate-100:hover{background:rgba(20,35,56,.95)!important}
 
 .users-workspace{width:min(100%,1600px);margin:0 auto;padding:5.5rem clamp(1rem,2.5vw,2.5rem) 2.5rem;min-height:calc(100vh - 3.5rem)}
 .users-workspace-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1.5rem;margin-bottom:1.5rem}
