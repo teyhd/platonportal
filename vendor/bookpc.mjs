@@ -1,5 +1,6 @@
 import express from 'express';
 import { readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 
 const apiPath = '/api/bookpc';
 const upstreamPath = '/internal/integrations/harmony/bookpc-portal';
@@ -14,6 +15,21 @@ function loadBookpcKey() {
   }
 }
 
+async function loadBookpcAssignments() {
+  const path = process.env.MAINPORTAL_BOOKPC_ASSIGNMENTS_FILE || '/etc/platonportal/bookpc-assignments.json';
+  const assignments = JSON.parse(await readFile(path, 'utf8'));
+  if (!assignments || typeof assignments !== 'object' || Array.isArray(assignments)) {
+    throw new Error('invalid_bookpc_assignments');
+  }
+  const entries = Object.entries(assignments);
+  for (const [id, label] of entries) {
+    if (!/^[1-9][0-9]{0,9}$/.test(id) || typeof label !== 'string' || !label.trim() || label.length > 100) {
+      throw new Error('invalid_bookpc_assignment');
+    }
+  }
+  return new Map(entries.map(([id, label]) => [Number(id), label.trim()]));
+}
+
 export function createBookpcBlock({
   secret = process.env.MAINPORTAL_BOOKPC_SECRET ?? loadBookpcKey(),
   upstream = 'http://127.0.0.1:81',
@@ -21,6 +37,9 @@ export function createBookpcBlock({
   issuesToken = process.env.MAINPORTAL_ROOM_ISSUES_TOKEN,
   issuesUpstream = process.env.MAINPORTAL_ROOM_ISSUES_URL || 'http://127.0.0.1:18181',
   canReadIssues = () => false,
+  getAssignments = loadBookpcAssignments,
+  getAssignmentAccess = async () => null,
+  fetchImpl = fetch,
 } = {}) {
   const enabled = /^[0-9a-f]{64}$/.test(secret ?? '');
   const actorId = session => {
@@ -30,7 +49,7 @@ export function createBookpcBlock({
   let issuesCache;
 
   async function loadIssues() {
-    const response = await fetch(new URL(laptopIssuesPath, issuesUpstream), {
+    const response = await fetchImpl(new URL(laptopIssuesPath, issuesUpstream), {
       headers: { Authorization: `Bearer ${issuesToken}` }, redirect: 'error', signal: AbortSignal.timeout(2500),
     });
     if (!response.ok) throw new Error('laptop_issues_unavailable');
@@ -75,6 +94,18 @@ export function createBookpcBlock({
     }
   }
 
+  async function applyAssignments(result, userId, assignments) {
+    const access = assignments.size ? await getAssignmentAccess(userId).catch(() => null) : null;
+    const ownRentals = result.devices.filter(device => device.own === true && device.state === 'occupied' && device.rental?.id);
+    const devices = result.devices.flatMap(device => {
+      const label = assignments.get(Number(device.id));
+      if (!label) return [device];
+      if (access !== 'admin' && access !== 'moderator') return [];
+      return [{ id: device.id, state: device.state, assignment: access === 'admin' ? { label } : {} }];
+    });
+    return { ...result, devices, ownRentals };
+  }
+
   return {
     visibleFor(session) {
       return enabled && Boolean(actorId(session)) && Array.isArray(session.right) &&
@@ -109,13 +140,27 @@ export function createBookpcBlock({
           headers['X-Portal-Request-Id'] = requestId;
           body = JSON.stringify(operation === 'rent' ? { computer_id, room } : { computer_id, rental_id, comment });
         }
+        let assignments;
+        if (operation !== 'return') {
+          try {
+            assignments = await getAssignments();
+          } catch {
+            return res.status(503).json({ error: 'assignments_unavailable' });
+          }
+        }
+        if (operation === 'rent' && assignments.has(Number(req.body.computer_id))) {
+          return res.status(409).json({ error: 'computer_assigned' });
+        }
         try {
-          const response = await fetch(`${upstream}${upstreamPath}${operation ? `/${operation}` : ''}`, {
+          const response = await fetchImpl(`${upstream}${upstreamPath}${operation ? `/${operation}` : ''}`, {
             method: req.method, headers, body, redirect: 'error', signal: AbortSignal.timeout(5000),
           });
           const result = await response.json();
           if (response.status === 401 || response.status >= 500) throw new Error('bookpc_unavailable');
-          const payload = !operation && response.ok ? await attachIssues(result, actorId(req.session)) : result;
+          const userId = actorId(req.session);
+          const payload = !operation && response.ok
+            ? await attachIssues(await applyAssignments(result, userId, assignments), userId)
+            : result;
           return res.status(response.status).json(payload);
         } catch {
           return res.status(503).json({ error: operation ? 'operation_unconfirmed' : 'bookpc_unavailable' });

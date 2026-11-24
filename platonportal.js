@@ -199,6 +199,11 @@ app.use("/sso", makeSsoRouter({
 app.use(platformsso)
 
 const bookpcBlock = createBookpcBlock({
+  getAssignmentAccess: async uid => {
+    const right = await db.get_user_rights(uid);
+    if (hasPortalAdminRole({ right })) return 'admin';
+    return hasPortalManagementRole({ right }) ? 'moderator' : null;
+  },
   canReadIssues: async uid => (await db.getUserRolesForsrvnam(uid, 'zayavki')).some(role => role >= 1),
 });
 bookpcBlock.register(app);

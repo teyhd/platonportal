@@ -25,7 +25,8 @@ const dateFormat = new Intl.DateTimeFormat('ru-RU', {
   timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit',
   hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
 });
-const states = { free: 'Свободно', occupied: 'Занято', own: 'У вас', unknown: 'Статус неизвестен' };
+const states = { free: 'Свободно', occupied: 'Занято', own: 'У вас', unknown: 'Статус неизвестен',
+  assigned: 'Закреплён', 'assigned-admin': 'Закреплён' };
 const rentalSlot = document.querySelector('[data-important-rentals]');
 const tiles = new Map();
 let shown;
@@ -83,16 +84,22 @@ function addDetail(label, value, layout) {
   details.append(row);
 }
 
+function deviceTone(device) {
+  if (device.assignment) return device.assignment.label ? 'assigned-admin' : 'assigned';
+  return device.own ? 'own' : device.state;
+}
+
 function paintCard() {
-  const { id, state, own, rental, issue } = shown.device;
-  const tone = own ? 'own' : state;
+  const { id, state, own, rental, issue, assignment } = shown.device;
+  const tone = deviceTone(shown.device);
   cardTitle.textContent = `Ноутбук №${id}`;
   cardState.textContent = states[tone];
   cardState.dataset.state = tone;
-  caption.textContent = state === 'free' ? (rental ? 'Последняя аренда' : 'Истории аренды пока нет') : '';
+  caption.textContent = !assignment && state === 'free' ? (rental ? 'Последняя аренда' : 'Истории аренды пока нет') : '';
   caption.hidden = !caption.textContent;
   details.replaceChildren();
-  if (rental) {
+  if (assignment?.label) addDetail('Закреплён за', assignment.label, 'wide');
+  if (rental && !assignment) {
     addDetail('Кабинет №', roomLabel(rental.room), 'compact');
     addDetail('Начало', rental.startedAt ? dateFormat.format(new Date(rental.startedAt)).replace(',', '') : '—', 'compact');
     addDetail('Пользователь', rental.renter, 'wide');
@@ -106,7 +113,7 @@ function paintCard() {
     issueLink.hidden = !issue.incidentId;
     if (issue.incidentId) issueLink.href = `https://tech.platoniks.ru/?view=reports&incident=${encodeURIComponent(issue.incidentId)}`;
   }
-  action.hidden = !fresh || (state !== 'free' && !own);
+  action.hidden = Boolean(assignment) || !fresh || (state !== 'free' && !own);
   action.textContent = own ? 'Сдать' : 'Взять';
   placeCard();
 }
@@ -163,12 +170,17 @@ function paintDevices(devices) {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'bookpc__tile';
-      button.textContent = String(device.id);
+      const number = document.createElement('span');
+      number.textContent = String(device.id);
+      const assignee = document.createElement('small');
+      assignee.className = 'bookpc__assignee';
+      assignee.hidden = true;
+      button.append(number, assignee);
       button.setAttribute('aria-controls', card.id);
       button.setAttribute('aria-expanded', 'false');
       item.append(button);
       grid.append(item);
-      tile = { item, button };
+      tile = { item, button, assignee };
       tiles.set(device.id, tile);
       button.addEventListener('pointerenter', event => {
         if (event.pointerType === 'mouse' && !pinned && !dialog.open) showCard(tile);
@@ -183,15 +195,20 @@ function paintDevices(devices) {
       });
     }
     tile.device = device;
-    const tone = device.own ? 'own' : device.state;
+    const tone = deviceTone(device);
+    const assignee = device.assignment?.label;
     tile.button.dataset.state = tone;
+    tile.item.toggleAttribute('data-named-assignment', Boolean(assignee));
+    tile.assignee.hidden = !assignee;
+    tile.assignee.textContent = assignee || '';
     tile.button.toggleAttribute('data-has-issue', Boolean(device.issue));
-    tile.button.setAttribute('aria-label', `Ноутбук №${device.id}, ${states[tone]}${device.issue ? ', есть жалоба' : ''}`);
+    tile.button.setAttribute('aria-label', `Ноутбук №${device.id}, ${states[tone]}${assignee ? ` за ${assignee}` : ''}${device.issue ? ', есть жалоба' : ''}`);
   }
   if (shown) paintCard();
-  const freeCount = devices.filter(device => device.state === 'free').length;
-  const ownCount = devices.filter(device => device.own).length;
-  summary.textContent = devices.length ? `Свободно ${freeCount} из ${devices.length}${ownCount ? ` · У вас ${ownCount}` : ''}` : 'Нет ноутбуков';
+  const rentable = devices.filter(device => !device.assignment);
+  const freeCount = rentable.filter(device => device.state === 'free').length;
+  const ownCount = rentable.filter(device => device.own).length;
+  summary.textContent = devices.length ? `Свободно ${freeCount} из ${rentable.length}${ownCount ? ` · У вас ${ownCount}` : ''}` : 'Нет ноутбуков';
 }
 
 function paintOwnRentals(devices) {
@@ -226,20 +243,21 @@ function refresh(feedback = '') {
   retry.hidden = true;
   loading = (async () => {
     try {
-      const { devices, issuesStatus } = await request();
+      const { devices, ownRentals = devices, issuesStatus } = await request();
       fresh = true;
       paintDevices(devices);
-      paintOwnRentals(devices);
+      paintOwnRentals(ownRentals);
       issueMessage.textContent = issuesStatus === 'unavailable' ? 'Данные техподдержки временно недоступны.' : '';
       message.textContent = feedback || (devices.length ? '' : 'В BookPC пока нет зарегистрированных ноутбуков.');
       return true;
     } catch (error) {
       fresh = false;
       paintOwnRentals([]);
-      if (error.status === 401 || error.status === 403) paintDevices([]);
+      if (error.status === 401 || error.status === 403 || error.message === 'assignments_unavailable') paintDevices([]);
       if (shown) paintCard();
       summary.textContent = tiles.size ? 'Данные не обновились' : 'Статус недоступен';
-      const issue = error.status === 401 || error.status === 403 ? 'Войдите в аккаунт с доступом к BookPC.' : 'Не удалось обновить данные BookPC.';
+      const issue = errorMessages[error.message] ||
+        (error.status === 401 || error.status === 403 ? 'Войдите в аккаунт с доступом к BookPC.' : 'Не удалось обновить данные BookPC.');
       message.textContent = [feedback, issue].filter(Boolean).join(' ');
       retry.hidden = false;
       return false;
@@ -289,6 +307,8 @@ function openOperation(device, button) {
 }
 
 const errorMessages = {
+  computer_assigned: 'Ноутбук закреплён за сотрудником. Выберите другой.',
+  assignments_unavailable: 'Реестр ноутбуков недоступен. Попробуйте ещё раз.',
   computer_occupied: 'Ноутбук уже взяли. Статус обновлён.',
   active_rental_changed: 'Аренда изменилась. Статус обновлён.',
   no_active_rental: 'Эта аренда уже завершена. Статус обновлён.',

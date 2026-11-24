@@ -25,12 +25,16 @@
 .bookpc [data-state='occupied'] { --bookpc-ink: #9f2850; --bookpc-bg: #fff0f3; --bookpc-border: #f5cbd6; }
 .bookpc [data-state='own'] { --bookpc-ink: #2158a5; --bookpc-bg: #ebf3ff; --bookpc-border: #bfd6f9; }
 .bookpc [data-state='unknown'] { --bookpc-ink: #475569; --bookpc-bg: #f1f5f9; --bookpc-border: #d8e1eb; }
+[data-named-assignment] { grid-column: span 3; }
+.bookpc [data-state='assigned'] { --bookpc-ink: #4b5563; --bookpc-bg: #f1f5f9; --bookpc-border: #d8e1eb; }
+.bookpc [data-state='assigned-admin'] { --bookpc-ink: #764708; --bookpc-bg: #fef3c7; --bookpc-border: #e6bf58; }
 .bookpc__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(2.125rem, 1fr));
   gap: .25rem;
 }
 .bookpc__grid:not(:empty) { margin-block: .42rem; }
+.bookpc__assignee { display: block; font-size: .6875rem; font-weight: 500; }
 .bookpc__tile, .bookpc__badge {
   border: 1px solid var(--bookpc-border);
   color: var(--bookpc-ink);
