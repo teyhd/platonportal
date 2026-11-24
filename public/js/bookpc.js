@@ -1,12 +1,10 @@
 const root = document.querySelector('[data-bookpc]');
 const select = key => root.querySelector(`[data-${key}]`);
-const toggle = select('toggle');
-const body = root.querySelector('#bookpc-body');
+const heading = root.querySelector('#bookpc-title');
 const summary = select('summary');
 const grid = select('grid');
 const message = select('message');
 const issueMessage = select('issue-message');
-const issueKey = select('issue-key');
 const retry = select('retry');
 const card = select('card');
 const cardTitle = select('card-title');
@@ -165,7 +163,7 @@ function paintDevices(devices) {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'bookpc__tile';
-      button.textContent = `№${device.id}`;
+      button.textContent = String(device.id);
       button.setAttribute('aria-controls', card.id);
       button.setAttribute('aria-expanded', 'false');
       item.append(button);
@@ -190,7 +188,6 @@ function paintDevices(devices) {
     tile.button.toggleAttribute('data-has-issue', Boolean(device.issue));
     tile.button.setAttribute('aria-label', `Ноутбук №${device.id}, ${states[tone]}${device.issue ? ', есть жалоба' : ''}`);
   }
-  issueKey.hidden = !devices.some(device => device.issue);
   if (shown) paintCard();
   const freeCount = devices.filter(device => device.state === 'free').length;
   const ownCount = devices.filter(device => device.own).length;
@@ -253,12 +250,6 @@ function refresh(feedback = '') {
   return loading;
 }
 
-toggle.addEventListener('click', () => {
-  closeCard();
-  body.hidden = !body.hidden;
-  toggle.setAttribute('aria-expanded', String(!body.hidden));
-  if (!body.hidden) refresh();
-});
 retry.addEventListener('click', () => refresh());
 select('close-card').addEventListener('click', () => closeCard({ restoreFocus: true }));
 card.addEventListener('pointerenter', () => clearTimeout(closeTimer));
@@ -314,7 +305,7 @@ dialog.addEventListener('cancel', event => {
 dialog.addEventListener('close', () => {
   const button = pending?.button;
   pending = undefined;
-  (button?.isConnected ? button : toggle).focus();
+  (button?.isConnected ? button : heading).focus();
 });
 form.addEventListener('submit', async event => {
   event.preventDefault();
