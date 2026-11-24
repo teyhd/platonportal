@@ -33,6 +33,15 @@ const adapters = {
   vote: {
     origin: 'https://vote.platoniks.ru', port: 3020, key: 'VOTE_SSO_CLIENT_SECRET', directory: 14,
   },
+  chess: {
+    origin: 'https://chess.platoniks.ru', port: 3015, key: 'CHESS_SSO_CLIENT_SECRET', directory: 16,
+  },
+  zayavki: {
+    origin: 'https://tech.platoniks.ru', port: 18181, key: 'ZAYAVKI_SSO_CLIENT_SECRET', directory: 17,
+  },
+  trainers: {
+    origin: 'https://exe.platoniks.ru', port: 18144, key: 'TRAINERS_CLIENT_SECRET', directory: 21,
+  },
 };
 
 const hash = value => createHash('sha256').update(value).digest();

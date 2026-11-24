@@ -22,6 +22,9 @@ export const nativeProfileServices = [
   { key: 'bookpc', label: 'BookPC', ids: [2] },
   { key: 'buy', label: 'Закупки', ids: [12] },
   { key: 'vote', label: 'Голосования', ids: [14] },
+  { key: 'chess', label: 'Шахматы', ids: [16] },
+  { key: 'zayavki', label: 'Заявки', ids: [17] },
+  { key: 'trainers', label: 'Тренажёры', ids: [21] },
 ];
 
 export function positiveUserId(value) {
