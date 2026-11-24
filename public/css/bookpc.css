@@ -27,8 +27,8 @@
 .bookpc [data-state='unknown'] { --bookpc-ink: #475569; --bookpc-bg: #f1f5f9; --bookpc-border: #d8e1eb; }
 .bookpc__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(2.125rem, 1fr));
-  gap: .25rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 2.75rem), 1fr));
+  gap: .375rem;
 }
 .bookpc__grid:not(:empty) { margin-block: .42rem; }
 .bookpc__tile, .bookpc__badge {
@@ -41,7 +41,7 @@
 .bookpc__tile {
   position: relative;
   width: 100%;
-  min-height: 1.875rem;
+  min-height: 2.125rem;
   padding: .15rem .2rem;
   border-radius: .375rem;
   font-size: .75rem;
@@ -162,8 +162,8 @@
 .bookpc__message { color: #475569; font-size: .875rem; margin: .6rem 0; }
 .bookpc__dialog .bookpc__message { color: #475569; margin: 0; }
 .bookpc__message:empty { display: none; }
-@media (pointer: coarse) {
-  .bookpc__grid { grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr)); }
+@media (any-pointer: coarse) {
+  .bookpc__grid { gap: .25rem; }
   .bookpc__tile { min-height: 2.75rem; font-size: .8125rem; }
 }
 .bookpc-rental {
