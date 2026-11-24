@@ -4,17 +4,31 @@
       <span id="room-occ-title">Кабинеты</span>
       <span class="room-occ__chevron" aria-hidden="true"></span>
     </button>
+    <span class="room-occ__selected" data-selected hidden></span>
     <ul class="room-occ__preview" data-preview aria-label="Номера и статусы кабинетов" tabindex="-1" hidden></ul>
     <span class="room-occ__preview-note" data-preview-note role="status">Загрузка…</span>
   </div>
   <div class="room-occ__body" id="room-occ-body" hidden>
     <header class="room-occ__header">
-      <p class="room-occ__time" data-time>По расписанию</p>
-      <div class="room-occ__totals" data-totals hidden>
-        <strong class="room-occ__total" data-kind="free"></strong>
-        <strong class="room-occ__total" data-kind="busy"></strong>
-        <strong class="room-occ__total" data-kind="soon" hidden></strong>
-        <strong class="room-occ__total" data-kind="unknown" hidden></strong>
+      <div class="room-occ__picker" role="group" aria-label="Момент проверки по московскому времени">
+        <label class="room-occ__field">
+          <span>Дата</span>
+          <input type="date" data-pick-date autocomplete="off">
+        </label>
+        <label class="room-occ__field">
+          <span>Время (МСК)</span>
+          <input type="time" data-pick-time autocomplete="off">
+        </label>
+        <button class="room-occ__reset" data-reset type="button" aria-label="Сейчас — сбросить дату и время" disabled>Сейчас</button>
+      </div>
+      <div class="room-occ__readout">
+        <p class="room-occ__time" data-time>По расписанию</p>
+        <div class="room-occ__totals" data-totals hidden>
+          <strong class="room-occ__total" data-kind="free"></strong>
+          <strong class="room-occ__total" data-kind="busy"></strong>
+          <strong class="room-occ__total" data-kind="soon" hidden></strong>
+          <strong class="room-occ__total" data-kind="unknown" hidden></strong>
+        </div>
       </div>
     </header>
     <ul class="room-occ__legend" data-legend aria-label="Статусы кабинетов" hidden>

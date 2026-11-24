@@ -21,9 +21,9 @@ function routeFor(fetchImpl, clock = () => now, options = {}) {
   } });
   return {
     service,
-    async request(uid) {
+    async request(uid, query = {}) {
       const result = { status: 200, headers: {} };
-      await route({ session: { uid } }, {
+      await route({ session: { uid }, query }, {
         set(key, value) { result.headers[key] = value; return this; },
         status(code) { result.status = code; return this; },
         json(data) { result.body = data; return this; },
@@ -117,4 +117,36 @@ test('an outage in Заявки still returns occupancy', async () => {
   assert.equal(result.status, 200);
   assert.equal(result.body.issueStatus, 'unavailable');
   assert.deepEqual(result.body.rooms, [{ id: 2, name: '14', floor: '2 этаж', intervals: [] }]);
+});
+
+test('uses the requested date for signed-in users and caches each day independently', async () => {
+  const dates = [];
+  const { request } = routeFor(url => {
+    assert.ok(url.pathname.endsWith('/room-occupancy'));
+    const date = url.searchParams.get('date');
+    dates.push(date);
+    if (date === '2026-11-20') {
+      return Response.json({ ...published, date, dayEnd: '2026-11-21T00:00:00+03:00', state: 'unpublished' });
+    }
+    return Response.json(published);
+  }, undefined, { env: { MAINPORTAL_ROOM_ISSUES_TOKEN: 'test-issues' }, canReadIssues: () => true });
+
+  const date = '2026-11-20';
+  const [selected, today, same] = await Promise.all([
+    request(100, { date }), request(101, { date: published.date }), request(102, { date }),
+  ]);
+  assert.deepEqual(dates, [date, published.date]);
+  assert.equal(selected.status, 200);
+  assert.deepEqual(selected.body, same.body);
+  assert.equal(selected.body.date, date);
+  assert.equal(selected.body.state, 'unpublished');
+  assert.equal(today.body.date, published.date);
+});
+
+test('rejects malformed and repeated dates before contacting the source', async () => {
+  const { request } = routeFor(() => assert.fail('unexpected upstream request'));
+  for (const date of ['', '2026-2-01', '2026-02-30', '0000-01-01', ['2026-11-19', '2026-11-20']]) {
+    assert.equal((await request(100, { date })).status, 400);
+  }
+  assert.equal((await request(undefined, { date: '2026-11-20' })).status, 401);
 });

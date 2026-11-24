@@ -4,6 +4,8 @@ const freshFor = 2 * minute;
 const clock = new Intl.DateTimeFormat("ru-RU", {
   timeZone: "Europe/Moscow", hour: "2-digit", minute: "2-digit"
 });
+const schoolDay = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Moscow", dateStyle: "short" });
+const displayDay = new Intl.DateTimeFormat("ru-RU", { timeZone: "Europe/Moscow", dateStyle: "short" });
 const natural = new Intl.Collator("ru", { numeric: true });
 const roomKinds = ["free", "short", "soon", "busy", "unknown"];
 
@@ -44,7 +46,7 @@ export function prepareSnapshot(payload) {
   }
   const groups = [...floors].sort(([a],[b]) => a === null ? 1 : b === null ? -1 : natural.compare(a,b));
   for (const [,rooms] of groups) rooms.sort((a,b) => natural.compare(a.name,b.name));
-  return { generated, end, state: payload.state, groups, issuesUnavailable:payload.issueStatus === "unavailable" };
+  return { date: payload.date, generated, end, state: payload.state, groups, issuesUnavailable:payload.issueStatus === "unavailable" };
 }
 
 function issueLabel(issue) {
@@ -85,7 +87,8 @@ function mount(card) {
   const select = name => card.querySelector("[data-" + name + "]");
   const toggle = select("toggle");
   const body = document.getElementById(toggle.getAttribute("aria-controls"));
-  const preview = select("preview"), previewNote = select("preview-note");
+  const preview = select("preview"), previewNote = select("preview-note"), selected = select("selected");
+  const dateInput = select("pick-date"), timeInput = select("pick-time"), reset = select("reset");
   const floors = select("floors"), time = select("time"), legend = select("legend");
   const totals = select("totals") ?? select("total");
   const message = select("message"), retry = select("retry");
@@ -101,7 +104,7 @@ function mount(card) {
   const rows = new Map();
   const previewItems = new Map();
   const roomByMark = new WeakMap();
-  let snapshot, offset = 0, pending = false, timer, failure = "";
+  let snapshot, selection, request, offset = 0, timer, failure = "";
   let tooltipAnchor, pinned, hideTimer;
 
   function hideTooltip() {
@@ -176,8 +179,39 @@ function mount(card) {
     body.hidden = !open;
     toggle.setAttribute("aria-expanded", String(open));
     hideTooltip();
+    if (open && !selection) fillCurrentTime();
     draw();
   });
+
+  function fillCurrentTime() {
+    const now = Date.now() + offset;
+    dateInput.value = schoolDay.format(now);
+    timeInput.value = clock.format(now);
+  }
+
+  function chooseTime() {
+    reset.disabled = false;
+    const date = dateInput.value;
+    const at = Date.parse(date + "T" + timeInput.value + ":00+03:00");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date.startsWith("0000") || !Number.isFinite(at)) return;
+    const changedDate = date !== selection?.date;
+    selection = { date, at };
+    if (changedDate) failure = "";
+    hideTooltip();
+    draw();
+    if (changedDate) refresh();
+  }
+
+  function resetTime() {
+    const reload = Boolean(selection);
+    selection = undefined;
+    reset.disabled = true;
+    fillCurrentTime();
+    hideTooltip();
+    if (reload) failure = "";
+    draw();
+    if (reload) refresh();
+  }
 
   function updatePreview(groups, hint) {
     const items = groups.flatMap(([floor, entries]) =>
@@ -316,30 +350,39 @@ function mount(card) {
 
   function draw() {
     const now = Date.now() + offset;
-    const expired = snapshot && (now >= snapshot.end || now - snapshot.generated >= freshFor);
+    const at = selection?.at ?? now;
+    const date = selection?.date ?? schoolDay.format(now);
+    const data = snapshot?.date === date ? snapshot : null;
+    const expired = data && (at >= data.end || now - data.generated >= freshFor);
     const hint = failure || (expired ? "Данные устарели." :
-      snapshot?.state === "unpublished" ? "Нет опубликованного расписания на сегодня." :
-      snapshot && !snapshot.groups.length ? "В справочнике нет кабинетов." : "");
-    const show = !!snapshot && !hint;
-    const issuesCurrent = !failure && !expired && !snapshot?.issuesUnavailable;
-    const groups = (snapshot?.groups ?? []).map(([floor, rooms]) => [
+      data?.state === "unpublished" ? "Нет опубликованного расписания на " +
+        (selection ? displayDay.format(at) : "сегодня") + "." :
+      data && !data.groups.length ? "В справочнике нет кабинетов." : "");
+    const show = !!data && !hint;
+    const issuesCurrent = !selection && !hint && !data?.issuesUnavailable;
+    const groups = (data?.groups ?? []).map(([floor, rooms]) => [
       floor,
       rooms.map(room => ({
         room: !issuesCurrent && room.issue ? { ...room, issue:null } : room,
-        state: roomStatus(show ? room.spans : null, now),
+        state: roomStatus(show ? room.spans : null, at),
       })),
     ]);
-    updatePreview(groups, hint);
+    const label = (selection ? displayDay.format(at) + " · " : "Сейчас · ") + clock.format(at) + " МСК";
+    selected.hidden = !body.hidden || !selection;
+    if (selection && selected.textContent !== label) selected.textContent = label;
+    updatePreview(selection && !show ? [] : groups, hint);
     if (body.hidden) return;
 
     floors.hidden = totals.hidden = !show;
     if (legend) legend.hidden = !show;
-    message.hidden = !hint && !!snapshot;
+    message.hidden = !hint && !!data;
     retry.hidden = !failure && !expired;
-    retry.disabled = pending;
-    time.textContent = show ? "По расписанию · " + clock.format(now) + " МСК" : "По расписанию";
-    if (show && snapshot.issuesUnavailable) time.textContent += " · Заявки недоступны";
-    if (hint) message.textContent = hint;
+    retry.disabled = Boolean(request);
+    const readout = "По расписанию · " + label +
+      (show && !selection && data.issuesUnavailable ? " · Заявки недоступны" : "");
+    if (time.textContent !== readout) time.textContent = readout;
+    const statusMessage = hint || "Загрузка расписания…";
+    if (message.textContent !== statusMessage) message.textContent = statusMessage;
     if (!show) {
       if (tooltipAnchor) hideTooltip();
       return;
@@ -389,12 +432,17 @@ function mount(card) {
   }
 
   async function refresh() {
-    if (document.hidden || pending) return;
-    pending = true;
+    const date = selection?.date;
+    if (document.hidden || (request && request.date === date)) return;
+    request?.controller.abort();
     const controller = new AbortController();
+    const current = { date, controller };
+    request = current;
+    const url = "/api/room-occupancy" + (date ? "?date=" + encodeURIComponent(date) : "");
     const timeout = setTimeout(() => controller.abort(), 10_000);
     try {
-      const response = await fetch("/api/room-occupancy",{ signal:controller.signal, cache:"no-store" });
+      const response = await fetch(url, { signal:controller.signal, cache:"no-store" });
+      if (request !== current || selection?.date !== date) return;
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
           snapshot = null;
@@ -404,17 +452,22 @@ function mount(card) {
         throw new Error("Unavailable");
       }
       const payload = await response.json();
+      if (request !== current || selection?.date !== date) return;
       const data = prepareSnapshot(payload);
-      const serverNow = Date.parse(payload.serverTime || response.headers.get("Date"));
-      offset = (Number.isFinite(serverNow) ? serverNow : data.generated) - Date.now();
+      const serverTime = Date.parse(payload.serverTime || response.headers.get("Date"));
+      const now = Number.isFinite(serverTime) ? serverTime : data.generated;
+      if (data.date !== (date ?? schoolDay.format(now))) throw new Error("Wrong room schedule date");
+      offset = now - Date.now();
       snapshot = data;
       failure = "";
     } catch {
-      failure = "Данные о кабинетах недоступны.";
+      if (request === current && selection?.date === date) failure = "Данные о кабинетах недоступны.";
     } finally {
       clearTimeout(timeout);
-      pending = false;
-      draw();
+      if (request === current) {
+        request = undefined;
+        draw();
+      }
     }
   }
 
@@ -430,8 +483,18 @@ function mount(card) {
       }, 1000);
     }
   }
-  retry.addEventListener("click",refresh);
-  document.addEventListener("visibilitychange",activate);
+  for (const input of [dateInput, timeInput]) input.addEventListener("change", chooseTime);
+  reset.addEventListener("click", () => {
+    dateInput.focus({ preventScroll: true });
+    resetTime();
+  });
+  card.querySelector(".room-occ__picker").addEventListener("input", () => { reset.disabled = false; });
+  window.addEventListener("pageshow", event => {
+    if (event.persisted) resetTime();
+  });
+  retry.addEventListener("click", refresh);
+  document.addEventListener("visibilitychange", activate);
+  fillCurrentTime();
   activate();
 }
 

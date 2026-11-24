@@ -6,6 +6,12 @@ export function canViewRoomOccupancy(session) {
   return Number.isSafeInteger(uid) && uid > 0;
 }
 
+function isSchoolDate(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || value.startsWith('0000')) return false;
+  const parsed = new Date(value);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
 function roomSnapshot(data, date) {
   if (data?.schema !== 1 || data.date !== date || !['published', 'unpublished'].includes(data.state) ||
       !Array.isArray(data.rooms) || !Number.isFinite(Date.parse(data.generatedAt)) ||
@@ -66,7 +72,7 @@ export function createRoomOccupancy({
 } = {}) {
   const token = env.MAINPORTAL_SCHEDULE_TOKEN;
   const issueToken = env.MAINPORTAL_ROOM_ISSUES_TOKEN;
-  let cache;
+  const cache = new Map();
   let issueCache;
 
   function loadIssues() {
@@ -102,14 +108,16 @@ export function createRoomOccupancy({
     }
   }
 
-  function load() {
-    const date = schoolDate.format(now());
-    if (cache?.date === date && (cache.pending || now() < cache.expiresAt)) return cache.promise;
+  function load(selectedDate) {
+    const date = selectedDate ?? schoolDate.format(now());
+    const cached = cache.get(date);
+    if (cached && (cached.pending || now() < cached.expiresAt)) return cached.promise;
 
-    const request = { date, pending: true, expiresAt: 0 };
+    const request = { pending: true, expiresAt: 0 };
     request.promise = Promise.resolve().then(async () => {
       const url = new URL('/internal/integrations/mainportal/v1/room-occupancy',
         env.MAINPORTAL_SCHEDULE_URL || 'http://127.0.0.1:3011');
+      if (selectedDate !== undefined) url.searchParams.set('date', selectedDate);
       const response = await fetchImpl(url, {
         headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
         redirect: 'error',
@@ -120,7 +128,9 @@ export function createRoomOccupancy({
       request.expiresAt = now() + 15_000;
       return snapshot;
     }).finally(() => { request.pending = false; });
-    cache = request;
+    cache.delete(date);
+    cache.set(date, request);
+    if (cache.size > 24) cache.delete(cache.keys().next().value);
     return request.promise;
   }
 
@@ -131,8 +141,15 @@ export function createRoomOccupancy({
         res.set('Cache-Control', 'private, no-store');
         if (!canViewRoomOccupancy(req.session)) return res.status(401).json({ error: 'authentication_required' });
         if (!token) return res.status(503).json({ error: 'room_occupancy_unavailable' });
+        const selectedDate = req.query?.date;
+        if (selectedDate !== undefined && !isSchoolDate(selectedDate)) {
+          return res.status(400).json({ error: 'invalid_date' });
+        }
         try {
-          const [snapshot, issues] = await Promise.all([load(), issuesFor(req.session.uid)]);
+          const [snapshot, issues] = await Promise.all([
+            load(selectedDate),
+            selectedDate === undefined ? issuesFor(req.session.uid) : undefined,
+          ]);
           const result = { ...snapshot, serverTime: new Date(now()).toISOString() };
           if (issues === null) result.issueStatus = 'unavailable';
           if (issues) {
