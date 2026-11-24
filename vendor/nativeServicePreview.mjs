@@ -1,3 +1,5 @@
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+
 const adapters = {
   schedule: {
     origin: 'https://rasp.platoniks.ru', port: 3011, key: 'MAINPORTAL_SCHEDULE_TOKEN',
@@ -19,15 +21,40 @@ const adapters = {
     origin: 'https://stud.platoniks.ru', port: 789, key: 'ATTENDANCE_MAINPORTAL_SERVICE_KEY',
     base: 'MAINPORTAL_ATTENDANCE_URL',
   },
+  portal: {
+    origin: 'https://platoniks.ru', port: 777, key: 'SESSION_SECRET', directory: 1,
+  },
+  bookpc: {
+    origin: 'https://pc.platoniks.ru', port: 81, key: 'BOOKPC_SSO_CLIENT_SECRET', directory: 2,
+  },
+  buy: {
+    origin: 'https://buy.platoniks.ru', port: 3012, key: 'BUY_SSO_CLIENT_SECRET', directory: 12,
+  },
+  vote: {
+    origin: 'https://vote.platoniks.ru', port: 3020, key: 'VOTE_SSO_CLIENT_SECRET', directory: 14,
+  },
 };
+
+const hash = value => createHash('sha256').update(value).digest();
 
 export function createNativeServicePreview({ env = process.env, fetchImpl = fetch } = {}) {
   const adapterFor = service => Object.hasOwn(adapters, service) ? adapters[service] : null;
+  const keyFor = (adapter, service) => {
+    const base = env[adapter?.key];
+    if (!base || !adapter?.directory) return base;
+    return createHmac('sha256', base).update('mainportal:role-preview:v1:' + service).digest('hex');
+  };
   return {
-    supports: service => Boolean(env[adapterFor(service)?.key]),
+    supports: service => Boolean(keyFor(adapterFor(service), service)),
+    directoryService(service, authorization) {
+      const adapter = adapterFor(service);
+      const key = keyFor(adapter, service);
+      if (!adapter?.directory || !key || !timingSafeEqual(hash(authorization), hash('Bearer ' + key))) return null;
+      return adapter.directory;
+    },
     async launch(service, { actorId, targetId, childId }) {
       const adapter = adapterFor(service);
-      const token = env[adapter?.key];
+      const token = keyFor(adapter, service);
       if (!token) return null;
       const endpoint = new URL('/internal/integrations/mainportal/v1/role-preview',
         env[adapter.base] || 'http://127.0.0.1:' + adapter.port);

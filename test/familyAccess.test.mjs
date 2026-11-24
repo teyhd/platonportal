@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import express from 'express';
@@ -238,4 +239,78 @@ test('Important rechecks revoked links and scopes an independent service without
   linked = [children[0]];
   await assert.rejects(service.summary(session, { childId: '102' }), { status: 403 });
   await assert.rejects(service.details(session, { childId: '102', key: 'event' }), { status: 403 });
+});
+
+test('native-only previews verify service credentials and live grants independently of the portal session', async t => {
+  const serviceId = 2;
+  const actor = { id: 1, type: 5, active: true, rights: [{ srv_id: serviceId, role_id: 5, roleConfigured: 1 }] };
+  const target = { id: 2, name: 'Иванов Иван Иванович', type: 2, active: true, rights: [
+    { srv_id: serviceId, role_id: 2, roleConfigured: 1, service: 'bookpc', role: 'Педагог' },
+  ] };
+  const db = {
+    getAccount: async id => id === actor.id ? actor : id === target.id ? target : null,
+    isAdmin: async id => id === actor.id && actor.active,
+    getFamily: async () => null,
+  };
+  const clientSecret = 'fixture-service-credential';
+  const credential = createHmac('sha256', clientSecret).update('mainportal:role-preview:v1:bookpc').digest('hex');
+  const nativePreview = createNativeServicePreview({
+    env: { BOOKPC_SSO_CLIENT_SECRET: clientSecret, BUY_SSO_CLIENT_SECRET: clientSecret },
+    async fetchImpl(url, request) {
+      assert.equal(url.origin, 'http://127.0.0.1:81');
+      assert.equal(request.headers.Authorization, 'Bearer ' + credential);
+      assert.deepEqual(JSON.parse(request.body), { actor_id: 1, subject_id: 2 });
+      return Response.json({ code: 'b'.repeat(64) });
+    },
+  });
+  const routes = createFamilyRoutes({
+    db, sessionSecret: 'fixture-session', nativePreview,
+    important: { previewSource: () => assert.fail('BookPC has no summary') },
+    audit: () => {},
+  });
+  const app = express();
+  app.use(express.json());
+  app.use((req, _res, next) => {
+    req.session = { uid: Number(req.get('x-test-user')) };
+    req.sessionID = 'browser';
+    next();
+  });
+  app.use(routes.router);
+  const server = await new Promise(resolve => {
+    const listening = app.listen(0, '127.0.0.1', () => resolve(listening));
+  });
+  t.after(() => server.close());
+  const request = (path, options) => fetch('http://127.0.0.1:' + server.address().port + path, {
+    method: 'POST', redirect: 'manual', ...options,
+  });
+  const csrf = routes.formToken({ sessionID: 'browser' });
+  const list = await request('/api/users/2/service-preview', {
+    headers: { 'Content-Type': 'application/json', 'X-Portal-CSRF': csrf, 'x-test-user': '1' },
+    body: '{}',
+  });
+  const [listing] = (await list.json()).services;
+  assert.equal(listing.previewAvailable, false);
+  assert.equal(listing.nativePreviewAvailable, true);
+  const open = await request('/users/2/service-preview', {
+    headers: { 'x-test-user': '1' },
+    body: new URLSearchParams({ serviceId: '2', csrf }),
+  });
+  assert.equal(open.status, 303);
+  assert.equal(open.headers.get('location'), 'https://pc.platoniks.ru/audit/#code=' + 'b'.repeat(64));
+  assert.equal(open.headers.get('set-cookie'), null);
+
+  const directory = (service, token = credential) => request('/internal/integrations/mainportal/v1/role-preview/authorize', {
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify({ service, actor_id: 1, subject_id: 2 }),
+  });
+  assert.equal((await directory('bookpc', clientSecret)).status, 401);
+  assert.equal((await directory('buy')).status, 401);
+  assert.deepEqual(await (await directory('bookpc')).json(), {
+    id: 2, name: target.name, type: 2, roles: [2],
+  });
+  actor.rights = [];
+  assert.equal((await directory('bookpc')).status, 403);
+  actor.rights = [{ srv_id: serviceId, role_id: 5, roleConfigured: 1 }];
+  target.rights.push({ srv_id: 1, role_id: 7, roleConfigured: 1 });
+  assert.equal((await directory('bookpc')).status, 403);
 });

@@ -378,6 +378,10 @@ export function createUserFamilyTools({ drawer, openDrawer }) {
     $('[data-preview-roles]').replaceChildren(...service.roles.map(role => node('li', '', role)));
     entries.replaceChildren();
     date.hidden = true;
+    if (service.nativePreviewAvailable && !service.previewAvailable) {
+      showStatus('');
+      return;
+    }
     preview.setAttribute('aria-busy', 'true');
     showStatus('Загружаем сводку…');
     try {
@@ -431,8 +435,9 @@ export function createUserFamilyTools({ drawer, openDrawer }) {
       const serviceLabel = service => Object.hasOwn(serviceNames, service.label) ? serviceNames[service.label] : service.label;
       const offersSummary = service => service.previewAvailable ?? service.integration;
       const withSummary = services.filter(offersSummary);
-      const withRolesOnly = services.filter(service => !offersSummary(service));
-      const groups = [[withSummary, 'Со сводкой'], [withRolesOnly, 'Только роли']];
+      const withNativePage = services.filter(service => !offersSummary(service) && service.nativePreviewAvailable);
+      const withRolesOnly = services.filter(service => !offersSummary(service) && !service.nativePreviewAvailable);
+      const groups = [[withSummary, 'Со сводкой'], [withNativePage, 'С просмотром'], [withRolesOnly, 'Только роли']];
       serviceSelect.replaceChildren(...groups.filter(([list]) => list.length).map(([list, label]) => {
         const group = node('optgroup');
         group.label = label;
@@ -440,7 +445,7 @@ export function createUserFamilyTools({ drawer, openDrawer }) {
         return group;
       }));
       optionList(childSelect, children, child => `${child.name} · ${childIdentity(child)}`);
-      serviceSelect.value = (withSummary[0] ?? services[0]).id;
+      serviceSelect.value = (withSummary[0] ?? withNativePage[0] ?? services[0]).id;
       $('[data-preview-controls]').hidden = false;
       $('[data-preview-details]').hidden = false;
       await loadPreview();

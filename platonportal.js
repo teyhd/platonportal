@@ -9,6 +9,7 @@ import * as db from './vendor/db.mjs';
 import { createImportantService, registerImportantRoutes } from './vendor/important.mjs';
 import { contextualizeFamilyCard, createFamilyAccess } from './vendor/familyAccess.mjs';
 import { createFamilyRoutes } from './vendor/familyRoutes.mjs';
+import { registerPortalRolePreview } from './vendor/rolePreview.mjs';
 import { createImportantVcall, lessonRoomPrefix, registerImportantVcallRoutes } from './vendor/important-vcall.mjs';
 import * as hlp from './vendor/hlp.mjs';
 import { getRegisteredService } from './vendor/nginxServices.mjs';
@@ -160,6 +161,24 @@ app.use(express.static(publicPath, {
 
 app.use(cookieParser());
 app.set('trust proxy', 1);
+app.use(['/internal/integrations/mainportal/v1/role-preview', '/audit/exchange'], express.json({ limit: '1kb' }));
+registerPortalRolePreview(app, {
+  service: 'portal',
+  secret: SESSION_SECRET,
+  origin: 'https://platoniks.ru',
+  project: user => ({ ...user, grants: Array.isArray(user.grants) ? user.grants : [] }),
+  entry: () => '/',
+  allowRead: route => ['/', '/manual', '/api/important', '/api/important/expanded', '/api/projects-widget'].includes(route),
+  assets: ['/main.js', '/jquery.js', '/lib.js', '/bootstrap.js', '/plugins/'],
+  audit: ({ actorId, subjectId }) => mlog('role_preview_open actor=' + actorId + ' subject=' + subjectId),
+});
+app.use((req, res, next) => {
+  if (req.rolePreview) {
+    const user = req.rolePreview;
+    req.session = { uid: user.id, name: user.name, right: user.grants, logins: [] };
+  }
+  return next();
+});
 
 app.use(session({name: 'sso.sid',resave:true,saveUninitialized:false, secret: SESSION_SECRET, cookie:
   {secure: false, // ⚠️ обязательно false на HTTP!

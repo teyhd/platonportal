@@ -1,9 +1,23 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import express from 'express';
 import { createNativeServicePreview } from './nativeServicePreview.mjs';
-import { makeFamilyLinks, positiveUserId, previewServices, selectedFamilyChild } from './familyAccess.mjs';
+import { makeFamilyLinks, nativeProfileServices, positiveUserId, previewServices, selectedFamilyChild } from './familyAccess.mjs';
 
 const protectedRoles = new Set([5, 7]);
+const nativeServices = [...previewServices, ...nativeProfileServices];
+const forService = (right, serviceId) => Number(right.srv_id) === serviceId;
+const isServiceAdmin = (account, serviceId) => Boolean(account?.active && account.rights.some(right =>
+  forService(right, serviceId) && Number(right.role_id) === 5 && right.roleConfigured !== 0
+));
+const canPreviewTarget = (account, serviceId) => Boolean(account?.active && Number(account.type) !== -1 &&
+  !protectedRoles.has(Number(account.type)) && !account.rights.some(right =>
+    (forService(right, 1) || forService(right, serviceId)) && protectedRoles.has(Number(right.role_id))
+  )
+);
+const targetServiceRoles = (account, serviceId) => [...new Set(account.rights
+  .filter(right => forService(right, serviceId) && Number(right.roleConfigured) === 1)
+  .map(right => Number(right.role_id))
+  .filter(Number.isInteger))];
 const noStore = res => res.set('Cache-Control', 'private, no-store');
 const temporaryFailure = res => res.status(503).json({ message: 'Не удалось загрузить данные. Попробуйте ещё раз.' });
 
@@ -13,7 +27,8 @@ function listServices(rights) {
     const integration = previewServices.find(service => service.ids.includes(Number(right.srv_id)));
     const key = String(right.srv_id);
     if (!services.has(key)) services.set(key, {
-      id: key, label: integration?.label ?? right.service, roles: [], integration: Boolean(integration), family: false,
+      id: key, label: nativeServices.find(service => service.ids.includes(Number(right.srv_id)))?.label ?? right.service,
+      roles: [], integration: Boolean(integration), family: false,
     });
     if (integration?.path && Number(right.role_id) === 6) services.get(key).family = true;
     services.get(key).roles.push(right.role);
@@ -46,6 +61,29 @@ export function createFamilyRoutes({ db, important, sessionSecret, audit, native
   }
 
   const router = express.Router();
+  router.post('/internal/integrations/mainportal/v1/role-preview/authorize', express.json({ limit: '1kb' }), async (req, res) => {
+    noStore(res);
+    const { service, actor_id, subject_id } = req.body ?? {};
+    const serviceId = nativePreview.directoryService(service, req.get('Authorization') || '');
+    if (!serviceId) return res.sendStatus(401);
+    const actorId = positiveUserId(actor_id);
+    const targetId = positiveUserId(subject_id);
+    if (!actorId || !targetId) return res.sendStatus(403);
+    try {
+      const [portalAdmin, actor, target] = await Promise.all([
+        db.isAdmin(actorId), db.getAccount(actorId), db.getAccount(targetId),
+      ]);
+      if (!portalAdmin || !isServiceAdmin(actor, serviceId) || !canPreviewTarget(target, serviceId)) return res.sendStatus(403);
+      const roles = targetServiceRoles(target, serviceId);
+      if (!roles.length) return res.sendStatus(403);
+      const grants = serviceId === 1 ? target.rights.map(right => ({
+        srv_id: Number(right.srv_id), role_id: Number(right.role_id),
+      })) : undefined;
+      return res.json({ id: target.id, name: target.name, type: Number(target.type), roles, grants });
+    } catch {
+      return temporaryFailure(res);
+    }
+  });
   router.post('/family/child', express.urlencoded({ extended: false, limit: '1kb' }), async (req, res) => {
     noStore(res);
     const parentId = positiveUserId(req.session?.uid);
@@ -170,22 +208,18 @@ export function createFamilyRoutes({ db, important, sessionSecret, audit, native
       if (childId && !children.some(child => child.id === childId)) return res.sendStatus(403);
       audit(`service-preview actor=${actorId} subject=${targetId} service=${positiveUserId(serviceId) ?? 'list'} child=${childId ?? 'none'}`);
       for (const service of services) {
-        const actorCanRead = actor?.active && actor.rights.some(right =>
-          Number(right.srv_id) === Number(service.id) && Number(right.role_id) === 5 && right.roleConfigured !== 0
-        );
-        const targetHasPrivilegedAccess = protectedRoles.has(Number(target.type)) || target.rights.some(right =>
-          (Number(right.srv_id) === 1 || Number(right.srv_id) === Number(service.id)) && protectedRoles.has(Number(right.role_id))
-        );
-        service.previewAvailable = Boolean(service.integration && actorCanRead && !targetHasPrivilegedAccess);
-        const integration = previewServices.find(item => item.ids.includes(Number(service.id)));
-        service.nativePreviewAvailable = Boolean(service.previewAvailable && nativePreview.supports(integration?.key) &&
-          target.rights.some(right => Number(right.srv_id) === Number(service.id) && Number(right.roleConfigured) === 1));
+        const id = Number(service.id);
+        const allowed = isServiceAdmin(actor, id) && canPreviewTarget(target, id);
+        const integration = nativeServices.find(item => item.ids.includes(id));
+        service.previewAvailable = service.integration && allowed;
+        service.nativePreviewAvailable = Boolean(allowed && nativePreview.supports(integration?.key) &&
+          targetServiceRoles(target, id).length);
       }
       if (serviceId == null) return res.json({ active: target.active, services, children });
 
       const service = services.find(item => item.id === String(positiveUserId(serviceId)));
       if (!service) return res.sendStatus(404);
-      const integration = previewServices.find(item => item.ids.includes(Number(service.id)));
+      const integration = nativeServices.find(item => item.ids.includes(Number(service.id)));
       const selected = service.family ? selectedFamilyChild(children, childId) : null;
       if (!page) {
         if (!service.previewAvailable) return res.json({ state: 'permissions_only' });

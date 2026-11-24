@@ -17,6 +17,13 @@ export const previewServices = [
   { key: 'attendance', label: 'Посещаемость', ids: [13] },
 ];
 
+export const nativeProfileServices = [
+  { key: 'portal', label: 'Портал', ids: [1] },
+  { key: 'bookpc', label: 'BookPC', ids: [2] },
+  { key: 'buy', label: 'Закупки', ids: [12] },
+  { key: 'vote', label: 'Голосования', ids: [14] },
+];
+
 export function positiveUserId(value) {
   if ((typeof value !== 'string' && typeof value !== 'number') || !/^[1-9]\d*$/.test(String(value))) return null;
   const id = Number(value);
