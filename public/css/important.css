@@ -22,7 +22,7 @@
 .important-panel :is(button, a) { touch-action: manipulation; }
 .important-panel button { cursor: pointer; }
 .important-panel button:disabled { cursor: wait; opacity: .65; }
-.important-panel :is(button, a, input, select):focus-visible {
+.important-panel :is(button, a, input, select, summary):focus-visible {
   outline: 2px solid var(--important-blue);
   outline-offset: 3px;
 }
@@ -75,6 +75,7 @@
   box-shadow: 0 1px 3px #14203517;
 }
 .important-panel .important-refresh {
+  min-width: 96px;
   min-height: 36px;
   padding: 4px 9px;
   border: 0;
@@ -84,7 +85,8 @@
   font-size: 13px;
   font-weight: 600;
 }
-.important-refresh:hover { background: var(--important-blue-wash); }
+.important-panel .important-refresh:is(:hover, [aria-busy="true"]) { background: var(--important-blue-wash); }
+.important-panel .important-refresh[aria-busy="true"] { cursor: wait; }
 .important-toolbar { margin-top: 8px; min-height: 20px; }
 .important-source-status {
   display: flex;
@@ -286,16 +288,19 @@
 }
 .important-lesson-timeline { margin-top: 10px; }
 .important-progress {
-  height: 6px;
+  height: 8px;
   overflow: hidden;
-  border-radius: 4px;
-  background: #dce5f3;
+  border-radius: 999px;
+  background: #d7e3f5;
+  box-shadow: inset 0 1px 2px #183f7f20;
 }
 .important-progress span {
+  position: relative;
   display: block;
   height: 100%;
+  overflow: hidden;
   border-radius: inherit;
-  background: #3563cd;
+  background: linear-gradient(90deg, #2853be, #3568d6 70%, #5593ef);
   transform: scaleX(0);
   transform-origin: left center;
 }
@@ -309,8 +314,41 @@
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
+.important-progress-value { color: var(--important-blue); font-weight: 650; }
+
 @media (prefers-reduced-motion: no-preference) {
-  .important-progress span { transition: transform 850ms linear; }
+  .important-panel:not([data-offscreen], [data-page-hidden]) .important-progress span {
+    transition: transform 960ms linear;
+  }
+  .important-panel:not([data-offscreen], [data-page-hidden]) .important-progress span::after {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 26%;
+    background: linear-gradient(90deg, transparent, #ffffff90, transparent);
+    animation: important-progress-sheen 5.4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes important-progress-sheen {
+    0%, 15% { opacity: 0; transform: translateX(-110%) skewX(-14deg); }
+    30%, 58% { opacity: .7; }
+    75%, 100% { opacity: 0; transform: translateX(400%) skewX(-14deg); }
+  }
+  .important-panel :is(button, summary, .important-item-actions a) {
+    transition: background-color 150ms ease-out, border-color 150ms ease-out, transform 120ms ease-out;
+  }
+  .important-panel :is(button:not(:disabled), summary, .important-item-actions a):active {
+    transform: translateY(1px);
+  }
+  .important-details:not([hidden]),
+  .important-workday[open] > [data-important-workday-details],
+  [data-important-orders-more][open] > ul {
+    animation: important-details-reveal 200ms cubic-bezier(.22, 1, .36, 1) both;
+  }
+  @keyframes important-details-reveal {
+    from { opacity: .55; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 }
 .important-item-controls,
 .important-item-actions {
@@ -537,6 +575,15 @@
 }
 @media (max-width: 600px) {
   .important-panel { margin-top: 16px; padding: 13px; }
+  .important-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(96px, 50%);
+    gap: 6px 10px;
+  }
+  .important-heading-main { display: contents; }
+  .important-heading h2 { grid-row: 1; }
+  .important-heading-side { grid-row: 1; grid-column: 2; justify-content: flex-end; gap: 4px 6px; }
+  .important-contexts { grid-row: 2; grid-column: 1 / -1; justify-self: start; }
   .important-heading h2 { font-size: 22px; }
   .important-heading-main { gap: 7px; }
   .important-heading-side { margin-left: auto; }

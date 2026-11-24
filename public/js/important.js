@@ -4,6 +4,8 @@ if (panel) {
   const $ = selector => panel.querySelector(selector);
   const list = $('[data-important-items]');
   const status = $('[data-important-sources]');
+  const refreshButton = $('[data-important-refresh]');
+  const motion = matchMedia('(prefers-reduced-motion: no-preference)');
   const nodes = new Map();
   const details = new Map();
   const clockFormat = new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
@@ -21,7 +23,7 @@ if (panel) {
   let data = null, etag = '', context = 'personal', childId = panel.dataset.portalChild || '', generation = 0, controller, pollTimer;
   let baseTime = Date.now(), basePerformance = performance.now(), lastSuccess = 0, failures = 0, expanded = false;
   let noticeUntil = 0, boundary = '', networkFailed = false;
-  let itemSequence = 0;
+  let itemSequence = 0, tickTimer;
   const currentTime = () => baseTime + performance.now() - basePerformance;
   const text = (node, value) => { const next = String(value ?? ''); if (node.textContent !== next) node.textContent = next; };
   const element = (tag, className, value) => { const node = document.createElement(tag); if (className) node.className = className; if (value != null) text(node, value); return node; };
@@ -244,6 +246,8 @@ if (panel) {
     const percent = String(Math.floor(100 * progress));
     node.progress.hidden = !current;
     if (node.progress.getAttribute('aria-valuenow') !== percent) node.progress.setAttribute('aria-valuenow', percent);
+    node.timelineProgress.hidden = !current;
+    if (current) text(node.timelineProgress, `${percent}% пройдено`);
     node.progressFill.style.transform = `scaleX(${progress})`;
     return current;
   }
@@ -307,8 +311,11 @@ if (panel) {
     timeline.hidden = true;
     const timelineLabels = element('div', 'important-timeline-labels');
     const timelineStart = element('span');
+    const timelineProgress = element('strong', 'important-progress-value');
+    timelineProgress.hidden = true;
+    timelineProgress.setAttribute('aria-hidden', 'true');
     const timelineEnd = element('span');
-    timelineLabels.append(timelineStart, timelineEnd);
+    timelineLabels.append(timelineStart, timelineProgress, timelineEnd);
     const progress = element('div', 'important-progress');
     progress.hidden = true;
     const progressFill = element('span');
@@ -340,7 +347,7 @@ if (panel) {
     controls.append(primaryActions, toggle, actions);
     article.append(top, timeline, contacts, controls, body);
     const node = { article, timing, title, subtitle, subtitleText, studentName, studentStatus, notes, timeBox, timeValue, timeCaption, timeMode,
-      timeline, timelineStart, timelineEnd, progress, progressFill,
+      timeline, timelineStart, timelineProgress, timelineEnd, progress, progressFill,
       metric, metricValue, metricLabel, controls, primaryActions, actions, toggle, toggleText, checkCount,
       contacts, body, actionKey: '', contactKey: '', detailRevision: '' };
     timeMode.addEventListener('click', () => {
@@ -348,10 +355,18 @@ if (panel) {
       if (!item) return;
       timeMode.setAttribute('aria-pressed', String(timeMode.getAttribute('aria-pressed') !== 'true'));
       updateLessonTime(item, node, currentTime());
+      if (motion.matches) {
+        timeValue.getAnimations().forEach(animation => animation.cancel());
+        timeValue.animate([
+          { opacity: .55, transform: 'translateY(3px)' },
+          { opacity: 1, transform: 'translateY(0)' },
+        ], { duration: 180, easing: 'ease-out' });
+      }
     });
     toggle.addEventListener('click', () => {
       body.hidden = !body.hidden; toggle.setAttribute('aria-expanded', String(!body.hidden));
-      if (!body.hidden) loadDetails(key, true);
+      if (body.hidden) details.get(key)?.controller?.abort();
+      else loadDetails(key, true);
     });
     nodes.set(key, node); return node;
   }
@@ -668,8 +683,16 @@ if (panel) {
     finally { clearTimeout(timeout); if (request === state.request) state.more.disabled = false; }
   }
 
+  function setRefreshBusy(busy) {
+    if (busy === (refreshButton.getAttribute('aria-busy') === 'true')) return;
+    refreshButton.setAttribute('aria-busy', String(busy));
+    refreshButton.setAttribute('aria-disabled', String(busy));
+    text(refreshButton, busy ? 'Обновляем…' : 'Обновить');
+  }
+
   function cancelScopeRequests() {
     generation++; controller?.abort(); controller = null; clearTimeout(pollTimer);
+    setRefreshBusy(false);
     for (const state of details.values()) state.controller?.abort();
   }
   function clearPrivateData() {
@@ -734,7 +757,10 @@ if (panel) {
       text(status, 'Не удалось обновить сводку. Повторим после восстановления связи.');
     } finally {
       clearTimeout(timeout); if (controller === requestController) controller = null;
-      if (scope === generation) schedule(failures ? Math.min(60_000, 30_000 * failures) : 15_000);
+      if (scope === generation) {
+        setRefreshBusy(false);
+        schedule(failures ? Math.min(60_000, 30_000 * failures) : 15_000);
+      }
     }
   }
   function changeScope() {
@@ -769,20 +795,49 @@ if (panel) {
   });
   $('[data-important-child]').addEventListener('change', event => changeChild(event.target.value));
   $('[data-important-more]').addEventListener('click', () => { expanded = !expanded; render(); });
-  $('[data-important-refresh]').addEventListener('click', () => {
-    if (controller) return;
-    etag = '';
+  refreshButton.addEventListener('click', () => {
+    if (refreshButton.getAttribute('aria-busy') === 'true') return;
+    setRefreshBusy(true);
     status.dataset.state = 'loading';
     text(status, 'Обновляем…');
-    schedule(0);
+    if (!controller) {
+      etag = '';
+      refresh();
+    }
   });
-  document.addEventListener('visibilitychange', () => document.hidden ? clearTimeout(pollTimer) : schedule(0));
+
+  function syncTicker() {
+    clearInterval(tickTimer);
+    panel.toggleAttribute('data-page-hidden', document.hidden);
+    if (document.hidden) {
+      clearTimeout(pollTimer);
+      return;
+    }
+    tick();
+    tickTimer = setInterval(tick, 1000);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    syncTicker();
+    if (!document.hidden) schedule(0);
+  });
   window.addEventListener('focus', () => schedule(0)); window.addEventListener('online', () => schedule(0));
-  window.addEventListener('pagehide', clearPrivateData);
-  window.addEventListener('pageshow', event => { if (event.persisted) schedule(0); });
+  window.addEventListener('pagehide', () => {
+    clearInterval(tickTimer);
+    clearPrivateData();
+  });
+  window.addEventListener('pageshow', event => {
+    if (event.persisted) {
+      syncTicker();
+      schedule(0);
+    }
+  });
   const observeBookpc = new MutationObserver(updatePanelVisibility);
   for (const slot of bookpcSlots) observeBookpc.observe(slot, { attributes: true, attributeFilter: ['hidden'] });
+  new IntersectionObserver(([entry]) => {
+    panel.toggleAttribute('data-offscreen', !entry.isIntersecting);
+  }).observe(panel);
   panel.hidden = false;
-  setInterval(tick, 1000);
+  syncTicker();
   refresh();
 }
