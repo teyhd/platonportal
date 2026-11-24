@@ -7,6 +7,7 @@ import 'dotenv/config'
 import bcrypt from 'bcrypt';
 import * as db from './vendor/db.mjs';
 import { createImportantService, registerImportantRoutes } from './vendor/important.mjs';
+import { createImportantOrders } from './vendor/important-orders.mjs';
 import { createBookpcBlock } from './vendor/bookpc.mjs';
 import { contextualizeFamilyCard, createFamilyAccess } from './vendor/familyAccess.mjs';
 import { createFamilyRoutes } from './vendor/familyRoutes.mjs';
@@ -1046,6 +1047,7 @@ function isNoisyIntroInfo(card) {
 const familyAccess = createFamilyAccess(db.openHarmonySsoConnection);
 const importantLessonRooms = createImportantVcall(vcall);
 const importantService = createImportantService({
+  loadOrders: createImportantOrders(),
   getRights: db.get_user_rights,
   getFamilyScope: userId => familyAccess.getFamily(userId, { includeGrants: false }),
   getClassContactContext: db.getClassContactContext,

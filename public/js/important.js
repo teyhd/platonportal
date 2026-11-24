@@ -31,6 +31,37 @@ if (panel) {
   const setClock = value => { const parsed = Date.parse(value); if (Number.isFinite(parsed)) { baseTime = parsed; basePerformance = performance.now(); } };
   const query = extra => new URLSearchParams({ context, ...(childId && context === 'personal' ? { childId } : {}), ...extra });
   const workday = $('[data-important-workday]');
+  const rentalSlot = $('[data-important-rentals]');
+  const orderSlot = $('[data-important-orders]');
+
+  function renderOrders(orders) {
+    if (!orderSlot) return;
+    const items = orders?.items ?? [];
+    orderSlot.hidden = !items.length;
+    const signature = JSON.stringify(items);
+    if (orderSlot.dataset.items === signature) return;
+    orderSlot.dataset.items = signature;
+    const row = item => {
+      const elementRow = element('li', 'important-order');
+      const name = element('span', 'important-order-name', item.title);
+      if (item.quantity) name.append(element('small', '', `× ${item.quantity}`));
+      const label = element('span', 'important-order-status', item.status);
+      label.dataset.stage = item.stage;
+      elementRow.append(name, label);
+      return elementRow;
+    };
+    $('[data-important-orders-list]').replaceChildren(...items.slice(0, 3).map(row));
+    const moreOrders = $('[data-important-orders-more]');
+    moreOrders.hidden = items.length <= 3;
+    if (moreOrders.hidden) moreOrders.open = false;
+    text(moreOrders.querySelector('summary'), `Показать ещё ${Math.max(0, items.length - 3)}`);
+    moreOrders.querySelector('ul').replaceChildren(...items.slice(3).map(row));
+  }
+
+  function updatePanelVisibility() {
+    const rentalVisible = context === 'personal' && rentalSlot && !rentalSlot.hidden;
+    panel.hidden = !data?.visible && !rentalVisible;
+  }
 
   function formatCountdown(duration) {
     if (duration < 60_000) return `${Math.ceil(duration / 1000)} сек`;
@@ -376,8 +407,15 @@ if (panel) {
   }
 
   function render() {
-    panel.hidden = !data.visible;
-    if (!data.visible) return;
+    panel.dataset.contextMode = context;
+    renderOrders(context === 'personal' ? data.orders : null);
+    updatePanelVisibility();
+    if (!data.visible) {
+      status.hidden = true;
+      list.hidden = true;
+      return;
+    }
+    status.hidden = false;
     list.hidden = false;
     $('[data-important-contexts]').hidden = !data.schoolAllowed;
     for (const button of panel.querySelectorAll('[data-context]')) button.setAttribute('aria-pressed', String(button.dataset.context === context));
@@ -473,7 +511,7 @@ if (panel) {
     more.setAttribute('aria-expanded', String(expanded));
     const emptyMessage = issues.length ? 'Нет доступных сведений' : context === 'school' ? 'Нет событий, требующих внимания' : 'Сейчас нет важных событий';
     const footer = $('[data-important-day]');
-    text(footer, data.daySummary || (!data.items.length ? emptyMessage : ''));
+    text(footer, data.daySummary || (!data.items.length && !data.orders?.items.length && rentalSlot?.hidden !== false ? emptyMessage : ''));
     footer.hidden = !footer.textContent;
     tick();
   }
@@ -615,6 +653,7 @@ if (panel) {
   function clearPrivateData() {
     cancelScopeRequests();
     list.replaceChildren(); nodes.clear(); details.clear(); data = null; etag = ''; panel.hidden = true;
+    renderOrders(null);
     $('[data-important-clock]').hidden = true;
     if (workday) {
       workday.hidden = true; workday.open = false;
@@ -643,7 +682,16 @@ if (panel) {
     try {
       const response = await fetch(`/api/important?${query()}`, { credentials:'same-origin', cache:'no-cache', signal:controller.signal, headers:etag?{'If-None-Match':etag}:{} });
       if (scope !== generation) return;
-      if ([401,403,404].includes(response.status)) { clearPrivateData(); return; }
+      if ([401,403,404].includes(response.status)) {
+        clearPrivateData();
+        status.hidden = true;
+        if (response.status === 401 && rentalSlot) {
+          rentalSlot.replaceChildren();
+          rentalSlot.hidden = true;
+        }
+        updatePanelVisibility();
+        return;
+      }
       if (!response.ok && response.status !== 304) throw new Error('important_unavailable');
       if (response.status === 304 && data) {
         data.serverTime = response.headers.get('X-Server-Time') || data.serverTime;
@@ -659,6 +707,7 @@ if (panel) {
     } catch (error) {
       if (scope !== generation) return;
       networkFailed = true; failures++; panel.hidden = false; panel.dataset.offline = 'true';
+      status.hidden = false;
       status.dataset.state = 'warning';
       text(status, 'Не удалось обновить сводку. Повторим после восстановления связи.');
     } finally {
@@ -668,6 +717,8 @@ if (panel) {
   }
   function changeScope() {
     clearPrivateData(); expanded = false; boundary = ''; noticeUntil = 0;
+    panel.dataset.contextMode = context;
+    status.hidden = false;
     panel.hidden = false; status.dataset.state = 'loading'; text(status, 'Загружаем вашу сводку…');
     for (const button of panel.querySelectorAll('[data-context]')) button.setAttribute('aria-pressed', String(button.dataset.context === context));
     if (context === 'school') $('[data-important-family]').hidden = true;
@@ -707,6 +758,9 @@ if (panel) {
   window.addEventListener('focus', () => schedule(0)); window.addEventListener('online', () => schedule(0));
   window.addEventListener('pagehide', clearPrivateData);
   window.addEventListener('pageshow', event => { if (event.persisted) schedule(0); });
+  if (rentalSlot) {
+    new MutationObserver(updatePanelVisibility).observe(rentalSlot, { attributes: true, attributeFilter: ['hidden'] });
+  }
   panel.hidden = false;
   setInterval(tick, 1000);
   refresh();

@@ -206,7 +206,8 @@ function paintOwnRentals(devices) {
     const row = document.createElement('div');
     row.className = 'bookpc-rental';
     const title = document.createElement('strong');
-    title.textContent = `У вас ноутбук №${device.id}`;
+    const room = device.rental.room;
+    title.textContent = `У вас ноутбук №${device.id}${room == null || room === '' ? '' : ` · каб. ${roomLabel(room)}`}`;
     const pin = document.createElement('span');
     pin.textContent = device.rental.pin ? `PIN: ${device.rental.pin}` : 'PIN недоступен';
     const button = document.createElement('button');
@@ -356,4 +357,8 @@ refresh();
 setInterval(() => { if (!document.hidden && !dialog.open) refresh(); }, 45000);
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && !dialog.open) refresh();
+});
+window.addEventListener('pagehide', () => paintOwnRentals([]));
+window.addEventListener('pageshow', event => {
+  if (event.persisted && !dialog.open) refresh();
 });

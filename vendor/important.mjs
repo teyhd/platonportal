@@ -203,7 +203,7 @@ async function addLessonContacts(items, schedule, loadContactContext) {
 
 export function createImportantService({
   env=process.env, fetchImpl=fetch, now=()=>new Date(), getRights, getClassContactContext, getFamilyScope,
-  canUseVcall=async()=>false, getVcallLessonStatus,
+  canUseVcall=async()=>false, getVcallLessonStatus, loadOrders,
 }={}) {
   const cache = new Map();
   const pilotIds = new Set(String(env.IMPORTANT_EXPANDED_PILOT_IDS ?? '').split(',').map(value => value.trim()).filter(Boolean));
@@ -340,9 +340,13 @@ export function createImportantService({
       : denied;
     const extra = expanded ? Object.fromEntries(['calendar','progress'].map(source => [source,
       extraContext(source,actorId,rightsKey,context,sourceChild(source) ?? (getFamilyScope ? null : scheduleData?.selectedChildId) ?? null,options)])) : {};
-    const [attendance, capability, extraResponses] = await Promise.all([
+    const ordersRequest = rooms && context === 'personal' && loadOrders &&
+      rights.some(right => Number(right.srv_id) === 12 && Number(right.role_id) > 0)
+      ? loadOrders(actorId) : null;
+    const [attendance, capability, extraResponses, orders] = await Promise.all([
       attendanceRequest, canUseVcall({...session,right:rights},{expanded}),
-      Promise.all(Object.entries(extra).map(async ([source, result]) => [source, await result]))
+      Promise.all(Object.entries(extra).map(async ([source, result]) => [source, await result])),
+      ordersRequest,
     ]);
     if (context==='school' && schedule.status==='forbidden' && attendance.status==='forbidden' &&
         !extraResponses.some(([, result]) => result.data?.schoolAllowed === true && result.status === 'ready')) {
@@ -398,6 +402,10 @@ export function createImportantService({
         .map(([key,value])=>[key,value.data]));
       view.schoolAllowed ||= Object.values(integrated).some(source=>source?.schoolAllowed===true);
       expandImportantView(view,{schedule:readySchedule,attendance:readyAttendance,integrated,now:viewNow,vcallRooms:Object.fromEntries(roomEntries)});
+    }
+    if (orders?.items.length) {
+      view.orders = orders;
+      view.visible = true;
     }
     return {view,actorId,rightsKey,schedule:readySchedule,options,scope,childId};
   }
@@ -521,6 +529,7 @@ export function registerImportantRoutes(app,service) {
     res.set('Cache-Control','private, no-cache');res.set('Vary','Cookie');
     try {
       const data=await service[method](req.session,req.query);
+      if (data.orders) res.set('Cache-Control','private, no-store');
       const etag=`"${crypto.createHash('sha256').update(JSON.stringify({...data,serverTime:undefined,sources:method==='summary'?Object.fromEntries(Object.entries(data.sources).map(([name,s])=>[name,{...s,checkedAt:undefined}])):undefined})).digest('hex')}"`;
       res.set('ETag',etag);res.set('X-Server-Time',data.serverTime);res.set('X-Checked-At',data.serverTime);
       if(req.headers['if-none-match']===etag)return res.status(304).end();
