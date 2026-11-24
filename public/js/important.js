@@ -10,6 +10,9 @@ if (panel) {
   const details = new Map();
   const clockFormat = new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
   const dateFormat = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Moscow' });
+  const approvalDateFormat = new Intl.DateTimeFormat('ru-RU', {
+    timeZone: 'Europe/Moscow', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+  });
   const schoolCategories = {
     attendance: 'Посещаемость',
     schedule_conflict: 'Расписание',
@@ -17,7 +20,6 @@ if (panel) {
     reports: 'Обращения',
     flex: 'Flex',
     calendar: 'Календарь',
-    calendar_approval: 'Календарь',
   };
   const portalControlsFamily = panel.hasAttribute('data-portal-family');
   let data = null, etag = '', context = 'personal', childId = panel.dataset.portalChild || '', generation = 0, controller, pollTimer;
@@ -35,6 +37,43 @@ if (panel) {
   const workday = $('[data-important-workday]');
   const bookpcSlots = [$('[data-important-rentals]'), $('[data-important-laptop-locations]')].filter(Boolean);
   const orderSlot = $('[data-important-orders]');
+  const approvals = $('[data-important-approvals]');
+  const approvalList = $('[data-important-approval-list]');
+
+  function renderApprovals(items) {
+    const signature = JSON.stringify(items.map(({ key, title, subtitle, start, actions }) => [key, title, subtitle, start, actions]));
+    if (approvals.dataset.items === signature) return;
+    const focused = approvals.contains(document.activeElement) ? document.activeElement : null;
+    const focusedKey = focused?.closest('li')?.dataset.key;
+    approvals.hidden = !items.length;
+    if (!items.length) approvals.open = false;
+    approvals.dataset.items = signature;
+    text($('[data-important-approval-count]'), items.length);
+
+    let nextFocus;
+    approvalList.replaceChildren(...items.map(item => {
+      const row = element('li', 'important-approval-row');
+      row.dataset.key = item.key;
+      const content = element('div', 'important-approval-content');
+      content.append(element('p', 'important-approval-title', item.subtitle || item.title));
+      if (Number.isFinite(when(item.start))) {
+        const time = element('time', '', approvalDateFormat.format(new Date(item.start)));
+        time.dateTime = item.start;
+        content.append(time);
+      }
+      const actions = element('div', 'important-approval-actions');
+      for (const action of item.actions ?? []) {
+        const link = element('a', '', action.label);
+        link.href = action.href;
+        actions.append(link);
+        if (item.key === focusedKey && link.href === focused.href) nextFocus = link;
+      }
+      row.append(content);
+      if (actions.childElementCount) row.append(actions);
+      return row;
+    }));
+    if (focused) (nextFocus || (items.length ? approvals.querySelector('summary') : refreshButton)).focus({ preventScroll: true });
+  }
 
   function renderOrders(orders) {
     if (!orderSlot) return;
@@ -280,6 +319,7 @@ if (panel) {
     boundary = nextBoundary;
     if (networkFailed && performance.now() - lastSuccess > 120_000) {
       list.hidden = true;
+      renderApprovals([]);
       const footer = $('[data-important-day]');
       text(footer, 'Сводка устарела. Восстановите соединение или откройте нужный сервис ниже.');
       footer.hidden = false;
@@ -429,6 +469,7 @@ if (panel) {
   function render() {
     panel.dataset.contextMode = context;
     renderOrders(context === 'personal' ? data.orders : null);
+    renderApprovals(data.visible ? data.items.filter(item => item.kind === 'calendar_approval') : []);
     updatePanelVisibility();
     if (!data.visible) {
       status.hidden = true;
@@ -452,7 +493,8 @@ if (panel) {
     status.dataset.state = issues.length ? 'warning' : 'ready';
     text(status, issues.length ? issues.map(source => `${source.label}: ${source.status==='ready' && source.partial ? 'часть сведений временно недоступна' : source.checkedAt ? `последние данные ${formatTime(source.checkedAt)}` : 'временно недоступно'}`).join(' · ')
       : `Обновлено в ${formatTime(data.serverTime)}`);
-    const wanted = new Set(data.items.map(item => item.key));
+    const items = data.items.filter(item => item.kind !== 'calendar_approval');
+    const wanted = new Set(items.map(item => item.key));
     for (const [key, node] of nodes) if (!wanted.has(key)) {
       if (node.article.contains(document.activeElement)) $('[data-important-refresh]').focus({ preventScroll: true });
       details.get(key)?.controller?.abort(); node.article.remove(); nodes.delete(key); details.delete(key);
@@ -460,8 +502,8 @@ if (panel) {
     const focused = list.contains(document.activeElement);
     panel.dataset.context = context;
     panel.dataset.empty = String(!data.items.length);
-    list.dataset.paired = String(context === 'personal' && data.items.slice(0, 2).filter(item => item.kind === 'lesson').length === 2);
-    data.items.forEach((item, index) => {
+    list.dataset.paired = String(context === 'personal' && items.slice(0, 2).filter(item => item.kind === 'lesson').length === 2);
+    items.forEach((item, index) => {
       const node = nodes.get(item.key) || createItem(item.key);
       const lesson = item.kind === 'lesson';
       const school = context === 'school';
@@ -542,8 +584,8 @@ if (panel) {
       if (!focused || !node.article.isConnected) list.append(node.article);
     });
     const more = $('[data-important-more]');
-    more.hidden = data.items.length <= 3;
-    text(more, expanded ? 'Свернуть' : `Ещё сегодня · ${Math.max(0, data.items.length - 3)}`);
+    more.hidden = items.length <= 3;
+    text(more, expanded ? 'Свернуть' : `Ещё сегодня · ${Math.max(0, items.length - 3)}`);
     more.setAttribute('aria-expanded', String(expanded));
     const emptyMessage = issues.length ? 'Нет доступных сведений' : context === 'school' ? 'Нет событий, требующих внимания' : 'Сейчас нет важных событий';
     const footer = $('[data-important-day]');
@@ -699,6 +741,7 @@ if (panel) {
     cancelScopeRequests();
     list.replaceChildren(); nodes.clear(); details.clear(); data = null; etag = ''; panel.hidden = true;
     renderOrders(null);
+    renderApprovals([]);
     $('[data-important-clock]').hidden = true;
     if (workday) {
       workday.hidden = true; workday.open = false;
@@ -781,7 +824,7 @@ if (panel) {
     }
     cancelScopeRequests();
     data = { ...data, selectedChildId:childId, daySummary:'', scheduleFingerprint:'',
-      items:data.items.filter(item => item.kind === 'lesson' && item.audience === 'self') };
+      items:data.items.filter(item => item.kind === 'calendar_approval' || (item.kind === 'lesson' && item.audience === 'self')) };
     etag = ''; boundary = ''; noticeUntil = 0;
     render();
     status.dataset.state = 'loading';

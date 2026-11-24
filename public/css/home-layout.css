@@ -1,0 +1,32 @@
+[data-home-room-grid] > a,
+[data-home-room-status] {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+[data-catalog-status]:not(:empty) { margin-top: 8px; }
+[data-open-rooms-status]:empty { margin: 0; }
+
+[data-home-catalog-grid] > :is(a, button) {
+  min-width: 0;
+  justify-content: flex-start;
+  hyphens: auto;
+  overflow-wrap: anywhere;
+}
+
+[data-home-catalog-grid] > :is(a, button) > span:first-child { flex-shrink: 0; }
+
+@media (max-width: 420px) {
+  [data-home-catalog-grid] > :is(a, button) { padding-inline: 8px; }
+  [data-home-catalog-grid] .text-base { font-size: 0.9375rem; line-height: 1.35; }
+}
+
+@media (min-width: 640px) {
+  [data-home-room-grid] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  [data-home-room-status] { grid-column: 1 / -1; }
+}
+
+@media (min-width: 1024px) {
+  [data-home-room-grid] { grid-template-columns: repeat(2, minmax(0, 1fr)) 14rem; }
+  [data-home-room-status] { grid-column: auto; }
+}

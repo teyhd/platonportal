@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="/css/home-layout.css?v=1">
 <main class="min-h-screen bg-[#f5f5f7] text-slate-950">
   <div class="mx-auto max-w-[1500px] px-[16px] pb-10 pt-14 sm:pt-16 md:px-6 xl:pt-16">
     <header class="max-w-4xl">
@@ -55,7 +56,7 @@
           </div>
         </div>
 
-        <div class="mt-4 grid gap-3 md:mt-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_14rem]">
+        <div class="mt-4 grid gap-3 md:mt-5" data-home-room-grid>
           {{#each operationMenu}}
             <a href="{{this.cont}}"
                class="group flex min-h-[112px] items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-white hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 md:min-h-[132px] md:gap-5 md:p-5">
@@ -70,7 +71,7 @@
             </a>
           {{/each}}
 
-          <div data-open-rooms-summary class="hidden rounded-lg border border-slate-200 bg-white p-4 lg:min-h-[132px]">
+          <div data-open-rooms-summary data-home-room-status class="hidden rounded-lg border border-slate-200 bg-white p-4 lg:min-h-[132px]">
             <div class="text-sm font-semibold text-slate-500">Открытые комнаты</div>
             <div data-open-rooms-count class="mt-3 text-3xl font-semibold leading-none text-slate-950" aria-live="polite">—</div>
             <p data-open-rooms-status class="mt-2 text-sm text-slate-600">Загружаем…</p>
@@ -99,9 +100,9 @@
         <button type="button" data-catalog-clear class="hidden rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:border-blue-300">Очистить</button>
       </div>
 
-      <p data-catalog-status class="mt-2 text-sm text-slate-600" role="status"></p>
+      <p data-catalog-status class="text-sm text-slate-600" role="status"></p>
 
-      <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+      <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6" data-home-catalog-grid>
         {{#if isGuestHome}}
           <button type="button" data-open-login
                   class="group flex min-h-[148px] flex-col items-center justify-center rounded-lg border border-blue-200 bg-white p-3 text-center shadow-sm shadow-blue-950/5 transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 sm:min-h-[156px] md:min-h-[168px] md:p-4 xl:min-h-[176px]">
@@ -123,7 +124,7 @@
               <span class="flex h-[76px] w-[76px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-3 sm:h-20 sm:w-20 md:h-24 md:w-24 md:p-4 xl:h-28 xl:w-28">
                 <img src="{{this.imageSrc}}" alt="" class="h-full w-full object-contain" loading="lazy" />
               </span>
-              <span class="mt-3 block text-base font-semibold leading-6 text-slate-950 line-clamp-2">{{this.title}}</span>
+              <span class="mt-3 block text-base font-semibold leading-6 text-slate-950">{{this.title}}</span>
               {{#if (eq this.role 7)}}
                 <span class="mt-1 text-xs leading-5 text-slate-500">{{this.serviceDescription}}</span>
               {{/if}}
