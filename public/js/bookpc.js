@@ -19,6 +19,7 @@ const form = select('form');
 const room = select('room');
 const comment = form.elements.comment;
 const formMessage = select('form-message');
+const forceNote = select('force-note');
 const submit = select('submit');
 const cancel = select('cancel');
 const dateFormat = new Intl.DateTimeFormat('ru-RU', {
@@ -27,6 +28,7 @@ const dateFormat = new Intl.DateTimeFormat('ru-RU', {
 });
 const states = { free: 'Свободно', occupied: 'Занято', own: 'У вас', unknown: 'Статус неизвестен',
   assigned: 'Закреплён', 'assigned-admin': 'Закреплён' };
+const actionLabels = { rent: 'Взять', return: 'Сдать', 'force-return': 'Завершить аренду' };
 const rentalSlot = document.querySelector('[data-important-rentals]');
 const tiles = new Map();
 let shown;
@@ -84,14 +86,22 @@ function addDetail(label, value, layout) {
   details.append(row);
 }
 
+function deviceOperation(device) {
+  if (device.assignment) return null;
+  if (device.own) return 'return';
+  if (device.canForceReturn) return 'force-return';
+  return device.state === 'free' && device.rentable ? 'rent' : null;
+}
+
 function deviceTone(device) {
   if (device.assignment) return device.assignment.label ? 'assigned-admin' : 'assigned';
   return device.own ? 'own' : device.state;
 }
 
 function paintCard() {
-  const { id, state, own, rental, issue, assignment } = shown.device;
+  const { id, state, rental, issue, assignment } = shown.device;
   const tone = deviceTone(shown.device);
+  const operation = deviceOperation(shown.device);
   cardTitle.textContent = `Ноутбук №${id}`;
   cardState.textContent = states[tone];
   cardState.dataset.state = tone;
@@ -113,8 +123,9 @@ function paintCard() {
     issueLink.hidden = !issue.incidentId;
     if (issue.incidentId) issueLink.href = `https://tech.platoniks.ru/?view=reports&incident=${encodeURIComponent(issue.incidentId)}`;
   }
-  action.hidden = Boolean(assignment) || !fresh || (state !== 'free' && !own);
-  action.textContent = own ? 'Сдать' : 'Взять';
+  action.hidden = !fresh || !operation;
+  action.textContent = actionLabels[operation] ?? '';
+  action.toggleAttribute('data-force', operation === 'force-return');
   placeCard();
 }
 
@@ -202,13 +213,14 @@ function paintDevices(devices) {
     tile.assignee.hidden = !assignee;
     tile.assignee.textContent = assignee || '';
     tile.button.toggleAttribute('data-has-issue', Boolean(device.issue));
-    tile.button.setAttribute('aria-label', `Ноутбук №${device.id}, ${states[tone]}${assignee ? ` за ${assignee}` : ''}${device.issue ? ', есть жалоба' : ''}`);
+    tile.button.setAttribute('aria-label', `Ноутбук №${device.id}, ${states[tone]}${assignee ? `, сотрудник: ${assignee}` : ''}${device.issue ? ', есть жалоба' : ''}`);
   }
   if (shown) paintCard();
   const rentable = devices.filter(device => !device.assignment);
   const freeCount = rentable.filter(device => device.state === 'free').length;
   const ownCount = rentable.filter(device => device.own).length;
-  summary.textContent = devices.length ? `Свободно ${freeCount} из ${rentable.length}${ownCount ? ` · У вас ${ownCount}` : ''}` : 'Нет ноутбуков';
+  const availability = rentable.length ? `Для аренды ${freeCount} из ${rentable.length}` : 'Нет ноутбуков для аренды';
+  summary.textContent = `${availability}${ownCount ? ` · У вас ${ownCount}` : ''}`;
 }
 
 function paintOwnRentals(devices) {
@@ -245,10 +257,10 @@ function refresh(feedback = '') {
     try {
       const { devices, ownRentals = devices, issuesStatus } = await request();
       fresh = true;
-      paintDevices(devices);
+      paintDevices(devices.filter(device => device.rentable || device.assignment));
       paintOwnRentals(ownRentals);
       issueMessage.textContent = issuesStatus === 'unavailable' ? 'Данные техподдержки временно недоступны.' : '';
-      message.textContent = feedback || (devices.length ? '' : 'В BookPC пока нет зарегистрированных ноутбуков.');
+      message.textContent = feedback;
       return true;
     } catch (error) {
       fresh = false;
@@ -290,18 +302,25 @@ window.addEventListener('scroll', placeCard, { passive: true });
 action.addEventListener('click', () => openOperation(shown.device, shown.button));
 
 function openOperation(device, button) {
-  const operation = device.own ? 'return' : 'rent';
+  const operation = deviceOperation(device);
+  if (!fresh || !operation) return;
   pending = { device, button, operation, payload: null };
   const rent = operation === 'rent';
+  const forced = operation === 'force-return';
   form.reset();
   formMessage.textContent = '';
-  select('dialog-title').textContent = `${rent ? 'Взять' : 'Сдать'} ноутбук №${device.id}`;
+  select('dialog-title').textContent = `${actionLabels[operation]} ${forced ? 'ноутбука' : 'ноутбук'} №${device.id}`;
   select('room-field').hidden = !rent;
-  select('comment-field').hidden = rent;
+  select('comment-field').hidden = operation !== 'return';
+  forceNote.hidden = !forced;
+  if (forced) {
+    forceNote.textContent = device.rental.renter ? `Арендатор — ${device.rental.renter}.` : 'Текущая аренда оформлена на другого пользователя.';
+  }
   room.required = rent;
   room.disabled = !rent;
-  comment.disabled = rent;
-  submit.textContent = rent ? 'Взять' : 'Сдать';
+  comment.disabled = operation !== 'return';
+  submit.textContent = actionLabels[operation];
+  submit.toggleAttribute('data-force', forced);
   closeCard();
   dialog.showModal();
 }
@@ -314,7 +333,9 @@ const errorMessages = {
   no_active_rental: 'Эта аренда уже завершена. Статус обновлён.',
   rental_not_owned: 'Сдать ноутбук может тот, кто его взял.',
   computer_not_registered: 'Ноутбук больше не числится в BookPC.',
+  computer_not_rentable: 'Этот ноутбук не выдаётся в аренду.',
   bookpc_access_denied: 'Доступ к BookPC изменился.',
+  portal_admin_required: 'Чужую аренду может завершить администратор портала.',
   authentication_required: 'Сессия истекла. Войдите в портал снова.',
 };
 
@@ -334,7 +355,8 @@ form.addEventListener('submit', async event => {
   const rent = operation === 'rent';
   pending.payload ??= {
     requestId: crypto.randomUUID(), computer_id: device.id,
-    ...(rent ? { room: Number(room.value) } : { rental_id: device.rental.id, comment: comment.value }),
+    ...(rent ? { room: Number(room.value) } : { rental_id: device.rental.id }),
+    ...(operation === 'return' && { comment: comment.value }),
   };
   submitting = true;
   room.disabled = comment.disabled = submit.disabled = cancel.disabled = true;
@@ -345,7 +367,7 @@ form.addEventListener('submit', async event => {
       body: JSON.stringify(pending.payload),
     });
     if (loading) await loading;
-    const updated = await refresh(rent ? `Ноутбук №${device.id} у вас.` : `Ноутбук №${device.id} сдан.`);
+    const updated = await refresh(rent ? `Ноутбук №${device.id} у вас.` : `Аренда ноутбука №${device.id} завершена.`);
     dialog.close();
     if (updated && rent && tiles.get(device.id)?.device.own) showCard(tiles.get(device.id), true);
   } catch (error) {

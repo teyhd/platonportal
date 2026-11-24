@@ -141,12 +141,15 @@
 }
 .bookpc__primary { color: white; background: #19499b; }
 .bookpc__primary:hover { background: #153e83; }
+.bookpc__primary[data-force] { background: #a1283c; }
+.bookpc__primary[data-force]:hover { background: #811c2d; }
 .bookpc__primary:disabled { opacity: .55; }
 .bookpc__card .bookpc__primary { width: 100%; margin-top: .85rem; }
 .bookpc__retry { border: 1px solid #cbd5e1; }
 .bookpc__dialog { position: fixed; inset: 0; margin: auto; max-height: calc(100dvh - 24px); }
 .bookpc__dialog::backdrop { background: #0f172a80; }
 .bookpc__form { display: grid; gap: .85rem; }
+.bookpc__force-note { color: #475569; font-size: .875rem; overflow-wrap: anywhere; }
 .bookpc__form label { display: grid; gap: .35rem; font-size: .875rem; }
 .bookpc__form select, .bookpc__form textarea {
   width: 100%;
