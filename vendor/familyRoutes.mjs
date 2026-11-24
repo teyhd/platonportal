@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import express from 'express';
+import { createNativeServicePreview } from './nativeServicePreview.mjs';
 import { makeFamilyLinks, positiveUserId, previewServices, selectedFamilyChild } from './familyAccess.mjs';
 
 const protectedRoles = new Set([5, 7]);
@@ -20,7 +21,7 @@ function listServices(rights) {
   return [...services.values()];
 }
 
-export function createFamilyRoutes({ db, important, sessionSecret, audit }) {
+export function createFamilyRoutes({ db, important, sessionSecret, audit, nativePreview = createNativeServicePreview() }) {
   const formToken = req => createHmac('sha256', sessionSecret).update(`family:${req.sessionID}`).digest('base64url');
   const tokenMatches = (req, token) => typeof token === 'string' && /^[A-Za-z0-9_-]{43}$/.test(token) &&
     timingSafeEqual(Buffer.from(token), Buffer.from(formToken(req)));
@@ -176,6 +177,9 @@ export function createFamilyRoutes({ db, important, sessionSecret, audit }) {
           (Number(right.srv_id) === 1 || Number(right.srv_id) === Number(service.id)) && protectedRoles.has(Number(right.role_id))
         );
         service.previewAvailable = Boolean(service.integration && actorCanRead && !targetHasPrivilegedAccess);
+        const integration = previewServices.find(item => item.ids.includes(Number(service.id)));
+        service.nativePreviewAvailable = Boolean(service.previewAvailable && nativePreview.supports(integration?.key) &&
+          target.rights.some(right => Number(right.srv_id) === Number(service.id) && Number(right.roleConfigured) === 1));
       }
       if (serviceId == null) return res.json({ active: target.active, services, children });
 
@@ -183,25 +187,19 @@ export function createFamilyRoutes({ db, important, sessionSecret, audit }) {
       if (!service) return res.sendStatus(404);
       const integration = previewServices.find(item => item.ids.includes(Number(service.id)));
       const selected = service.family ? selectedFamilyChild(children, childId) : null;
-      let snapshot;
-      if (!service.previewAvailable) snapshot = { state: 'permissions_only' };
-      else if (service.family && !selected) snapshot = { state: 'no_child' };
-      else snapshot = await important.previewSource(targetId, integration.key, selected?.id ?? null);
-
-      if (!page) return res.json(snapshot);
-      const messages = {
-        ready: snapshot.entries?.length ? '' : 'За этот период в сводке пока нет записей.',
-        permissions_only: 'Для этого просмотра доступны назначенные роли.',
-        no_child: 'У пользователя пока нет активных связанных детей.',
-        forbidden: 'Сервис не предоставил сводку для выбранного профиля.',
-        unavailable: 'Сервис временно недоступен.',
-      };
-      return res.render('servicePreview', {
-        layout: false, target, service, selected, snapshot,
-        message: messages[snapshot.state] ?? messages.unavailable,
-        hasSummary: snapshot.state !== 'permissions_only',
-      });
+      if (!page) {
+        if (!service.previewAvailable) return res.json({ state: 'permissions_only' });
+        if (service.family && !selected) return res.json({ state: 'no_child' });
+        return res.json(await important.previewSource(targetId, integration.key, selected?.id ?? null));
+      }
+      if (!service.nativePreviewAvailable) {
+        return res.status(403).send('Для выбранного сервиса или роли недоступен просмотр интерфейса.');
+      }
+      const destination = await nativePreview.launchSchedule({ actorId, targetId, childId: selected?.id ?? null });
+      if (!destination) return res.status(403).send('Просмотр интерфейса недоступен для этой роли.');
+      return res.redirect(303, destination);
     } catch {
+      if (page) return res.status(503).send('Не удалось открыть просмотр сервиса. Попробуйте ещё раз из портала.');
       return temporaryFailure(res);
     }
   }

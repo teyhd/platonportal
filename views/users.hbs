@@ -1,6 +1,6 @@
 {{!-- User-management workspace --}}
 <link rel="stylesheet" href="/css/users.css?v=family-2">
-{{#if familyAdminToken}}<link rel="stylesheet" href="/css/user-family-tools.css?v=3">{{/if}}
+{{#if familyAdminToken}}<link rel="stylesheet" href="/css/user-family-tools.css?v=4">{{/if}}
 <script>document.body.classList.add('users-route');</script>
 
 <main class="users-workspace">
@@ -202,4 +202,4 @@
 </div><footer class="users-drawer-footer"><span class="users-drawer-message" id="user-drawer-message" role="status"></span><div class="users-drawer-actions"><button class="users-cancel-button" type="button" data-close-drawer>Закрыть</button><button class="users-secondary-button" id="btn-retry-user" type="button" hidden>Повторить загрузку</button><button class="users-save-button" id="btn-save-current" type="button">Сохранить профиль</button></div></footer></div></aside>
 
 {{#if familyAdminToken}}{{> userFamilyTools}}{{/if}}
-<script type="module" src="/js/users.js?v=family-3"></script>
+<script type="module" src="/js/users.js?v=family-4"></script>

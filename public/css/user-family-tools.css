@@ -161,26 +161,3 @@
 .users-family-footer [data-preview-actions] { flex-wrap: wrap; }
 .users-family-footer [data-preview-tab] { flex: 1 0 auto; }
 .users-family-footer [data-preview-tab] button { width: 100%; }
-
-.users-preview-page {
-  --users-border: #405473;
-  margin: 0;
-  padding: clamp(1rem, 4vw, 3rem);
-  background: #0e1827;
-  color: #e7effa;
-  font: 1rem/1.5 system-ui, sans-serif;
-  overflow-wrap: anywhere;
-  color-scheme: dark;
-}
-.users-preview-page main { max-width: 44rem; margin: auto; }
-.users-preview-page h1 { margin: .45rem 0 .25rem; font-size: clamp(1.65rem, 5vw, 2.4rem); line-height: 1.15; }
-.users-preview-page h2 { margin: 0 0 .65rem; font-size: 1.05rem; }
-.users-preview-page p { margin: .4rem 0; }
-.users-preview-page section {
-  margin-top: 1rem;
-  padding: clamp(.85rem, 3vw, 1.25rem);
-  border: 1px solid var(--users-border);
-  border-radius: .75rem;
-  background: #101c2e;
-}
-.users-preview-page .users-family-list { margin-top: .65rem; }

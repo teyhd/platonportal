@@ -1,14 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import express from 'express';
-import { create } from 'express-handlebars';
-import { fileURLToPath } from 'node:url';
 import { contextualizeFamilyCard, makeFamilyLinks, positiveUserId, selectedFamilyChild } from '../vendor/familyAccess.mjs';
 import { createImportantService } from '../vendor/important.mjs';
 import { createFamilyRoutes } from '../vendor/familyRoutes.mjs';
+import { createNativeServicePreview } from '../vendor/nativeServicePreview.mjs';
 
 const children = [{ id: 101, name: 'Первый ребёнок', active: true }, { id: 102, name: 'Второй ребёнок', active: true }];
-const parentGrants = [8, 11, 15, 3].map(srv_id => ({ srv_id, role_id: 6, service: 'test', role: 'Родитель' }));
+const parentGrants = [8, 11, 15, 3].map(srv_id => ({ srv_id, role_id: 6, service: 'test', role: 'Родитель', roleConfigured: 1 }));
 
 test('child preference and service links are scoped to membership and service roles', () => {
   assert.equal(positiveUserId(['1']), null);
@@ -41,6 +40,7 @@ test('family selection, protected editing and scoped preview keep the real porta
   const replacements = [];
   const revision = 'r'.repeat(43);
   const snapshots = [];
+  const launches = [];
   const db = {
     getFamily: async id => id === 600 ? { children, rights: parentGrants, revision } : null,
     isAdmin: async id => id === 900,
@@ -62,12 +62,19 @@ test('family selection, protected editing and scoped preview keep the real porta
     db, sessionSecret: 'synthetic',
     important: { previewSource: async (...args) => (snapshots.push(args), { state: 'ready', entries: [] }) },
     audit: entry => reads.push(entry),
+    nativePreview: createNativeServicePreview({
+      env: { MAINPORTAL_SCHEDULE_TOKEN: 'fixture-service-key' },
+      fetchImpl: async (url, request) => {
+        assert.equal(url.pathname, '/internal/integrations/mainportal/v1/role-preview');
+        assert.equal(request.method, 'POST');
+        assert.equal(request.headers.Authorization, 'Bearer fixture-service-key');
+        launches.push(JSON.parse(request.body));
+        return Response.json({ code: 'a'.repeat(64) });
+      },
+    }),
   });
 
   const app = express();
-  app.engine('hbs', create({ extname: '.hbs' }).engine);
-  app.set('view engine', 'hbs');
-  app.set('views', fileURLToPath(new URL('../views', import.meta.url)));
   app.use(express.json());
   app.use((req, _res, next) => {
     const uid = Number(req.get('x-test-user'));
@@ -109,6 +116,8 @@ test('family selection, protected editing and scoped preview keep the real porta
   assert.equal((await post(900, preview, {}, 'invalid')).status, 403);
   const serviceList = await (await post(900, preview, {})).json();
   assert.equal(serviceList.services.find(service => service.id === '8').previewAvailable, true);
+  assert.equal(serviceList.services.find(service => service.id === '8').nativePreviewAvailable, true);
+  assert.equal(serviceList.services.find(service => service.id === '11').nativePreviewAvailable, false);
   assert.equal(serviceList.services.find(service => service.id === '3').previewAvailable, false);
   assert.deepEqual(serviceList.children.map(child => child.id), [101, 102]);
   assert.equal((await post(900, preview, { serviceId: 8, childId: 404 })).status, 403);
@@ -130,18 +139,18 @@ test('family selection, protected editing and scoped preview keep the real porta
   assert.equal((await openTab(900, { serviceId: 13 })).status, 404);
   assert.equal((await openTab(900, {})).status, 400);
   const page = await openTab(900, { serviceId: 8, childId: 102 });
-  assert.equal(page.status, 200);
+  assert.equal(page.status, 303);
   assert.equal(page.headers.get('cache-control'), 'private, no-store');
-  assert.match(page.headers.get('content-security-policy'), /frame-ancestors 'none'/);
-  const html = await page.text();
-  assert.match(html, /Тестовый родитель &lt;имя&gt;/);
-  assert.match(html, /Второй ребёнок · ID 102/);
-  assert.match(html, /Назначенные роли/);
-  assert.match(html, /Родитель/);
-  assert.match(html, /Сводка сервиса/);
-  const protectedTab = await openTab(900, { serviceId: 8 }, undefined, 500);
-  assert.match(await protectedTab.text(), /доступны назначенные роли/);
-  assert.deepEqual(snapshots, [[600, 'schedule', 102], [600, 'schedule', 102]]);
+  assert.equal(page.headers.get('set-cookie'), null);
+  const location = new URL(page.headers.get('location'));
+  assert.equal(location.origin, 'https://rasp.platoniks.ru');
+  assert.equal(location.pathname, '/audit/schedule/personal');
+  assert.equal(location.searchParams.get('child_id'), '102');
+  assert.equal(location.hash, '#code=' + 'a'.repeat(64));
+  assert.deepEqual(launches, [{ actor_id: 900, subject_id: 600 }]);
+  assert.equal((await openTab(900, { serviceId: 11 })).status, 403);
+  assert.equal((await openTab(900, { serviceId: 8 }, undefined, 500)).status, 403);
+  assert.deepEqual(snapshots, [[600, 'schedule', 102]]);
   assert.deepEqual(sessions.get(900), { uid: 900 });
   assert(reads.some(entry => /actor=900 subject=600 service=8 child=102/.test(entry)));
   assert.equal((await post(901, '/api/users/600/family', { childId: 102, action: 'remove' })).status, 403);

@@ -1,4 +1,4 @@
-import { createUserFamilyTools } from './user-family-tools.js?v=3';
+import { createUserFamilyTools } from './user-family-tools.js?v=4';
 
 export function normalizeSearchText(value) {
   return String(value ?? '')

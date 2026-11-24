@@ -39,6 +39,7 @@ export function createUserFamilyTools({ drawer, openDrawer }) {
   const serviceSelect = $('[data-preview-service]');
   const childSelect = $('[data-preview-child]');
   const previewTab = $('[data-preview-tab]');
+  const nativePreviewNote = $('[data-native-preview-note]');
   const entries = $('[data-preview-entries]');
   const date = $('[data-preview-date]');
   let targetId, mode, revision, retryAction, requestController, searchController, searchTimer;
@@ -96,6 +97,7 @@ export function createUserFamilyTools({ drawer, openDrawer }) {
     $('[data-preview-controls]').hidden = true;
     $('[data-preview-details]').hidden = true;
     previewTab.hidden = true;
+    nativePreviewNote.hidden = true;
     previewTab.removeAttribute('action');
     date.hidden = true;
     editor.removeAttribute('aria-busy');
@@ -362,7 +364,8 @@ export function createUserFamilyTools({ drawer, openDrawer }) {
 
   async function loadPreview() {
     const service = services.find(item => String(item.id) === serviceSelect.value);
-    previewTab.hidden = !service;
+    previewTab.hidden = !service?.nativePreviewAvailable;
+    nativePreviewNote.hidden = !service || service.nativePreviewAvailable;
     if (!service) return;
     const { current, signal } = startRequest();
     const child = service.family ? children.find(item => String(item.id) === childSelect.value) : null;
@@ -415,6 +418,7 @@ export function createUserFamilyTools({ drawer, openDrawer }) {
     $('[data-preview-controls]').hidden = true;
     $('[data-preview-details]').hidden = true;
     previewTab.hidden = true;
+    nativePreviewNote.hidden = true;
     preview.setAttribute('aria-busy', 'true');
     showStatus('Загружаем список сервисов…');
     try {
