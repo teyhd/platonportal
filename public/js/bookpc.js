@@ -26,7 +26,7 @@ const dateFormat = new Intl.DateTimeFormat('ru-RU', {
   timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit',
   hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
 });
-const states = { free: 'Свободно', occupied: 'Занято', own: 'У вас', 'not-rentable': 'Вне аренды', unknown: 'Статус неизвестен' };
+const states = { free: 'Свободно', occupied: 'Занято', own: 'У вас', unknown: 'Статус неизвестен' };
 const actionLabels = { rent: 'Взять', return: 'Сдать', 'force-return': 'Завершить аренду' };
 const rentalSlot = document.querySelector('[data-important-rentals]');
 const tiles = new Map();
@@ -85,11 +85,6 @@ function addDetail(label, value, layout) {
   details.append(row);
 }
 
-function deviceTone(device) {
-  if (device.own) return 'own';
-  return device.state === 'free' && !device.rentable ? 'not-rentable' : device.state;
-}
-
 function deviceOperation(device) {
   if (device.own) return 'return';
   if (device.canForceReturn) return 'force-return';
@@ -97,8 +92,8 @@ function deviceOperation(device) {
 }
 
 function paintCard() {
-  const { id, state, rental, issue } = shown.device;
-  const tone = deviceTone(shown.device);
+  const { id, state, own, rental, issue } = shown.device;
+  const tone = own ? 'own' : state;
   const operation = deviceOperation(shown.device);
   cardTitle.textContent = `Ноутбук №${id}`;
   cardState.textContent = states[tone];
@@ -198,16 +193,15 @@ function paintDevices(devices) {
       });
     }
     tile.device = device;
-    const tone = deviceTone(device);
+    const tone = device.own ? 'own' : device.state;
     tile.button.dataset.state = tone;
     tile.button.toggleAttribute('data-has-issue', Boolean(device.issue));
     tile.button.setAttribute('aria-label', `Ноутбук №${device.id}, ${states[tone]}${device.issue ? ', есть жалоба' : ''}`);
   }
   if (shown) paintCard();
-  const rentable = devices.filter(device => device.rentable);
-  const freeCount = rentable.filter(device => device.state === 'free').length;
+  const freeCount = devices.filter(device => device.state === 'free').length;
   const ownCount = devices.filter(device => device.own).length;
-  const availability = rentable.length ? `Для аренды ${freeCount} из ${rentable.length}` : 'Нет ноутбуков для аренды';
+  const availability = devices.length ? `Для аренды ${freeCount} из ${devices.length}` : 'Нет ноутбуков для аренды';
   summary.textContent = `${availability}${ownCount ? ` · У вас ${ownCount}` : ''}`;
 }
 
@@ -245,10 +239,10 @@ function refresh(feedback = '') {
     try {
       const { devices, issuesStatus } = await request();
       fresh = true;
-      paintDevices(devices);
+      paintDevices(devices.filter(device => device.rentable));
       paintOwnRentals(devices);
       issueMessage.textContent = issuesStatus === 'unavailable' ? 'Данные техподдержки временно недоступны.' : '';
-      message.textContent = feedback || (devices.length ? '' : 'В BookPC пока нет зарегистрированных ноутбуков.');
+      message.textContent = feedback;
       return true;
     } catch (error) {
       fresh = false;

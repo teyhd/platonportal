@@ -24,7 +24,6 @@
 .bookpc [data-state='free'] { --bookpc-ink: #08634a; --bookpc-bg: #e7f7ef; --bookpc-border: #b8e5ce; }
 .bookpc [data-state='occupied'] { --bookpc-ink: #9f2850; --bookpc-bg: #fff0f3; --bookpc-border: #f5cbd6; }
 .bookpc [data-state='own'] { --bookpc-ink: #2158a5; --bookpc-bg: #ebf3ff; --bookpc-border: #bfd6f9; }
-.bookpc [data-state='not-rentable'] { --bookpc-ink: #4b5563; --bookpc-bg: #f3f4f6; --bookpc-border: #d8dde5; }
 .bookpc [data-state='unknown'] { --bookpc-ink: #475569; --bookpc-bg: #f1f5f9; --bookpc-border: #d8e1eb; }
 .bookpc__grid {
   display: grid;
