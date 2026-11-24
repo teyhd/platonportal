@@ -1,0 +1,58 @@
+<link rel="stylesheet" href="/css/bookpc.css?v=1">
+<section class="bookpc" data-bookpc aria-labelledby="bookpc-title">
+  <button class="bookpc__toggle" type="button" aria-expanded="false" aria-controls="bookpc-body" data-toggle>
+    <span id="bookpc-title">Ноутбуки</span>
+    <span class="bookpc__summary" data-summary>Загружаем…</span>
+  </button>
+  <div class="bookpc__body" id="bookpc-body" hidden>
+    <div class="bookpc__toolbar">
+      <ul class="bookpc__legend" aria-label="Статусы ноутбуков">
+        <li data-state="free">Свободен</li>
+        <li data-state="occupied">Занят</li>
+        <li data-state="own">У вас</li>
+        <li class="bookpc__issue-key" data-issue-key hidden>Есть жалоба</li>
+      </ul>
+      <a href="https://pc.platoniks.ru/">Открыть BookPC</a>
+    </div>
+    <ul class="bookpc__grid" data-grid aria-label="Ноутбуки"></ul>
+    <p class="bookpc__message" data-message role="status"></p>
+    <p class="bookpc__message" data-issue-message></p>
+    <button class="bookpc__retry" type="button" data-retry hidden>Обновить</button>
+  </div>
+
+  <div class="bookpc__card" id="bookpc-device" popover="manual" role="group" aria-labelledby="bookpc-device-title" data-card>
+    <header class="bookpc__card-heading">
+      <h3 id="bookpc-device-title" data-card-title></h3>
+      <span class="bookpc__badge" data-card-state></span>
+    </header>
+    <p class="bookpc__card-caption" data-card-caption></p>
+    <dl class="bookpc__details" data-card-details></dl>
+    <aside class="bookpc__issue" data-issue hidden>
+      <p class="bookpc__issue-label" data-issue-label></p>
+      <p data-issue-title></p>
+      <a href="https://tech.platoniks.ru/" data-issue-link>Открыть заявку</a>
+    </aside>
+    <button class="bookpc__primary" type="button" data-action hidden></button>
+    <button class="bookpc__close" type="button" aria-label="Закрыть карточку ноутбука" data-close-card>×</button>
+  </div>
+
+  <dialog class="bookpc__dialog" data-dialog aria-labelledby="bookpc-dialog-title">
+    <form class="bookpc__form" data-form>
+      <h3 id="bookpc-dialog-title" data-dialog-title></h3>
+      <label data-room-field>Куда вы берёте ноутбук?
+        <select name="room" data-room>
+          <option value="" selected disabled>Выберите кабинет</option>
+        </select>
+      </label>
+      <label data-comment-field>Комментарий к возврату (необязательно)
+        <textarea name="comment" rows="3" maxlength="1000" placeholder="Например, куда вы его вернули"></textarea>
+      </label>
+      <p class="bookpc__message" data-form-message role="status"></p>
+      <div class="bookpc__form-actions">
+        <button class="bookpc__retry" type="button" data-cancel>Отмена</button>
+        <button class="bookpc__primary" type="submit" data-submit></button>
+      </div>
+    </form>
+  </dialog>
+</section>
+<script type="module" src="/js/bookpc.js?v=1"></script>

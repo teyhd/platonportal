@@ -7,6 +7,7 @@ import 'dotenv/config'
 import bcrypt from 'bcrypt';
 import * as db from './vendor/db.mjs';
 import { createImportantService, registerImportantRoutes } from './vendor/important.mjs';
+import { createBookpcBlock } from './vendor/bookpc.mjs';
 import { contextualizeFamilyCard, createFamilyAccess } from './vendor/familyAccess.mjs';
 import { createFamilyRoutes } from './vendor/familyRoutes.mjs';
 import { createImportantVcall, lessonRoomPrefix, registerImportantVcallRoutes } from './vendor/important-vcall.mjs';
@@ -195,6 +196,11 @@ app.use("/sso", makeSsoRouter({
   }
 }));
 app.use(platformsso)
+
+const bookpcBlock = createBookpcBlock({
+  canReadIssues: async uid => (await db.getUserRolesForsrvnam(uid, 'zayavki')).some(role => role >= 1),
+});
+bookpcBlock.register(app);
 
 app.use(express.json({ limit: "20mb" })); // для application/json
 app.use(async function (req, res, next) {
@@ -1129,6 +1135,7 @@ app.get('/',async (req,res)=>{
       canManageCards,
       family,
       showImportant: Boolean(req.session.uid) && importantService.enabled(),
+      showBookpc: bookpcBlock.visibleFor(req.session),
       showManualLink,
       isGuestHome: !res.locals.isSignedIn && homeCatalog.homeRoleMode === 'guest',
       isAdminHome: homeCatalog.homeRoleMode === 'admin',
