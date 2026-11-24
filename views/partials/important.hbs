@@ -17,7 +17,10 @@
     <p class="important-source-status" data-important-sources role="status">Загружаем вашу сводку…</p>
   </div>
   <p class="important-update" data-important-update role="status" hidden>Расписание обновлено</p>
-  {{#if showBookpc}}<section data-important-rentals aria-label="Активная аренда ПК" hidden></section>{{/if}}
+  {{#if showBookpc}}
+  <section data-important-rentals aria-label="Активная аренда ПК" hidden></section>
+  <section data-important-laptop-locations aria-label="Где находится ноутбук" hidden></section>
+  {{/if}}
   <details class="important-workday" data-important-workday hidden>
     <summary>
       <span data-important-workday-title></span>
@@ -44,5 +47,5 @@
   <noscript>Для обновления сводки включите JavaScript. Расписание и посещаемость доступны в каталоге сервисов.</noscript>
 </section>
 <link rel="stylesheet" href="/css/important.css?v=arrival-mark-1">
-<link rel="stylesheet" href="/css/important-services.css?v=1">
-<script type="module" src="/js/important.js?v=arrival-mark-1"></script>
+<link rel="stylesheet" href="/css/important-services.css?v=laptop-locations-1">
+<script type="module" src="/js/important.js?v=laptop-locations-1"></script>

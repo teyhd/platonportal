@@ -31,7 +31,7 @@ if (panel) {
   const setClock = value => { const parsed = Date.parse(value); if (Number.isFinite(parsed)) { baseTime = parsed; basePerformance = performance.now(); } };
   const query = extra => new URLSearchParams({ context, ...(childId && context === 'personal' ? { childId } : {}), ...extra });
   const workday = $('[data-important-workday]');
-  const rentalSlot = $('[data-important-rentals]');
+  const bookpcSlots = [$('[data-important-rentals]'), $('[data-important-laptop-locations]')].filter(Boolean);
   const orderSlot = $('[data-important-orders]');
 
   function renderOrders(orders) {
@@ -59,8 +59,8 @@ if (panel) {
   }
 
   function updatePanelVisibility() {
-    const rentalVisible = context === 'personal' && rentalSlot && !rentalSlot.hidden;
-    panel.hidden = !data?.visible && !rentalVisible;
+    const bookpcVisible = context === 'personal' && bookpcSlots.some(slot => !slot.hidden);
+    panel.hidden = !data?.visible && !bookpcVisible;
   }
 
   function formatCountdown(duration) {
@@ -531,7 +531,7 @@ if (panel) {
     more.setAttribute('aria-expanded', String(expanded));
     const emptyMessage = issues.length ? 'Нет доступных сведений' : context === 'school' ? 'Нет событий, требующих внимания' : 'Сейчас нет важных событий';
     const footer = $('[data-important-day]');
-    text(footer, data.daySummary || (!data.items.length && !data.orders?.items.length && rentalSlot?.hidden !== false ? emptyMessage : ''));
+    text(footer, data.daySummary || (!data.items.length && !data.orders?.items.length && bookpcSlots.every(slot => slot.hidden) ? emptyMessage : ''));
     footer.hidden = !footer.textContent;
     tick();
   }
@@ -706,9 +706,9 @@ if (panel) {
       if ([401,403,404].includes(response.status)) {
         clearPrivateData();
         status.hidden = true;
-        if (response.status === 401 && rentalSlot) {
-          rentalSlot.replaceChildren();
-          rentalSlot.hidden = true;
+        if (response.status === 401) for (const slot of bookpcSlots) {
+          slot.replaceChildren();
+          slot.hidden = true;
         }
         updatePanelVisibility();
         return;
@@ -779,9 +779,8 @@ if (panel) {
   window.addEventListener('focus', () => schedule(0)); window.addEventListener('online', () => schedule(0));
   window.addEventListener('pagehide', clearPrivateData);
   window.addEventListener('pageshow', event => { if (event.persisted) schedule(0); });
-  if (rentalSlot) {
-    new MutationObserver(updatePanelVisibility).observe(rentalSlot, { attributes: true, attributeFilter: ['hidden'] });
-  }
+  const observeBookpc = new MutationObserver(updatePanelVisibility);
+  for (const slot of bookpcSlots) observeBookpc.observe(slot, { attributes: true, attributeFilter: ['hidden'] });
   panel.hidden = false;
   setInterval(tick, 1000);
   refresh();

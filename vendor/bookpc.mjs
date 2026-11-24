@@ -21,13 +21,15 @@ async function loadBookpcAssignments() {
   if (!assignments || typeof assignments !== 'object' || Array.isArray(assignments)) {
     throw new Error('invalid_bookpc_assignments');
   }
-  const entries = Object.entries(assignments);
-  for (const [id, label] of entries) {
-    if (!/^[1-9][0-9]{0,9}$/.test(id) || typeof label !== 'string' || !label.trim() || label.length > 100) {
+  return new Map(Object.entries(assignments).map(([id, entry]) => {
+    const { label, room, showInImportant } = typeof entry === 'string' ? { label: entry } : entry ?? {};
+    if (!/^[1-9][0-9]{0,9}$/.test(id) || typeof label !== 'string' || !label.trim() || label.length > 100 ||
+        (room != null && (typeof room !== 'string' || !room.trim() || room.length > 60)) ||
+        (showInImportant != null && typeof showInImportant !== 'boolean') || (showInImportant && !room)) {
       throw new Error('invalid_bookpc_assignment');
     }
-  }
-  return new Map(entries.map(([id, label]) => [Number(id), label.trim()]));
+    return [Number(id), { label: label.trim(), ...(room && { room: room.trim() }), ...(showInImportant && { showInImportant }) }];
+  }));
 }
 
 export function createBookpcBlock({
@@ -100,9 +102,9 @@ export function createBookpcBlock({
     const devices = result.devices.filter(device => !assignments.has(Number(device.id)));
     if (access === 'admin' || access === 'moderator') {
       const liveStates = new Map(result.devices.map(device => [Number(device.id), device.state]));
-      for (const [id, label] of assignments) {
+      for (const [id, assignment] of assignments) {
         devices.push({
-          id, state: liveStates.get(id) ?? 'unknown', assignment: access === 'admin' ? { label } : {},
+          id, state: liveStates.get(id) ?? 'unknown', assignment: access === 'admin' ? assignment : {},
         });
       }
       devices.sort((first, second) => first.id - second.id);

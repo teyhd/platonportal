@@ -30,6 +30,7 @@ const states = { free: 'Свободно', occupied: 'Занято', own: 'У в
   assigned: 'Закреплён', 'assigned-admin': 'Закреплён' };
 const actionLabels = { rent: 'Взять', return: 'Сдать', 'force-return': 'Завершить аренду' };
 const rentalSlot = document.querySelector('[data-important-rentals]');
+const locationSlot = document.querySelector('[data-important-laptop-locations]');
 const tiles = new Map();
 let shown;
 let pinned = false;
@@ -109,6 +110,7 @@ function paintCard() {
   caption.hidden = !caption.textContent;
   details.replaceChildren();
   if (assignment?.label) addDetail('Закреплён за', assignment.label, 'wide');
+  if (assignment?.room) addDetail('Кабинет', assignment.room, 'compact');
   if (rental && !assignment) {
     addDetail('Кабинет №', roomLabel(rental.room), 'compact');
     addDetail('Начало', rental.startedAt ? dateFormat.format(new Date(rental.startedAt)).replace(',', '') : '—', 'compact');
@@ -211,7 +213,8 @@ function paintDevices(devices) {
     tile.button.dataset.state = tone;
     tile.item.toggleAttribute('data-named-assignment', Boolean(assignee));
     tile.assignee.hidden = !assignee;
-    tile.assignee.textContent = assignee || '';
+    const room = device.assignment?.room;
+    tile.assignee.textContent = assignee ? [assignee, room ? `каб. ${room}` : ''].filter(Boolean).join(' · ') : '';
     tile.button.toggleAttribute('data-has-issue', Boolean(device.issue));
     tile.button.setAttribute('aria-label', `Ноутбук №${device.id}, ${states[tone]}${assignee ? `, сотрудник: ${assignee}` : ''}${device.issue ? ', есть жалоба' : ''}`);
   }
@@ -250,6 +253,22 @@ function paintOwnRentals(devices) {
   if (focusedDevice) Array.from(rentalSlot.querySelectorAll('button')).find(button => button.dataset.returnDevice === focusedDevice)?.focus();
 }
 
+function paintLocations(devices) {
+  if (!locationSlot) return;
+  const rows = devices.filter(device => device.assignment?.showInImportant).map(({ id, assignment }) => {
+    const row = document.createElement('div');
+    row.className = 'bookpc-rental important-laptop-location';
+    const title = document.createElement('strong');
+    title.textContent = `Резервный ноутбук №${id}`;
+    const location = document.createElement('span');
+    location.textContent = `${assignment.label} · Кабинет ${assignment.room}`;
+    row.append(title, location);
+    return row;
+  });
+  locationSlot.replaceChildren(...rows);
+  locationSlot.hidden = !rows.length;
+}
+
 function refresh(feedback = '') {
   if (loading) return loading;
   retry.hidden = true;
@@ -259,12 +278,14 @@ function refresh(feedback = '') {
       fresh = true;
       paintDevices(devices.filter(device => device.rentable || device.assignment));
       paintOwnRentals(ownRentals);
+      paintLocations(devices);
       issueMessage.textContent = issuesStatus === 'unavailable' ? 'Данные техподдержки временно недоступны.' : '';
       message.textContent = feedback;
       return true;
     } catch (error) {
       fresh = false;
       paintOwnRentals([]);
+      paintLocations([]);
       if (error.status === 401 || error.status === 403 || error.message === 'assignments_unavailable') paintDevices([]);
       if (shown) paintCard();
       summary.textContent = tiles.size ? 'Данные не обновились' : 'Статус недоступен';
@@ -391,7 +412,10 @@ setInterval(() => { if (!document.hidden && !dialog.open) refresh(); }, 45000);
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && !dialog.open) refresh();
 });
-window.addEventListener('pagehide', () => paintOwnRentals([]));
+window.addEventListener('pagehide', () => {
+  paintOwnRentals([]);
+  paintLocations([]);
+});
 window.addEventListener('pageshow', event => {
   if (event.persisted && !dialog.open) refresh();
 });
