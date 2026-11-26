@@ -1,0 +1,37 @@
+.projects-teaser { margin: 32px 0; padding-top: 24px; border-top: 1px solid #dbe2ec; font-family: inherit; }
+.projects-teaser-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+.projects-teaser h2 { margin:0; color:#0f172a; font-size:clamp(23px,2vw,30px); font-weight:650; letter-spacing:-.025em; line-height:1.2; }
+.projects-teaser-heading p { margin:8px 0 0; color:#59657a; font-size:15px; }
+.projects-teaser-open { display:inline-flex; align-items:center; min-height:44px; color:#1763dc; font-weight:600; text-decoration:none; }
+.projects-teaser-controls { display:flex; gap:8px; margin:20px 0 16px; }
+.projects-teaser-controls button { min-height:40px; padding:8px 15px; border:1px solid #cdd6e4; border-radius:9px; background:#fff; color:#364158; font-family:inherit; font-weight:600; font-size:14px; cursor:pointer; }
+.projects-teaser-controls button[aria-pressed=true] { background:#1763dc; border-color:#1763dc; color:#fff; }
+.projects-teaser-controls button:focus-visible,.projects-teaser a:focus-visible { outline:3px solid #6ba5ff; outline-offset:4px; }
+.projects-teaser-list { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:18px; }
+.projects-teaser-card { min-width:0; }
+.projects-teaser-card a { display:block; color:inherit; text-decoration:none; position:relative; }
+.projects-teaser-image { display:flex; align-items:center; justify-content:center; aspect-ratio:4/3; border-radius:12px; overflow:hidden; background:#eaf0f9; color:#1763dc; font-weight:600; }
+.projects-teaser-image img { width:100%; height:100%; object-fit:contain; transition:transform .2s ease; }
+.projects-teaser-card a:hover img { transform:scale(1.025); }
+.projects-teaser-card h3 { margin:12px 36px 4px 0; color:#111c32; font-size:15px; font-weight:650; line-height:1.4; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.projects-teaser-card p { margin:0; color:#69768d; font-size:12px; }
+.projects-teaser-likes { position:absolute; right:0; bottom:21px; color:#59657a; font-size:12px; }
+.projects-teaser-status { color:#64748b; font-size:14px; line-height:1.6; }
+.projects-teaser-status:empty { display:none; }
+.projects-teaser-moderation { margin-top:12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:13px; }
+.projects-teaser-work-status { padding:5px 8px; border-radius:7px; background:#e8f1ff; color:#285b9f; }
+.projects-teaser-status-menu { width:100%; }
+.projects-teaser-status-menu summary,.projects-teaser-refresh { min-height:44px; box-sizing:border-box; padding:10px; border:1px solid #cdd6e4; border-radius:8px; color:#285b9f; background:#fff; cursor:pointer; font:inherit; }
+.projects-teaser-status-menu summary:focus-visible,.projects-teaser-status-options button:focus-visible,.projects-teaser-refresh:focus-visible { outline:3px solid #6ba5ff; outline-offset:3px; }
+.projects-teaser-status-options { display:grid; gap:7px; padding:10px; margin-top:7px; border:1px solid #dbe2ec; border-radius:9px; background:#f8fbff; }
+.projects-teaser-status-options button { min-height:44px; padding:9px; text-align:left; background:#fff; color:#243d62; border:1px solid #cdd6e4; border-radius:7px; font:inherit; cursor:pointer; }
+.projects-teaser-status-options button:disabled { cursor:default; opacity:.6; }
+.projects-teaser-status-options strong,.projects-teaser-status-options small { display:block; }
+.projects-teaser-status-options small { margin-top:3px; font-size:12px; line-height:1.5; color:#59657a; }
+.projects-teaser-status-options a { color:#1763dc; padding:8px 0; min-height:28px; }
+.projects-teaser-status-options p { white-space:normal; line-height:1.5; font-size:13px; margin:0; }
+.projects-teaser-refresh { margin-top:8px; }
+.projects-teaser-refresh[hidden] { display:none; }
+@media(max-width:900px) { .projects-teaser-list { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; padding:2px 2px 12px; } .projects-teaser-card { flex:0 0 220px; scroll-snap-align:start; } }
+@media(max-width:600px) { .projects-teaser-moderation { font-size:14px; } .projects-teaser-status-options button { font-size:16px; } .projects-teaser-status-options small,.projects-teaser-status-options p { font-size:14px; } }
+@media(prefers-reduced-motion:reduce) { .projects-teaser-image img { transition:none; } }
