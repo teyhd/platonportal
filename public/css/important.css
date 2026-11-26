@@ -465,6 +465,86 @@
 }
 .important-detail-metadata:not(:empty) { margin-bottom: 7px; font-weight: 600; }
 .important-detail-status { margin-top: 6px; }
+.important-panel .important-item[data-kind="schedule_change"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 10px;
+  padding: 6px 10px;
+}
+[data-kind="schedule_change"] .important-item-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 9px;
+}
+[data-kind="schedule_change"] .important-item-title { font-size: 14px; }
+[data-kind="schedule_change"] .important-item-subtitle { margin: 0; font-size: 12px; }
+[data-kind="schedule_change"] .important-notes:empty { display: none; }
+.important-panel .important-item[data-kind="schedule_change"] .important-item-controls {
+  justify-content: flex-end;
+  gap: 4px 6px;
+  margin-top: 0;
+}
+.important-panel [data-kind="schedule_change"] .important-item-controls :is(button, a) {
+  min-height: 31px;
+  padding: 3px 8px;
+  font-size: 12px;
+}
+[data-kind="schedule_change"] .important-details {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 5px;
+  margin-top: 6px;
+  padding: 7px 9px;
+}
+[data-kind="schedule_change"] .important-detail-metadata { order: 1; margin: 0; }
+[data-kind="schedule_change"] .important-detail-status { margin: 0; }
+[data-kind="schedule_change"] :is(.important-detail-status, .important-detail-metadata, .important-history-sides):empty {
+  display: none;
+}
+.important-history-sides {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.important-history-side { min-width: 0; padding: 3px 8px; overflow-wrap: anywhere; }
+.important-history-side + .important-history-side { border-inline-start: 1px solid var(--important-border); }
+.important-history-label { margin: 0 0 4px; color: var(--important-muted); font-size: 12px; font-weight: 700; }
+.important-history-side[data-side="after"] .important-history-label { color: var(--important-blue); }
+.important-history-empty { margin: 0; color: var(--important-muted); font-size: 13px; }
+.important-history-lessons { margin: 0; padding: 0; list-style: none; }
+.important-history-lesson strong { font-size: 13px; }
+.important-history-lesson + .important-history-lesson {
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px solid var(--important-border);
+}
+.important-history-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  color: var(--important-muted);
+  font-size: 12px;
+}
+.important-history-lesson [data-changed="true"] { color: var(--important-blue); font-weight: 650; }
+@media (max-width: 580px) {
+  .important-panel .important-item[data-kind="schedule_change"] { grid-template-columns: minmax(0, 1fr); }
+  .important-panel .important-item[data-kind="schedule_change"] .important-item-controls {
+    justify-content: flex-start;
+    margin-top: 4px;
+  }
+  .important-panel [data-kind="schedule_change"] .important-item-controls :is(button, a) { min-height: 40px; }
+  .important-history-sides { grid-template-columns: minmax(0, 1fr); }
+  .important-history-side + .important-history-side {
+    margin-top: 4px;
+    padding-top: 6px;
+    border-inline-start: 0;
+    border-top: 1px solid var(--important-border);
+  }
+}
 .important-students { margin: 3px 0 0; padding: 0; list-style: none; }
 .important-student {
   display: grid;

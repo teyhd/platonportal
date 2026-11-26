@@ -165,6 +165,29 @@ test('schedule history shows verified room change without exposing source snapsh
   assert.match(history.notes[0], /204 → 318/);
   assert.equal(view.items[0].notes[0], 'Кабинет 204 → 318');
   assert.deepEqual(history.rows.map(row => row.name), ['Было', 'Стало']);
+  assert.deepEqual(history.rows.map(row => row.lessons[0].place), ['Кабинет 204', 'Кабинет 318']);
+  assert.equal(history.rows[0].lessons[0].studentIds, undefined);
+});
+
+test('schedule history always has two sides for additions, removals and bulk edits', () => {
+  const first = {date, start:at('09:00'), end:at('09:40'), subject:'Логопедия', studentIds:[11]};
+  const second = {date, start:at('10:00'), end:at('10:40'), subject:'Математика', online:true};
+  const events = [
+    {key:'remove', before:[second, first]},
+    {key:'add', after:[second]},
+    {key:'move', before:[first], after:[second, first]},
+    {key:'unverified'},
+  ].map(event => ({...event, kind:'schedule_change', title:'Опубликованное расписание изменено', priority:30, href:'/schedule/personal?child_id=11'}));
+  const schedule = {schema:1, date, state:'published', roles:['parent'], events, historyLegacyGap:true};
+  const view = buildImportantView({schedule, now, sources:{schedule:{status:'ready'}}});
+  expandImportantView(view,{schedule, integrated:{}, now});
+  const byKey = Object.fromEntries(view.items.map(item=>[item.key,item]));
+  assert.deepEqual(byKey.remove.rows.map(row=>row.lessons.map(lesson=>lesson.subject)), [['Логопедия','Математика'],[]]);
+  assert.deepEqual(byKey.add.rows.map(row=>row.lessons.map(lesson=>lesson.subject)), [[],['Математика']]);
+  assert.deepEqual(byKey.move.rows.map(row=>row.lessons.map(lesson=>lesson.subject)), [['Логопедия'],['Логопедия','Математика']]);
+  assert.equal(byKey.move.actions[0].href,'https://rasp.platoniks.ru/schedule/personal?child_id=11');
+  assert.equal(byKey.unverified.rows, undefined);
+  assert.deepEqual(byKey.remove.metadata,['История изменений доступна не полностью']);
 });
 
 test('family Flex counts only for the selected child and family Calendar never occupies the adult', () => {

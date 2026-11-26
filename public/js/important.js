@@ -533,6 +533,7 @@ if (panel) {
     items.forEach((item, index) => {
       const node = nodes.get(item.key) || createItem(item.key);
       const lesson = item.kind === 'lesson';
+      const history = item.kind === 'schedule_change';
       const school = context === 'school';
       const count = item.kind === 'attendance' ? item.detailCount : item.count;
       node.article.dataset.tone = item.tone || 'neutral';
@@ -556,7 +557,7 @@ if (panel) {
         text(node.timing, schoolCategories[item.kind] || '');
         node.timing.hidden = !schoolCategories[item.kind];
       }
-      const notes = (item.notes ?? []).filter(note => !(lesson && note === `Требуют проверки: ${item.attentionCount}`));
+      const notes = history ? [] : (item.notes ?? []).filter(note => !(lesson && note === `Требуют проверки: ${item.attentionCount}`));
       const notesKey = JSON.stringify(notes);
       if (node.notes.dataset.value !== notesKey) { node.notes.replaceChildren(...notes.map(note => element('p', 'important-note', note))); node.notes.dataset.value = notesKey; }
       const actionKey = JSON.stringify(item.actions ?? []);
@@ -599,7 +600,7 @@ if (panel) {
         node.body.replaceChildren();
       }
       node.controls.hidden = node.toggle.hidden && !item.actions?.length;
-      const detailCountLabel = school && count > 0 ? '' : ` · ${item.detailCount}`;
+      const detailCountLabel = history || school && count > 0 ? '' : ` · ${item.detailCount}`;
       const detailLabel = lesson ? 'Ученики' : item.detailLabel || 'Подробнее';
       text(node.toggleText, item.detailCount ? detailLabel + detailCountLabel : 'Подробности');
       node.checkCount.hidden = !lesson || !item.attentionCount;
@@ -654,20 +655,22 @@ if (panel) {
   function detailState(key) {
     if (details.has(key)) return details.get(key);
     const node = nodes.get(key);
+    const history = node.article.dataset.kind === 'schedule_change';
     const metadata = element('p', 'important-detail-metadata');
     const actions = element('div', 'important-item-actions important-detail-links');
     actions.hidden = true;
     const tools = element('div', 'important-detail-tools');
+    tools.hidden = history;
     const filters = element('div');
     const all = element('button', '', 'Все'); all.type = 'button'; all.setAttribute('aria-pressed', 'true');
     const attention = element('button', '', 'Требуют внимания'); attention.type = 'button'; attention.setAttribute('aria-pressed', 'false');
     const search = element('input'); search.type = 'search'; search.placeholder = 'Найти ученика'; search.setAttribute('aria-label', 'Поиск ученика');
     filters.append(all, attention); tools.append(filters, search);
     const message = element('p', 'important-detail-status'); message.setAttribute('role', 'status');
-    const students = element('ul', 'important-students');
+    const students = element('ul', history ? 'important-history-sides' : 'important-students');
     const more = element('button', 'important-more-rows', 'Показать ещё'); more.type = 'button'; more.hidden = true;
     node.body.append(metadata, actions, tools, message, students, more);
-    const state = { metadata, actions, tools, filters, all, attention, search, message, students, more, rows: new Map(), filter: 'all', q: '', nextOffset: null, request: 0 };
+    const state = { history, metadata, actions, tools, filters, all, attention, search, message, students, more, rows: new Map(), filter: 'all', q: '', nextOffset: null, request: 0 };
     let searchTimer;
     search.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.q = search.value; loadDetails(key, true); }, 250); });
     for (const [button, filter] of [[all, 'all'], [attention, 'attention']]) button.addEventListener('click', () => { state.filter = filter; loadDetails(key, true); });
@@ -676,6 +679,10 @@ if (panel) {
   }
 
   function renderRows(state, rows, reset) {
+    if (state.history) {
+      renderHistory(state, rows);
+      return;
+    }
     const incoming = new Set(rows.map(row => row.id));
     if (reset) for (const [id, row] of state.rows) if (!incoming.has(id)) { if (row.node.contains(document.activeElement)) state.all.focus({ preventScroll:true }); row.node.remove(); state.rows.delete(id); }
     for (const person of rows) {
@@ -694,6 +701,41 @@ if (panel) {
       if (person.href) row.link.href = person.href;
       if (!row.node.contains(document.activeElement)) state.students.append(row.node);
     }
+  }
+
+  function renderHistory(state, rows) {
+    const signature = JSON.stringify(rows);
+    if (state.students.dataset.value === signature) return;
+    state.students.dataset.value = signature;
+    const previous = rows.find(row => row.id === 'before')?.lessons ?? [];
+    state.students.replaceChildren(...rows.map(({ id, name, lessons }) => {
+      const side = element('li', 'important-history-side');
+      side.dataset.side = id;
+      side.append(element('h4', 'important-history-label', name));
+      if (!lessons?.length) {
+        side.append(element('p', 'important-history-empty', id === 'before' ? 'Не было в расписании' : 'Нет в расписании'));
+        return side;
+      }
+      const list = element('ul', 'important-history-lessons');
+      const compare = id === 'after' && lessons.length === 1 && previous.length === 1 ? previous[0] : null;
+      for (const lesson of lessons) {
+        const line = element('li', 'important-history-lesson');
+        const subject = element('strong', '', lesson.subject);
+        if (compare && lesson.subject !== compare.subject) subject.dataset.changed = 'true';
+        line.append(subject);
+        const facts = element('div', 'important-history-facts');
+        for (const field of ['when', 'place', 'teacher']) {
+          if (!lesson[field]) continue;
+          const fact = element('span', '', lesson[field]);
+          if (compare && lesson[field] !== compare[field]) fact.dataset.changed = 'true';
+          facts.append(fact);
+        }
+        if (facts.childElementCount) line.append(facts);
+        list.append(line);
+      }
+      side.append(list);
+      return side;
+    }));
   }
 
   async function loadDetails(key, reset, automatic = false) {
@@ -741,13 +783,14 @@ if (panel) {
       state.more.hidden = payload.nextOffset == null;
       state.search.hidden = payload.total <= 12 && !state.q;
       const item = data?.items.find(item => item.key === key);
-      state.tools.hidden = Boolean(item?.remoteDetails) || !item?.detailCount;
+      state.tools.hidden = state.history || Boolean(item?.remoteDetails) || !item?.detailCount;
       state.filters.hidden = !item?.attentionCount && state.filter === 'all';
       state.all.setAttribute('aria-pressed', String(state.filter === 'all'));
       state.attention.setAttribute('aria-pressed', String(state.filter === 'attention'));
       text(state.metadata, payload.metadata.join(' · '));
-      text(state.message, payload.total ? `Показано ${state.rows.size} из ${payload.total}`
-        : item?.detailCount ? 'По выбранным условиям ничего не найдено' : 'Список участников не указан');
+      text(state.message, state.history ? payload.total ? '' : 'История недоступна'
+        : payload.total ? `Показано ${state.rows.size} из ${payload.total}`
+          : item?.detailCount ? 'По выбранным условиям ничего не найдено' : 'Список участников не указан');
     } catch (error) { if (error.name !== 'AbortError' && request === state.request) text(state.message, 'Не удалось обновить сведения. Сверните и откройте список для повтора.'); }
     finally { clearTimeout(timeout); if (request === state.request) state.more.disabled = false; }
   }

@@ -234,25 +234,34 @@ function scheduleHistory(view, schedule) {
     if (!event) continue;
     const before=Array.isArray(event.before) ? event.before : [];
     const after=Array.isArray(event.after) ? event.after : [];
+    if (!before.length && !after.length) continue;
     const dateText = date => /^\d{4}-\d{2}-\d{2}$/.test(date ?? '')
       ? shortDate.format(new Date(`${date}T12:00:00+03:00`)) : '';
     const room = value => text(value.roomName ?? value.room, 100);
-    const descriptor = value => [
-      dateText(value.date),
-      hasInterval(value) ? `${time(value.start)}–${time(value.end)}` : '',
-      value.online ? 'Онлайн' : room(value) ? `Кабинет ${room(value)}` : '',
-      text(value.teacherName, 180),
-    ].filter(Boolean).join(' · ');
-    item.rows = [['Было',before],['Стало',after]].flatMap(([label, snapshots]) =>
-      snapshots.map((value, index) => ({
-        id:`${label}:${index}`, name:`${label}${value.subject ? ' · ' + text(value.subject, 160) : ''}`,
-        description:descriptor(value),
-      })));
+    const interval = value => [dateText(value.date), hasInterval(value) ? `${time(value.start)}–${time(value.end)}` : '']
+      .filter(Boolean).join(' · ');
+    const snapshots = entries => [...entries].sort((a,b) => String(a.date).localeCompare(String(b.date)) ||
+      String(a.start).localeCompare(String(b.start))).map(value => ({
+      subject: text(value.subject, 160) || 'Занятие',
+      when: interval(value),
+      place: value.online ? 'Онлайн' : room(value) ? `Кабинет ${room(value)}` : '',
+      teacher: text(value.teacherName, 180),
+    }));
+    item.rows = [
+      { id:'before', name:'Было', lessons:snapshots(before) },
+      { id:'after', name:'Стало', lessons:snapshots(after) },
+    ];
     item.detailCount=item.rows.length;
-    item.detailLabel='Изменения';
-    if (Number.isFinite(instant(event.changedAt))) item.subtitle=`Обновлено ${shortDate.format(new Date(event.changedAt))} в ${time(event.changedAt)}`;
+    item.detailLabel='Было / стало';
+    if (item.title === 'Опубликованное расписание изменено') {
+      item.title = !before.length ? 'Добавлено в расписание' : !after.length ? 'Убрано из расписания' : 'Расписание изменилось';
+    }
+    item.actions = item.actions.filter(action => action.href).map(action => ({ ...action, label:'Расписание' }));
+    const subjects = new Set([...before, ...after].map(value => text(value.subject, 80)).filter(Boolean));
+    const changedAt = Number.isFinite(instant(event.changedAt)) ? `${shortDate.format(new Date(event.changedAt))}, ${time(event.changedAt)}` : '';
+    item.subtitle = [subjects.size === 1 ? [...subjects][0] : '', changedAt].filter(Boolean).join(' · ');
     if (schedule.historyLegacyGap || schedule.unavailableFeatures?.includes('history_truncated')) {
-      item.metadata=['Показана доступная часть истории изменений'];
+      item.metadata=['История изменений доступна не полностью'];
     }
     if (before.length !== 1 || after.length !== 1) continue;
     const [previous] = before;
@@ -265,7 +274,7 @@ function scheduleHistory(view, schedule) {
     if (room(previous) && room(current) && room(previous) !== room(current)) labels.push(`Кабинет ${room(previous)} → ${room(current)}`);
     if (hasInterval(previous) && hasInterval(current) &&
         (previous.start !== current.start || previous.end !== current.end)) {
-      labels.push(`${descriptor({date:previous.date,start:previous.start,end:previous.end})} → ${descriptor({date:current.date,start:current.start,end:current.end})}`);
+      labels.push(`${interval(previous)} → ${interval(current)}`);
     }
     if (previous.online !== current.online) labels.push(current.online ? 'Теперь онлайн' : 'Теперь очно');
     if (!labels.length) continue;
@@ -313,9 +322,9 @@ function calendarConflicts(view, events, schedule, now) {
 }
 
 export function expandImportantView(view, { schedule, attendance, integrated, now, vcallRooms = {} }) {
+  scheduleHistory(view, schedule);
   if (view.context === 'personal') {
     familyDay(view, schedule);
-    scheduleHistory(view, schedule);
     view.workday = workdayPreview(schedule, attendance, now);
     if (view.workday.some(day => day.entries.some(entry => entry.kind === 'shift') || day.pending.some(entry => entry.kind === 'shift'))) {
       view.items = view.items.filter(item => item.key !== 'shift');
