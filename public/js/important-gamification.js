@@ -5,6 +5,7 @@ const dateFormatter = new Intl.DateTimeFormat('ru', { day:'numeric', month:'shor
 const scoreValues = [1, 2, 3, 4, 5];
 const cellKey = task => [task.scopeId, task.studentId, task.criterionId].join(':');
 const taskKey = task => cellKey(task) + ':' + task.periodId;
+const availableGradeControl = 'button:not([aria-disabled="true"]), a';
 
 function element(tag, className, value) {
   const node = document.createElement(tag);
@@ -59,21 +60,11 @@ export function mountGamification(panel, refreshSummary) {
 
   function gradeRow(task) {
     const key = taskKey(task);
-    const operation = operations.get(cellKey(task));
-    const ownOperation = operation?.key === key;
     const row = element('div', 'important-grade');
     row.dataset.task = key;
     const label = element('div', 'important-grade-label');
     label.append(element('strong', '', task.criterion));
     row.append(label);
-    const saved = confirmed.get(key);
-    if (saved) {
-      row.dataset.state = 'confirmed';
-      const status = element('p', 'important-grade-saved', 'Сохранено');
-      status.prepend(element('strong', '', String(saved.score)));
-      row.append(status);
-      return row;
-    }
     if (task.reason) {
       row.dataset.state = 'journal';
       const link = element('a', 'important-grade-link', task.reason === 'draft' ? 'Черновик в журнале' : `Шкала ${task.min}–${task.max} в журнале`);
@@ -82,6 +73,10 @@ export function mountGamification(panel, refreshSummary) {
       return row;
     }
 
+    row.dataset.gradeCell = cellKey(task);
+    if (task.draft != null) row.dataset.draft = task.draft;
+    label.append(element('p', 'important-grade-feedback'));
+    const actions = element('div', 'important-grade-actions');
     const keys = element('div', 'important-grade-keys');
     keys.setAttribute('role', 'group');
     keys.setAttribute('aria-label', `${task.criterion} · ${task.name}`);
@@ -94,21 +89,45 @@ export function mountGamification(panel, refreshSummary) {
       button.setAttribute('aria-label', [`Выставить ${score}`, task.criterion, meaning].filter(Boolean).join(' · '));
       if (meaning) button.title = meaning;
       button.disabled = outOfRange;
-      button.setAttribute('aria-disabled', String(outOfRange || !!operation && (operation.saving || !ownOperation || operation.score !== score)));
       if (task.draft === score) button.dataset.draft = 'true';
-      if (ownOperation && operation.score === score) button.dataset.gradeState = operation.saving ? 'saving' : 'retry';
-      button.addEventListener('click', () => save(task, score));
+      button.addEventListener('click', () => save(key, score));
       keys.append(button);
     }
-    row.append(keys);
-    if (ownOperation) {
-      row.dataset.state = operation.saving ? 'saving' : 'retry';
-      const status = operation.saving ? 'Сохраняем…' : `Нажмите ${operation.score} ещё раз, чтобы повторить`;
-      label.append(element('p', 'important-grade-feedback', status));
-    } else if (task.draft != null) {
-      label.append(element('p', 'important-grade-meta', `Черновик: ${task.draft}`));
-    }
+    const status = element('p', 'important-grade-saved', 'Сохранено');
+    status.prepend(element('strong'));
+    actions.append(keys, status);
+    row.append(actions);
+    updateGradeRow(row);
     return row;
+  }
+
+  function updateGradeRow(row) {
+    const key = row.dataset.task;
+    const operation = operations.get(row.dataset.gradeCell);
+    const ownOperation = operation?.key === key;
+    const saved = confirmed.get(key);
+    row.dataset.state = saved ? 'confirmed' : ownOperation ? (operation.saving ? 'saving' : 'retry') : '';
+
+    const keys = row.querySelector('.important-grade-keys');
+    keys.inert = Boolean(saved);
+    for (const button of keys.children) {
+      const selected = ownOperation && Number(button.dataset.score) === operation.score;
+      button.setAttribute('aria-disabled', String(button.disabled || !!saved || !!operation && (operation.saving || !selected)));
+      if (selected) button.dataset.gradeState = row.dataset.state;
+      else delete button.dataset.gradeState;
+    }
+
+    const status = row.querySelector('.important-grade-saved');
+    status.hidden = !saved;
+    if (saved) status.firstElementChild.textContent = saved.score;
+    const feedback = row.querySelector('.important-grade-feedback');
+    if (saved) feedback.textContent = '';
+    else if (ownOperation) feedback.textContent = operation.saving ? 'Сохраняем…' : `Повторите балл ${operation.score}`;
+    else feedback.textContent = row.dataset.draft ? `Черновик: ${row.dataset.draft}` : '';
+  }
+
+  function updateVisibleCell(key) {
+    for (const row of list.querySelectorAll(`[data-grade-cell="${key}"]`)) updateGradeRow(row);
   }
 
   function studentRow({ pending, saved }) {
@@ -183,7 +202,7 @@ export function mountGamification(panel, refreshSummary) {
       const target = ordered.map(row => row.querySelector(
         row.dataset.task === focusedId && focusedScore
           ? `button[data-score="${focusedScore}"]:not(:disabled)`
-          : 'button:not([aria-disabled="true"]), a'
+          : availableGradeControl
       )).find(Boolean) ?? summary;
       target.focus({ preventScroll:true });
     }
@@ -223,8 +242,10 @@ export function mountGamification(panel, refreshSummary) {
     }
   }
 
-  async function save(task, score) {
-    const key = cellKey(task), row = taskKey(task);
+  async function save(row, score) {
+    const task = tasks?.find(item => taskKey(item) === row);
+    if (!task) return;
+    const key = cellKey(task);
     let operation = operations.get(key);
     if (task.reason || score < task.min || score > task.max ||
         operation && (operation.saving || operation.key !== row || operation.score !== score)) return;
@@ -237,7 +258,7 @@ export function mountGamification(panel, refreshSummary) {
     request = undefined;
     operation.saving = true;
     message.textContent = '';
-    render();
+    updateVisibleCell(key);
     try {
       const response = await fetch(endpoint, { method:'POST', credentials:'same-origin', signal:AbortSignal.timeout(11_000),
         headers:{ 'Content-Type':'application/json', 'Idempotency-Key':operation.id },
@@ -253,7 +274,7 @@ export function mountGamification(panel, refreshSummary) {
         }
         if ([403,409,422].includes(response.status)) {
           operations.delete(key);
-          render();
+          updateVisibleCell(key);
           notice.textContent = 'Оценка изменилась или стала недоступна. Обновляем список.';
           await load();
           refreshSummary();
@@ -266,9 +287,23 @@ export function mountGamification(panel, refreshSummary) {
       confirmed.set(row, { task, score });
       tasks = tasks.filter(item => taskKey(item) !== row).map(item =>
         cellKey(item) === key ? { ...item, version:content.version } : item);
-      const finished = !tasks.some(item => item.studentId === task.studentId);
-      notice.textContent = finished ? `${task.name}. Все оценки выставлены.` : `Оценка ${score} сохранена. Осталось ${tasks.length}.`;
-      render();
+      const pending = tasks.filter(item => item.studentId === task.studentId).length;
+      const tile = list.querySelector(`[data-task="${row}"]`);
+      notice.textContent = pending ? `Оценка ${score} сохранена. Осталось ${tasks.length}.` : `${task.name}. Все оценки выставлены.`;
+      if (pending) {
+        const student = tile?.closest('.important-grade-student');
+        const focused = tile?.contains(document.activeElement);
+        if (student) student.querySelector('.important-grade-remaining').textContent = `Осталось ${pending}`;
+        updateVisibleCell(key);
+        if (focused) {
+          const tiles = [...student.querySelectorAll('[data-task]')];
+          const index = tiles.indexOf(tile);
+          const next = [...tiles.slice(index + 1), ...tiles.slice(0,index)].map(item => item.querySelector(availableGradeControl)).find(Boolean);
+          (next ?? summary).focus({ preventScroll:true });
+        }
+      } else {
+        render();
+      }
       setCount(tasks.length);
       await load();
       refreshSummary();
@@ -276,7 +311,7 @@ export function mountGamification(panel, refreshSummary) {
       if (scope !== generation) return;
       operation.saving = false;
       notice.textContent = 'Подтверждение не получено. Можно повторить отправку тем же баллом.';
-      render();
+      updateVisibleCell(key);
     }
   }
 

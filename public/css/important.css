@@ -719,11 +719,22 @@
 .important-grade-meta,
 .important-grade-feedback { margin: 1px 0 0; color: var(--important-muted); font-size: 12px; }
 .important-grade-feedback:empty { display: none; }
+.important-grade-label .important-grade-feedback {
+  display: block;
+  min-height: 15px;
+  line-height: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.important-grade-actions {
+  position: relative;
+  width: min(100%, 230px);
+}
 .important-grade-keys {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 4px;
-  width: min(100%, 230px);
 }
 .important-panel .important-grade-keys button {
   min-width: 0;
@@ -753,11 +764,13 @@
   border-color: var(--portal-success-line, #95cdb2);
   background: var(--portal-success-wash, #e8f7ef);
 }
+.important-grade[data-state="confirmed"] .important-grade-keys { visibility: hidden; }
 .important-grade-saved {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   gap: 6px;
-  min-height: 36px;
   margin: 0;
   color: var(--portal-success, #176846);
   font-size: 12px;
@@ -784,16 +797,14 @@
     gap: 10px;
     max-width: 640px;
   }
-  .important-grade:only-child .important-grade-keys { width: 230px; }
+  .important-grade:only-child .important-grade-actions { width: 230px; }
 }
 @container important-grades (max-width: 550px) {
-  .important-grade-keys { width: 100%; }
-  .important-panel .important-grade-keys button,
-  .important-grade-saved { min-height: 44px; }
+  .important-grade-actions { width: 100%; }
+  .important-panel .important-grade-keys button { min-height: 44px; }
 }
 @media (pointer: coarse) {
-  .important-panel .important-grade-keys button,
-  .important-grade-saved { min-height: 44px; }
+  .important-panel .important-grade-keys button { min-height: 44px; }
 }
 .important-pending-reports {
   margin: 12px 0 0;

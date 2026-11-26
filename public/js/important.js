@@ -1,4 +1,4 @@
-import { mountGamification } from './important-gamification.js?v=2';
+import { mountGamification } from './important-gamification.js?v=3';
 
 const panel = document.querySelector('[data-important]');
 
