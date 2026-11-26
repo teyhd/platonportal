@@ -33,6 +33,26 @@
     <p data-important-day></p>
     <button type="button" data-important-more aria-expanded="false" aria-controls="important-items" hidden></button>
   </div>
+  <p class="sr-only" data-gamification-notice role="status"></p>
+  <details class="important-gamification" data-important-gamification hidden>
+    <summary>
+      <span>Геймификация</span>
+      <span data-gamification-count></span>
+    </summary>
+    <div class="important-grading-body">
+      <div class="important-grading-tools">
+        <label hidden>
+          <span class="sr-only">Найти ученика в геймификации</span>
+          <input type="search" placeholder="Имя или класс">
+        </label>
+        <a href="https://points.platoniks.ru/">Журнал</a>
+      </div>
+      <div data-gamification-list></div>
+      <p class="important-grade-feedback" data-gamification-message role="status"></p>
+      <button type="button" data-gamification-retry hidden>Повторить загрузку</button>
+      <button type="button" data-gamification-more hidden></button>
+    </div>
+  </details>
   <ul class="important-pending-reports" data-important-pending-reports aria-label="Незаполненные отчётные карточки" hidden></ul>
   <details class="important-approvals" data-important-approvals hidden>
     <summary>
@@ -54,6 +74,6 @@
   </section>
   <noscript>Для обновления сводки включите JavaScript. Расписание и посещаемость доступны в каталоге сервисов.</noscript>
 </section>
-<link rel="stylesheet" href="/css/important.css?v=schedule-history-1">
+<link rel="stylesheet" href="/css/important.css?v=gamification-1">
 <link rel="stylesheet" href="/css/important-services.css?v=laptop-locations-2">
-<script type="module" src="/js/important.js?v=schedule-history-1"></script>
+<script type="module" src="/js/important.js?v=gamification-1"></script>

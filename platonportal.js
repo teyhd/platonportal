@@ -7,6 +7,7 @@ import 'dotenv/config'
 import bcrypt from 'bcrypt';
 import * as db from './vendor/db.mjs';
 import { createImportantService, registerImportantRoutes } from './vendor/important.mjs';
+import { createImportantGamification, registerImportantGamification } from './vendor/important-gamification.mjs';
 import { createImportantOrders } from './vendor/important-orders.mjs';
 import { createBookpcBlock } from './vendor/bookpc.mjs';
 import { contextualizeFamilyCard, createFamilyAccess } from './vendor/familyAccess.mjs';
@@ -1051,7 +1052,11 @@ function isNoisyIntroInfo(card) {
 
 const familyAccess = createFamilyAccess(db.openHarmonySsoConnection);
 const importantLessonRooms = createImportantVcall(vcall);
+const importantGamification = createImportantGamification({
+  getRoles: actorId => db.getUserRolesForsrvnam(actorId, 'points'),
+});
 const importantService = createImportantService({
+  getGamificationCount: importantGamification.count,
   loadOrders: createImportantOrders(),
   getRights: db.get_user_rights,
   getFamilyScope: userId => familyAccess.getFamily(userId, { includeGrants: false }),
@@ -1075,6 +1080,7 @@ const familyRoutes = createFamilyRoutes({
 });
 app.use(familyRoutes.router);
 registerImportantRoutes(app, importantService);
+registerImportantGamification(app, importantGamification);
 registerImportantVcallRoutes(app, { importantService, lessonRooms: importantLessonRooms, getUser: getVcallUser });
 
 app.get('/',async (req,res)=>{

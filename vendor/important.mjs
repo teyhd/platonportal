@@ -223,6 +223,7 @@ async function addLessonContacts(items, schedule, loadContactContext) {
 export function createImportantService({
   env=process.env, fetchImpl=fetch, now=()=>new Date(), getRights, getClassContactContext, getFamilyScope,
   canUseVcall=async()=>false, getVcallLessonStatus, loadOrders,
+  getGamificationCount,
 }={}) {
   const cache = new Map();
   const pilotIds = new Set(String(env.IMPORTANT_EXPANDED_PILOT_IDS ?? '').split(',').map(value => value.trim()).filter(Boolean));
@@ -507,8 +508,12 @@ export function createImportantService({
       if (!kind) throw Object.assign(new Error('lesson_forbidden'),{status:403});
       return {lesson,kind,actorId};
     },
-    async summary(session,query) {
-      const {view,schedule}=await load(session,query,{rooms:true});
+    async summary(session,query,{rolePreview=false}={}) {
+      const [{view,schedule}, gamificationCount]=await Promise.all([
+        load(session,query,{rooms:true}),
+        !rolePreview && enabled(env) && (query.context ?? 'personal') === 'personal' ? getGamificationCount?.(session) : null,
+      ]);
+      if (gamificationCount > 0) view.visible = true;
       if (schedule && view.context === 'personal') {
         await addLessonContacts(view.items, schedule, loadContactContext);
       }
@@ -518,7 +523,7 @@ export function createImportantService({
         remoteDetails: Boolean(remoteDetail || remoteScheduleDetail),
         detailRevision: crypto.createHash('sha256').update(JSON.stringify([rows ?? [], detailActions ?? []])).digest('hex'),
       }));
-      return { ...view, items };
+      return { ...view, items, ...(getGamificationCount ? { gamificationCount } : {}) };
     },
     async details(session,query) {
       const offset=Number(query.offset??0);
@@ -553,8 +558,8 @@ export function registerImportantRoutes(app,service) {
   for(const [path,method] of [['/api/important','summary'],['/api/important/details','details']]) app.get(path,async(req,res)=>{
     res.set('Cache-Control','private, no-cache');res.set('Vary','Cookie');
     try {
-      const data=await service[method](req.session,req.query);
-      if (data.orders) res.set('Cache-Control','private, no-store');
+      const data=await service[method](req.session,req.query,{rolePreview:Boolean(req.rolePreview)});
+      if (data.orders || data.gamificationCount > 0) res.set('Cache-Control','private, no-store');
       const etag=`"${crypto.createHash('sha256').update(JSON.stringify({...data,serverTime:undefined,sources:method==='summary'?Object.fromEntries(Object.entries(data.sources).map(([name,s])=>[name,{...s,checkedAt:undefined}])):undefined})).digest('hex')}"`;
       res.set('ETag',etag);res.set('X-Server-Time',data.serverTime);res.set('X-Checked-At',data.serverTime);
       if(req.headers['if-none-match']===etag)return res.status(304).end();

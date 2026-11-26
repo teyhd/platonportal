@@ -1,3 +1,5 @@
+import { mountGamification } from './important-gamification.js?v=1';
+
 const panel = document.querySelector('[data-important]');
 
 if (panel) {
@@ -5,6 +7,7 @@ if (panel) {
   const list = $('[data-important-items]');
   const status = $('[data-important-sources]');
   const refreshButton = $('[data-important-refresh]');
+  const gamification = mountGamification(panel, () => schedule(0));
   const motion = matchMedia('(prefers-reduced-motion: no-preference)');
   const nodes = new Map();
   const details = new Map();
@@ -497,6 +500,7 @@ if (panel) {
     renderOrders(context === 'personal' ? data.orders : null);
     renderApprovals(data.visible ? data.items.filter(item => item.kind === 'calendar_approval') : []);
     renderPendingReports(data.visible && context === 'personal' ? data.items.filter(isPendingReport) : []);
+    gamification.update(context === 'personal' ? data.gamificationCount : null);
     updatePanelVisibility();
     if (!data.visible) {
       status.hidden = true;
@@ -617,7 +621,8 @@ if (panel) {
     more.setAttribute('aria-expanded', String(expanded));
     const emptyMessage = issues.length ? 'Нет доступных сведений' : context === 'school' ? 'Нет событий, требующих внимания' : 'Сейчас нет важных событий';
     const footer = $('[data-important-day]');
-    text(footer, data.daySummary || (!data.items.length && !data.orders?.items.length && bookpcSlots.every(slot => slot.hidden) ? emptyMessage : ''));
+    text(footer, data.daySummary || (!data.items.length && !data.orders?.items.length && !data.gamificationCount &&
+      bookpcSlots.every(slot => slot.hidden) ? emptyMessage : ''));
     footer.hidden = !footer.textContent;
     tick();
   }
@@ -813,6 +818,7 @@ if (panel) {
     renderOrders(null);
     renderApprovals([]);
     renderPendingReports([]);
+    gamification.reset();
     $('[data-important-clock]').hidden = true;
     if (workday) {
       workday.hidden = true; workday.open = false;
