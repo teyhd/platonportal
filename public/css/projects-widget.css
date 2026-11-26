@@ -19,17 +19,110 @@
 .projects-teaser-status { color:#64748b; font-size:14px; line-height:1.6; }
 .projects-teaser-status:empty { display:none; }
 .projects-teaser-moderation { margin-top:12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:13px; }
-.projects-teaser-work-status { padding:5px 8px; border-radius:7px; background:#e8f1ff; color:#285b9f; }
-.projects-teaser-status-menu { width:100%; }
-.projects-teaser-status-menu summary,.projects-teaser-refresh { min-height:44px; box-sizing:border-box; padding:10px; border:1px solid #cdd6e4; border-radius:8px; color:#285b9f; background:#fff; cursor:pointer; font:inherit; }
-.projects-teaser-status-menu summary:focus-visible,.projects-teaser-status-options button:focus-visible,.projects-teaser-refresh:focus-visible { outline:3px solid #6ba5ff; outline-offset:3px; }
-.projects-teaser-status-options { display:grid; gap:7px; padding:10px; margin-top:7px; border:1px solid #dbe2ec; border-radius:9px; background:#f8fbff; }
-.projects-teaser-status-options button { min-height:44px; padding:9px; text-align:left; background:#fff; color:#243d62; border:1px solid #cdd6e4; border-radius:7px; font:inherit; cursor:pointer; }
-.projects-teaser-status-options button:disabled { cursor:default; opacity:.6; }
-.projects-teaser-status-options strong,.projects-teaser-status-options small { display:block; }
-.projects-teaser-status-options small { margin-top:3px; font-size:12px; line-height:1.5; color:#59657a; }
-.projects-teaser-status-options a { color:#1763dc; padding:8px 0; min-height:28px; }
-.projects-teaser-status-options p { white-space:normal; line-height:1.5; font-size:13px; margin:0; }
+.projects-teaser-work-status {
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: var(--portal-accent-wash);
+  color: var(--portal-accent);
+}
+.projects-teaser-status-menu { width: 100%; }
+.projects-teaser-status-menu > .projects-teaser-status-trigger,
+.projects-teaser-refresh {
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid var(--portal-control);
+  border-radius: 8px;
+  background: var(--portal-surface);
+  color: var(--portal-accent);
+  font: inherit;
+  cursor: pointer;
+}
+.projects-teaser-status-menu > .projects-teaser-status-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+}
+button.projects-teaser-status-trigger::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin: 0 2px 3px 0;
+  border: solid currentColor;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+.projects-teaser-status-menu:has(:popover-open) button.projects-teaser-status-trigger::after {
+  margin: 3px 2px 0 0;
+  transform: rotate(225deg);
+}
+.projects-teaser-status-trigger:hover,
+.projects-teaser-status-menu:has(:popover-open) .projects-teaser-status-trigger,
+.projects-teaser-refresh:not(:disabled):hover { background: var(--portal-hover); }
+.projects-teaser .projects-teaser-status-trigger:focus-visible,
+.projects-teaser-status-options button:focus-visible,
+.projects-teaser .projects-teaser-status-options a:focus-visible,
+.projects-teaser-refresh:focus-visible {
+  outline: 2px solid var(--portal-accent);
+  outline-offset: 2px;
+}
+.projects-teaser-status-options {
+  position: fixed;
+  inset: auto;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px;
+  border: 1px solid var(--portal-control);
+  border-radius: 10px;
+  background: var(--portal-surface);
+  color: var(--portal-text);
+  box-shadow: var(--portal-shadow);
+  overflow: auto;
+  overscroll-behavior: contain;
+  visibility: hidden;
+}
+.projects-teaser-status-options:popover-open { display: grid; gap: 6px; }
+.projects-teaser-status-options button {
+  min-height: 44px;
+  padding: 9px;
+  text-align: left;
+  background: var(--portal-surface);
+  color: var(--portal-text);
+  border: 1px solid var(--portal-line);
+  border-radius: 7px;
+  font: inherit;
+  cursor: pointer;
+}
+.projects-teaser-status-options button:not(:disabled):hover { background: var(--portal-hover); }
+.projects-teaser-status-options button:disabled {
+  background: var(--portal-raised);
+  color: var(--portal-muted);
+  cursor: default;
+}
+.projects-teaser-status-options strong,
+.projects-teaser-status-options small { display: block; }
+.projects-teaser-status-options small {
+  margin-top: 3px;
+  color: var(--portal-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.projects-teaser-card .projects-teaser-status-options a {
+  color: var(--portal-accent);
+  padding: 8px;
+  min-height: 28px;
+  text-decoration: underline;
+}
+.projects-teaser-status-options p {
+  white-space: normal;
+  line-height: 1.5;
+  font-size: 13px;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
 .projects-teaser-refresh { margin-top:8px; }
 .projects-teaser-refresh[hidden] { display:none; }
 @media(max-width:900px) { .projects-teaser-list { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; padding:2px 2px 12px; } .projects-teaser-card { flex:0 0 220px; scroll-snap-align:start; } }

@@ -4,6 +4,8 @@ if (section) {
   const list = section.querySelector('[data-projects-list]');
   const status = section.querySelector('[data-projects-status]');
   const tabs = Array.from(section.querySelectorAll('[data-projects-sort]'));
+  const supportsPopover = 'showPopover' in HTMLElement.prototype;
+  const openStatusMenu = '.projects-teaser-status-options:popover-open';
   const refresh = document.createElement('button');
   refresh.type = 'button';
   refresh.className = 'projects-teaser-refresh';
@@ -26,17 +28,70 @@ if (section) {
     return node;
   }
 
+  function positionOpenStatusMenu() {
+    const options = section.querySelector(openStatusMenu);
+    if (!options) return;
+
+    const trigger = options.previousElementSibling.getBoundingClientRect();
+    const carousel = list.getBoundingClientRect();
+    const viewport = window.visualViewport;
+    const viewportLeft = viewport?.offsetLeft ?? 0;
+    const viewportTop = viewport?.offsetTop ?? 0;
+    const viewportWidth = viewport?.width ?? document.documentElement.clientWidth;
+    const viewportBottom = viewportTop + (viewport?.height ?? document.documentElement.clientHeight);
+    const viewportRight = viewportLeft + viewportWidth;
+    const visibleLeft = Math.max(carousel.left, viewportLeft);
+    const visibleRight = Math.min(carousel.right, viewportRight);
+    if (trigger.right <= visibleLeft || trigger.left >= visibleRight ||
+        trigger.bottom <= viewportTop || trigger.top >= viewportBottom) {
+      options.hidePopover();
+      return;
+    }
+
+    const gap = 8;
+    const width = Math.min(Math.max(trigger.width, 256), 320, viewportWidth - 2 * gap);
+    const left = Math.min(Math.max(trigger.left, visibleLeft, viewportLeft + gap), viewportRight - width - gap);
+    options.style.width = `${width}px`;
+    options.style.left = `${left}px`;
+
+    const below = viewportBottom - trigger.bottom - 2 * gap;
+    const above = trigger.top - viewportTop - 2 * gap;
+    const fullHeight = options.scrollHeight + options.offsetHeight - options.clientHeight;
+    const opensAbove = fullHeight > below && above > below;
+    options.style.maxHeight = `${Math.max(opensAbove ? above : below, 0)}px`;
+    options.style.top = `${opensAbove ? trigger.top - gap - options.offsetHeight : trigger.bottom + gap}px`;
+    options.style.visibility = 'visible';
+  }
+
   function quickControls(work) {
     const quick = work.quick;
     if (!data?.quickModeration?.csrfToken || !quick) return null;
     const controls = element('div', '', 'projects-teaser-moderation');
     const label = work.visibility === 'public' ? 'Внешняя витрина' : 'В ленте школы';
     controls.append(element('span', label, 'projects-teaser-work-status'));
-    const menu = element('details', '', 'projects-teaser-status-menu');
-    const summary = element('summary', 'Изменить статус');
-    summary.setAttribute('aria-label', `Изменить статус работы «${work.title}»`);
-    menu.append(summary);
+    const menu = element('div', '', 'projects-teaser-status-menu');
+    const moderationUrl = `https://proj.platoniks.ru/works/${work.id}#moderation`;
+    const trigger = element(supportsPopover ? 'button' : 'a', 'Изменить статус', 'projects-teaser-status-trigger');
+    trigger.setAttribute('aria-label', `Изменить статус работы «${work.title}»`);
+    menu.append(trigger);
+    controls.append(menu);
+    if (!supportsPopover) {
+      trigger.href = moderationUrl;
+      return controls;
+    }
+
+    trigger.type = 'button';
     const options = element('div', '', 'projects-teaser-status-options');
+    options.popover = 'auto';
+    trigger.popoverTargetElement = options;
+    options.addEventListener('beforetoggle', () => { options.style.visibility = ''; });
+    options.addEventListener('toggle', positionOpenStatusMenu);
+    menu.addEventListener('keydown', event => {
+      if (event.key !== 'Escape' || !options.matches(':popover-open')) return;
+      event.preventDefault();
+      options.hidePopover();
+      trigger.focus({preventScroll: true});
+    });
     const unpublished = quick.latestVersionId !== work.versionId || (work.status === 'approved' && quick.status === 'pending');
     const unchanged = !unpublished && quick.status === 'approved' && work.visibility === 'school';
     const approve = element('button', unchanged ? 'Уже в ленте школы' : 'В ленту школы');
@@ -47,7 +102,7 @@ if (section) {
     if (unpublished || !quick.canApproveSchool) {
       options.append(element('p', quick.approveReason || 'Откройте и проверьте актуальную версию перед утверждением.'));
       const open = element('a', 'Проверить актуальную версию');
-      open.href = `https://proj.platoniks.ru/works/${work.id}#moderation`;
+      open.href = moderationUrl;
       options.append(open);
     }
     for (const [action, title, description] of [
@@ -63,10 +118,6 @@ if (section) {
     }
     if (busy.has(work.id)) options.append(element('p','Сохраняем статус…'));
     menu.append(options);
-    menu.addEventListener('keydown', event => {
-      if (event.key === 'Escape') { menu.open = false; summary.focus(); }
-    });
-    controls.append(menu);
     return controls;
   }
 
@@ -178,8 +229,16 @@ if (section) {
   tabs.forEach(tab => tab.addEventListener('click', () => show(tab.dataset.projectsSort)));
   refresh.addEventListener('click', () => { message = ''; void load(); });
   function quietRefresh() {
-    if (document.hidden || loading || busy.size || section.querySelector('details[open]') || section.contains(document.activeElement)) return;
+    if (document.hidden || loading || busy.size || section.contains(document.activeElement) ||
+        (supportsPopover && section.querySelector(openStatusMenu))) return;
     void load();
+  }
+  if (supportsPopover) {
+    list.addEventListener('scroll', positionOpenStatusMenu);
+    window.addEventListener('scroll', positionOpenStatusMenu);
+    window.addEventListener('resize', positionOpenStatusMenu);
+    window.visualViewport?.addEventListener('scroll', positionOpenStatusMenu);
+    window.visualViewport?.addEventListener('resize', positionOpenStatusMenu);
   }
   window.setInterval(quietRefresh,60000);
   document.addEventListener('visibilitychange',quietRefresh);
