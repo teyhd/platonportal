@@ -595,6 +595,7 @@
 .important-gamification {
   margin-top: 12px;
   border: 1px solid var(--important-border);
+  border-inline-start: 3px solid var(--portal-warning-line, #b77924);
   border-radius: 9px;
   background: var(--portal-raised, #f7f9fc);
 }
@@ -625,13 +626,16 @@
 [data-gamification-count] {
   padding: 3px 7px;
   border-radius: 6px;
-  background: var(--important-blue-wash);
-  color: var(--important-blue);
+  background: var(--important-warn-wash);
+  color: var(--important-warn);
   text-align: end;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
-.important-grading-body { padding: 5px 12px 10px; }
+.important-grading-body {
+  container: important-grades / inline-size;
+  padding: 5px 12px 10px;
+}
 .important-grading-tools { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
 .important-grading-tools label { flex: 1; min-width: 0; }
 .important-grading-tools input {
@@ -653,38 +657,77 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-.important-grade-student + .important-grade-student { margin-top: 12px; }
+.important-grade-student {
+  display: grid;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid var(--important-border);
+  border-radius: 8px;
+  background: var(--portal-surface, #fff);
+}
+.important-grade-student + .important-grade-student { margin-top: 8px; }
+.important-grade-identity { min-width: 0; }
 .important-grade-student h4 {
   margin: 0;
-  padding: 5px 8px;
-  border-radius: 5px;
-  background: var(--portal-hover, #eaf1fb);
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
+  line-height: 1.3;
   overflow-wrap: anywhere;
+}
+.important-grade-student-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 4px;
+  color: var(--important-muted);
+  font-size: 12px;
+}
+.important-grade-remaining {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--important-warn-wash);
+  color: var(--important-warn);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.important-grade-contexts { min-width: 0; }
+.important-grade-context + .important-grade-context { margin-top: 7px; }
+.important-grade-context .important-grade-context-label {
+  margin: 0 0 4px;
+  overflow-wrap: anywhere;
+}
+.important-grade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 184px), 1fr));
+  gap: 5px;
 }
 .important-grade {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 3px 12px;
-  padding: 6px 8px;
+  grid-template-rows: 1fr auto;
+  align-items: start;
+  gap: 4px;
+  min-width: 0;
+  padding: 6px 7px;
+  border: 1px solid var(--important-border);
+  border-radius: 6px;
+  background: var(--portal-raised, #f7f9fc);
   overflow-wrap: anywhere;
 }
-.important-grade + .important-grade { border-top: 1px solid var(--important-border); }
-.important-grade strong { font-size: 13px; font-weight: 650; }
+.important-grade-label { font-size: 13px; line-height: 1.25; }
+.important-grade-label strong { font-weight: 650; }
 .important-grade-meta,
 .important-grade-feedback { margin: 1px 0 0; color: var(--important-muted); font-size: 12px; }
-.important-grade-feedback { grid-column: 1 / -1; }
 .important-grade-feedback:empty { display: none; }
 .important-grade-keys {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 4px;
+  width: min(100%, 230px);
 }
 .important-panel .important-grade-keys button {
-  min-width: 34px;
-  min-height: 34px;
+  min-width: 0;
+  min-height: 36px;
   border: 1px solid var(--important-border);
   border-radius: 6px;
   background: var(--portal-surface, #fff);
@@ -692,14 +735,65 @@
   font-size: 14px;
   font-weight: 700;
 }
-.important-panel .important-grade-keys button:is(:hover, [data-draft="true"], [data-saving]) {
+.important-panel .important-grade-keys button:is(:hover:not([aria-disabled="true"]), [data-draft], [data-grade-state="saving"]) {
   background: var(--important-blue-wash);
   border-color: var(--important-blue);
 }
-.important-grade-keys button[aria-disabled="true"] { opacity: .55; cursor: default; }
-@media (max-width: 580px) {
-  .important-grade { grid-template-columns: minmax(0, 1fr); }
-  .important-panel .important-grade-keys button { min-width: 0; min-height: 44px; }
+.important-grade-keys button[aria-disabled="true"]:not([data-grade-state]) { opacity: .55; cursor: default; }
+.important-grade[data-state="saving"] .important-grade-feedback { color: var(--important-blue); }
+.important-grade[data-state="retry"],
+.important-panel .important-grade-keys button[data-grade-state="retry"] {
+  border-color: var(--portal-danger-line, #c75d70);
+}
+.important-grade[data-state="retry"] .important-grade-feedback,
+.important-panel .important-grade-keys button[data-grade-state="retry"] {
+  color: var(--portal-danger, #a32140);
+}
+.important-grade[data-state="confirmed"] {
+  border-color: var(--portal-success-line, #95cdb2);
+  background: var(--portal-success-wash, #e8f7ef);
+}
+.important-grade-saved {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  margin: 0;
+  color: var(--portal-success, #176846);
+  font-size: 12px;
+}
+.important-grade-saved strong {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid var(--portal-success-line, #95cdb2);
+  border-radius: 6px;
+  font-size: 14px;
+}
+@container important-grades (min-width: 900px) {
+  .important-grade-student {
+    grid-template-columns: clamp(165px, 17%, 245px) minmax(0, 1fr);
+    gap: 12px;
+  }
+  .important-grade-student h4 { font-size: 17px; }
+  .important-grade:only-child {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto;
+    align-items: center;
+    gap: 10px;
+    max-width: 640px;
+  }
+  .important-grade:only-child .important-grade-keys { width: 230px; }
+}
+@container important-grades (max-width: 550px) {
+  .important-grade-keys { width: 100%; }
+  .important-panel .important-grade-keys button,
+  .important-grade-saved { min-height: 44px; }
+}
+@media (pointer: coarse) {
+  .important-panel .important-grade-keys button,
+  .important-grade-saved { min-height: 44px; }
 }
 .important-pending-reports {
   margin: 12px 0 0;

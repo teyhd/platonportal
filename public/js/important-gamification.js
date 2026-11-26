@@ -18,6 +18,12 @@ function dateLabel(date) {
   return Number.isFinite(time) ? dateFormatter.format(time) : '';
 }
 
+function contextLabel(task) {
+  const week = dateLabel(task.week);
+  const due = dateLabel(task.dueOn);
+  return [task.subject, task.group, week && `Неделя с ${week}`, due && `Срок ${due}`].filter(Boolean).join(' · ');
+}
+
 export function mountGamification(panel, refreshSummary) {
   const card = panel.querySelector('[data-important-gamification]');
   if (!card) return { update() {}, reset() {} };
@@ -32,6 +38,8 @@ export function mountGamification(panel, refreshSummary) {
   const notice = panel.querySelector('[data-gamification-notice]');
   const fallbackFocus = panel.querySelector('[data-important-refresh]');
   const operations = new Map();
+  const confirmed = new Map();
+  const taskOrder = new Map();
   let tasks = null, limit = 8, active = false, request, generation = 0;
 
   function setCount(value) {
@@ -55,15 +63,19 @@ export function mountGamification(panel, refreshSummary) {
     const ownOperation = operation?.key === key;
     const row = element('div', 'important-grade');
     row.dataset.task = key;
-    const label = element('div');
-    const title = element('strong', '', task.criterion);
-    label.append(title);
-    const week = dateLabel(task.week);
-    const due = dateLabel(task.dueOn);
-    const meta = [task.subject, task.group, week && `Неделя с ${week}`, due && `Срок ${due}`].filter(Boolean).join(' · ');
-    if (meta) label.append(element('p', 'important-grade-meta', meta));
+    const label = element('div', 'important-grade-label');
+    label.append(element('strong', '', task.criterion));
     row.append(label);
+    const saved = confirmed.get(key);
+    if (saved) {
+      row.dataset.state = 'confirmed';
+      const status = element('p', 'important-grade-saved', 'Сохранено');
+      status.prepend(element('strong', '', String(saved.score)));
+      row.append(status);
+      return row;
+    }
     if (task.reason) {
+      row.dataset.state = 'journal';
       const link = element('a', 'important-grade-link', task.reason === 'draft' ? 'Черновик в журнале' : `Шкала ${task.min}–${task.max} в журнале`);
       link.href = journal;
       row.append(link);
@@ -84,18 +96,49 @@ export function mountGamification(panel, refreshSummary) {
       button.disabled = outOfRange;
       button.setAttribute('aria-disabled', String(outOfRange || !!operation && (operation.saving || !ownOperation || operation.score !== score)));
       if (task.draft === score) button.dataset.draft = 'true';
-      if (ownOperation && operation.score === score) button.dataset.saving = String(operation.saving);
+      if (ownOperation && operation.score === score) button.dataset.gradeState = operation.saving ? 'saving' : 'retry';
       button.addEventListener('click', () => save(task, score));
       keys.append(button);
     }
     row.append(keys);
     if (ownOperation) {
+      row.dataset.state = operation.saving ? 'saving' : 'retry';
       const status = operation.saving ? 'Сохраняем…' : `Нажмите ${operation.score} ещё раз, чтобы повторить`;
-      row.append(element('p', 'important-grade-feedback', status));
+      label.append(element('p', 'important-grade-feedback', status));
     } else if (task.draft != null) {
       label.append(element('p', 'important-grade-meta', `Черновик: ${task.draft}`));
     }
     return row;
+  }
+
+  function studentRow({ pending, saved }) {
+    const student = pending[0];
+    const group = element('section', 'important-grade-student');
+    const identity = element('div', 'important-grade-identity');
+    identity.append(element('h4', '', student.name));
+    const details = element('div', 'important-grade-student-meta');
+    if (student.class) details.append(element('span', '', student.class));
+    details.append(element('span', 'important-grade-remaining', `Осталось ${pending.length}`));
+    identity.append(details);
+
+    const criteria = element('div', 'important-grade-contexts');
+    const contexts = new Map();
+    for (const task of [...pending, ...saved].sort((a, b) => taskOrder.get(taskKey(a)) - taskOrder.get(taskKey(b)))) {
+      const key = [task.scopeId, task.periodId, task.dueOn].join(':');
+      if (!contexts.has(key)) contexts.set(key, []);
+      contexts.get(key).push(task);
+    }
+    for (const rows of contexts.values()) {
+      const context = element('div', 'important-grade-context');
+      const label = contextLabel(rows[0]);
+      if (label) context.append(element('p', 'important-grade-meta important-grade-context-label', label));
+      const grid = element('div', 'important-grade-grid');
+      grid.append(...rows.map(gradeRow));
+      context.append(grid);
+      criteria.append(context);
+    }
+    group.append(identity, criteria);
+    return group;
   }
 
   function render() {
@@ -106,26 +149,42 @@ export function mountGamification(panel, refreshSummary) {
     const focusedScore = focused?.dataset.score;
     const groups = new Map();
     for (const task of tasks) {
-      if (!groups.has(task.studentId)) groups.set(task.studentId, []);
-      groups.get(task.studentId).push(task);
+      const key = taskKey(task);
+      if (!taskOrder.has(key)) taskOrder.set(key, taskOrder.size);
+      const rank = taskOrder.get(key);
+      if (!groups.has(task.studentId)) groups.set(task.studentId, { pending:[], saved:[], rank });
+      const group = groups.get(task.studentId);
+      group.pending.push(task);
+      group.rank = Math.min(group.rank, rank);
+    }
+    for (const { task } of confirmed.values()) {
+      const group = groups.get(task.studentId);
+      if (group) {
+        group.saved.push(task);
+        group.rank = Math.min(group.rank, taskOrder.get(taskKey(task)));
+      } else {
+        confirmed.delete(taskKey(task));
+      }
     }
     searchBox.hidden = groups.size < 8 && !search.value;
     const query = search.value.trim().toLocaleLowerCase('ru');
-    const matches = [...groups.values()].filter(rows => !query ||
-      (rows[0].name + ' ' + (rows[0].class || '')).toLocaleLowerCase('ru').includes(query));
-    list.replaceChildren(...matches.slice(0,limit).map(rows => {
-      const group = element('section', 'important-grade-student');
-      const heading = element('h4', '', rows[0].name + (rows[0].class ? ' · ' + rows[0].class : ''));
-      group.append(heading, ...rows.map(gradeRow));
-      return group;
-    }));
+    const matches = [...groups.values()].filter(({pending:[student]}) => !query ||
+      (student.name + ' ' + (student.class || '')).toLocaleLowerCase('ru').includes(query))
+      .sort((a, b) => a.rank - b.rank);
+    list.replaceChildren(...matches.slice(0,limit).map(studentRow));
     if (!matches.length && query) list.append(element('p', 'important-grade-meta', 'По этому запросу учеников нет'));
     more.hidden = matches.length <= limit;
     more.textContent = `Ещё ученики · ${Math.max(0, matches.length - limit)}`;
     if (focused) {
       const next = [...list.querySelectorAll('[data-task]')];
-      const row = next.find(item => item.dataset.task === focusedId) ?? next[Math.max(0, previousOrder.indexOf(focusedId))];
-      const target = row?.querySelector(focusedScore ? `button[data-score="${focusedScore}"]:not(:disabled)` : 'a') ?? summary;
+      const current = next.findIndex(row => row.dataset.task === focusedId);
+      const start = current < 0 ? Math.max(0, previousOrder.indexOf(focusedId)) : current;
+      const ordered = [...next.slice(start), ...next.slice(0,start).reverse()];
+      const target = ordered.map(row => row.querySelector(
+        row.dataset.task === focusedId && focusedScore
+          ? `button[data-score="${focusedScore}"]:not(:disabled)`
+          : 'button:not([aria-disabled="true"]), a'
+      )).find(Boolean) ?? summary;
       target.focus({ preventScroll:true });
     }
   }
@@ -148,6 +207,7 @@ export function mountGamification(panel, refreshSummary) {
       if (!Array.isArray(result.tasks)) throw Error();
       const incoming = new Set(result.tasks.map(taskKey));
       for (const [key, op] of operations) if (!incoming.has(op.key)) operations.delete(key);
+      for (const key of confirmed.keys()) if (incoming.has(key)) confirmed.delete(key);
       const changed = JSON.stringify(tasks) !== JSON.stringify(result.tasks);
       tasks = result.tasks;
       message.textContent = '';
@@ -203,9 +263,11 @@ export function mountGamification(panel, refreshSummary) {
       }
       if (!Number.isSafeInteger(content.version)) throw Error();
       operations.delete(key);
+      confirmed.set(row, { task, score });
       tasks = tasks.filter(item => taskKey(item) !== row).map(item =>
         cellKey(item) === key ? { ...item, version:content.version } : item);
-      notice.textContent = `Оценка ${score} сохранена. Осталось ${tasks.length}.`;
+      const finished = !tasks.some(item => item.studentId === task.studentId);
+      notice.textContent = finished ? `${task.name}. Все оценки выставлены.` : `Оценка ${score} сохранена. Осталось ${tasks.length}.`;
       render();
       setCount(tasks.length);
       await load();
@@ -224,6 +286,8 @@ export function mountGamification(panel, refreshSummary) {
     request?.abort();
     request = undefined;
     operations.clear();
+    confirmed.clear();
+    taskOrder.clear();
     tasks = null;
     search.value = '';
     limit = 8;
